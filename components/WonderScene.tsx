@@ -46,8 +46,8 @@ const WAVE_TICK_MS = 110; // interval langkah gelombang sapuan (dari 80: sapuan 
 const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
 
 // --- spiral galaksi per huruf (dari halaman uji /spiral) ---
-const SPIRAL_EVERY_MS = 700; // jeda pemicu otomatis spiral huruf (dipercepat lagi: lebih rame)
-const SPIRAL_MAX = 7; // maks spiral huruf aktif bersamaan
+const SPIRAL_EVERY_MS = 400; // jeda pemicu otomatis efek huruf (700 -> 400: kemunculan diperbanyak, permintaan user 30 Okt; timer ini juga memicu sparkle)
+const SPIRAL_MAX = 10; // maks spiral huruf aktif bersamaan (7 -> 10, ruang untuk kepadatan baru)
 const SPIRAL_GLITCH_MS = 150; // glitch pembuka/penutup urutan spiral
 const SPIRAL_GROW_MS = 500; // spiral tumbuh (dipangkas: durasi total lebih singkat)
 const SPIRAL_SHRINK_MS = 550; // spiral menguncup (dipangkas)
@@ -58,7 +58,7 @@ const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong
 // lekuk 0,10, glow 4, hold 1,5 detik, maks 10 aktif. Berjalan BERSAMA
 // spiral: satu cell boleh berisi spiral + sparkle di huruf berbeda,
 // tapi tidak pernah di huruf yang sama.
-const SPARK_MAX = 10; // maks sparkle aktif bersamaan (setelan user); pemicu otomatisnya menumpang timer spiral (700 ms)
+const SPARK_MAX = 14; // maks sparkle aktif bersamaan (10 -> 14: kemunculan diperbanyak, permintaan user 30 Okt); pemicu otomatisnya menumpang timer efek huruf
 const SPARK_SIZE = 1.3; // ukuran relatif ke tinggi huruf (setelan user)
 const SPARK_PINCH = 0.1; // kedalaman lekuk cekung sisi sparkle (setelan user)
 const SPARK_GLOW = 4; // shadowBlur sparkle (setelan user)
