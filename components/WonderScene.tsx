@@ -6,12 +6,13 @@ import { useEffect, useRef, useState } from "react";
    KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
    ===================================================================== */
 const WORD = "AMAMIYA"; // kata yang diulang menjadi pola grid
-// MODE DIAM (permintaan user 30 Okt malam): kata AMAMIYA tidak berubah
-// sama sekali — glitch substitusi/hapus, scramble, kata sisipan, front,
-// gelombang, dan heat kursor SEMUA dimatikan. Satu-satunya yang tetap
-// hidup adalah SPIRAL pada glitch huruf. Ubah ke false untuk
-// menghidupkan kembali efek teks ambient.
-const STATIC_TEXT = true;
+// MODE DIAM: bila true, kata AMAMIYA tidak berubah sama sekali — glitch
+// substitusi/hapus, scramble, kata sisipan, front, gelombang, dan heat
+// kursor SEMUA mati; hanya SPIRAL yang hidup. (Sempat diaktifkan user
+// 30 Okt malam saat memburu bug sisa glitch, lalu diminta dimatikan lagi
+// malam yang sama setelah spiral terbungkus rapi & glitch dibuat
+// bertenggat — efek ambient hidup lagi dengan pagar pengamannya.)
+const STATIC_TEXT = false;
 const GLYPHS = "AMAMIYA"; // karakter pengganti glitch — hanya huruf penyusun kata (simbol & angka dihapus atas permintaan user)
 const FONT_SIZE = 20; // ukuran font grid (px)
 const CW = 170; // lebar satu sel (px) — kira-kira selebar kata + letter-spacing
