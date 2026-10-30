@@ -52,38 +52,73 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
     const cy = H / 2;
 
     function drawSpiral(now: number) {
-      const R = H * 0.34;
-      const R0 = R * 0.12;
+      // Galaksi GEMUK (meniru foto galaksi spiral): lengan digambar
+      // 3 lapis — badan cahaya lebar lembut + badan tengah + garis inti
+      // terang — lebar mengikuti radius setempat, plus taburan bintang
+      // deterministik di sepanjang lengan dan inti elips terang.
+      // Jarak antar lengan ±0,56 r > lebar halo total 0,38 r: lengan
+      // tetap terpisah, tidak menyatu.
+      const R = H * 0.37;
+      const R0 = R * 0.1;
       const rot = now / 1600;
       const TURNS = Math.PI * 2 * 0.38;
-      ctx!.strokeStyle = "rgba(245,245,255,1)";
-      ctx!.fillStyle = "rgba(245,245,255,1)";
-      ctx!.lineWidth = 2;
+      const steps = 48;
+      const CHUNK = 4;
       ctx!.lineCap = "round";
       ctx!.shadowColor = "rgba(245,245,255,0.85)";
-      ctx!.shadowBlur = 4;
       for (let a = 0; a < 4; a++) {
-        const base = (a * Math.PI) / 2 + rot;
-        ctx!.beginPath();
-        const steps = 44;
-        for (let sIdx = 0; sIdx <= steps; sIdx++) {
-          const th = (TURNS * sIdx) / steps;
-          const r = R0 + (R - R0) * (th / TURNS);
-          const x = cx + r * Math.cos(base + th) * 0.82;
-          const y = cy + r * Math.sin(base + th);
-          if (sIdx === 0) ctx!.moveTo(x, y);
-          else ctx!.lineTo(x, y);
+        const off = (a * Math.PI) / 2;
+        for (let s0 = 0; s0 < steps; s0 += CHUNK) {
+          const thMid = (TURNS * (s0 + CHUNK / 2)) / steps;
+          const rMid = R0 * Math.pow(R / R0, thMid / TURNS);
+          const path = new Path2D();
+          for (let i = s0; i <= Math.min(steps, s0 + CHUNK); i++) {
+            const th = (TURNS * i) / steps;
+            const r = R0 * Math.pow(R / R0, th / TURNS);
+            const ang = rot + off + th;
+            const x = cx + r * Math.cos(ang);
+            const y = cy + r * Math.sin(ang);
+            if (i === s0) path.moveTo(x, y);
+            else path.lineTo(x, y);
+          }
+          ctx!.shadowBlur = 0;
+          ctx!.lineWidth = Math.max(1.2, 0.38 * rMid);
+          ctx!.strokeStyle = "rgba(245,245,255,0.15)";
+          ctx!.stroke(path);
+          ctx!.lineWidth = Math.max(1, 0.2 * rMid);
+          ctx!.strokeStyle = "rgba(245,245,255,0.32)";
+          ctx!.stroke(path);
+          ctx!.shadowBlur = 5;
+          ctx!.lineWidth = Math.max(1.1, 0.07 * rMid);
+          ctx!.strokeStyle = "rgba(245,245,255,0.95)";
+          ctx!.stroke(path);
+          ctx!.shadowBlur = 0;
+          const hsh = Math.sin(a * 127.1 + s0 * 311.7) * 43758.5453;
+          const h1 = hsh - Math.floor(hsh);
+          if (h1 < 0.65 && rMid > R * 0.2) {
+            const th = thMid;
+            const o2 = (h1 - 0.32) * 0.55 * rMid;
+            const bx = rMid * Math.cos(th) - Math.sin(th) * o2;
+            const by = rMid * Math.sin(th) + Math.cos(th) * o2;
+            const wx = cx + bx * Math.cos(rot + off) - by * Math.sin(rot + off);
+            const wy = cy + bx * Math.sin(rot + off) + by * Math.cos(rot + off);
+            ctx!.beginPath();
+            ctx!.arc(wx, wy, 0.7 + h1 * 0.9, 0, Math.PI * 2);
+            ctx!.fillStyle = "rgba(245,245,255,0.85)";
+            ctx!.fill();
+          }
         }
-        // lengan diredupkan saat mengarah horizontal (seperti aslinya:
-        // massa cahaya terkumpul di atas-bawah)
-        const vert = Math.abs(Math.sin(base + TURNS / 2));
-        ctx!.globalAlpha = 0.25 + 0.75 * vert;
-        ctx!.stroke();
       }
-      ctx!.globalAlpha = 1;
+      // inti galaksi: elips terang memanjang, berputar bersama lengan
+      ctx!.save();
+      ctx!.translate(cx, cy);
+      ctx!.rotate(rot);
       ctx!.beginPath();
-      ctx!.arc(cx, cy, 2.2, 0, Math.PI * 2);
+      ctx!.ellipse(0, 0, R * 0.24, R * 0.13, 0, 0, Math.PI * 2);
+      ctx!.shadowBlur = 8;
+      ctx!.fillStyle = "rgba(245,245,255,0.8)";
       ctx!.fill();
+      ctx!.restore();
       ctx!.shadowBlur = 0;
     }
 

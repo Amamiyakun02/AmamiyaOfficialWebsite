@@ -549,27 +549,73 @@ export default function WonderScene() {
       const CHUNK = 4;
       // 4 lengan saja (permintaan user): 8 lengan terlalu padat —
       // galaksi terlihat seperti lingkaran penuh, bukan spiral berlengan.
+      // Lengan DIGEMUKKAN ala galaksi (permintaan user 30 Okt, referensi
+      // foto galaksi spiral): tiap potongan lengan digambar 3 LAPIS —
+      // badan cahaya lebar lembut + badan tengah + garis inti terang —
+      // plus taburan bintang kecil di sepanjang lengan. Lebar lapis
+      // mengikuti radius setempat (ramping di dekat pusat, melebar ke
+      // luar); jarak tegak lurus antar lengan ±0,56 r sehingga total
+      // lebar halo (2 x 0,19 r) TIDAK membuat lengan saling menyatu.
       for (let a = 0; a < 4; a++) {
         g.save();
         g.rotate((a * Math.PI) / 2);
         for (let s0 = 0; s0 < steps; s0 += CHUNK) {
           const thMid = (upto * (s0 + CHUNK / 2)) / steps;
+          const rMid = R0 * Math.pow(R / R0, thMid / ARM_TURNS);
           const screenAng = thMid + rot + (a * Math.PI) / 2;
           const fade = 1 - 0.85 * Math.pow(Math.abs(Math.cos(screenAng)), 1.3);
-          g.strokeStyle = `rgba(245,245,255,${(alpha * Math.max(0.08, fade)).toFixed(3)})`;
-          g.beginPath();
+          const fAlpha = alpha * Math.max(0.08, fade);
+          const path = new Path2D();
           for (let i = s0; i <= Math.min(steps, s0 + CHUNK); i++) {
             const th = (upto * i) / steps;
             const r = R0 * Math.pow(R / R0, th / ARM_TURNS);
             const px = r * Math.cos(th);
             const py = r * Math.sin(th);
-            if (i === s0) g.moveTo(px, py);
-            else g.lineTo(px, py);
+            if (i === s0) path.moveTo(px, py);
+            else path.lineTo(px, py);
           }
-          g.stroke();
+          // lapis 1: badan cahaya lebar & lembut (tanpa bayangan — lebar
+          // + alpha rendahnya sendiri yang memberi kesan lembut)
+          g.shadowBlur = 0;
+          g.lineWidth = Math.max(0.8, 0.38 * rMid);
+          g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.16).toFixed(3)})`;
+          g.stroke(path);
+          // lapis 2: badan tengah
+          g.lineWidth = Math.max(0.7, 0.2 * rMid);
+          g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.34).toFixed(3)})`;
+          g.stroke(path);
+          // lapis 3: garis inti terang (satu-satunya yang bercahaya)
+          g.shadowBlur = 4;
+          g.lineWidth = Math.max(0.9 * gScale, 0.07 * rMid);
+          g.strokeStyle = `rgba(245,245,255,${fAlpha.toFixed(3)})`;
+          g.stroke(path);
+          g.shadowBlur = 0;
+          // taburan bintang: posisi deterministik dari (lengan, potongan)
+          // agar bintang ikut berputar bersama galaksi, tidak berkedip acak
+          const hsh = Math.sin(a * 127.1 + s0 * 311.7) * 43758.5453;
+          const h1 = hsh - Math.floor(hsh);
+          if (h1 < 0.6 && rMid > 2.2 * gScale) {
+            const off = (h1 - 0.3) * 0.55 * rMid;
+            const mx = rMid * Math.cos(thMid) - Math.sin(thMid) * off;
+            const my = rMid * Math.sin(thMid) + Math.cos(thMid) * off;
+            g.beginPath();
+            g.arc(mx, my, (0.45 + h1 * 0.5) * gScale, 0, Math.PI * 2);
+            g.fillStyle = `rgba(245,245,255,${(fAlpha * 0.8).toFixed(3)})`;
+            g.fill();
+          }
         }
         g.restore();
       }
+      // inti galaksi: elips terang memanjang (seperti pusat galaksi di
+      // foto referensi) — digambar dalam frame yang sudah terotasi `rot`,
+      // jadi memanjangnya selaras dengan putaran lengan
+      g.save();
+      g.beginPath();
+      g.ellipse(0, 0, 2.7 * gScale, 1.5 * gScale, 0, 0, Math.PI * 2);
+      g.shadowBlur = 4;
+      g.fillStyle = `rgba(245,245,255,${(alpha * 0.75).toFixed(3)})`;
+      g.fill();
+      g.restore();
       g.restore();
       g.beginPath();
       g.arc(cx, cy, 1.3 * gScale * Math.max(0.35, p), 0, Math.PI * 2);
