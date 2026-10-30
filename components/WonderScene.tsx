@@ -21,9 +21,11 @@ const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
 const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
 const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
-const MOUSE_RADIUS = 170; // radius highlight di sekitar kursor (px)
-const HI_PEAK = 0.95; // opasitas puncak highlight tepat di pusat kursor (nyaris putih)
-const HI_FADE_STEP = 0.35; // kecepatan sel mengejar target highlight tiap tick fade (50 ms)
+const HEAT_RADIUS = 110; // radius panas kursor (px) — highlight blok/dither
+const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
+const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
+const HEAT_RAMP = ["░", "▒", "▓", "█"]; // kepadatan blok mengikuti heat
+const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
 const WAVE_BOOST = 0.22; // tambahan opasitas sel saat dilewati gelombang sapuan
 const WAVE_BAND = 260; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal)
 const HOLE_MAX_W = 660; // lebar maksimum lubang tengah (px)
@@ -44,12 +46,13 @@ const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
+type HeatState = { heat: number; glyphs: string[] }; // keadaan panas kursor per sel
 
 export default function WonderScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cellsRef = useRef<Cell[]>([]);
   const colsRef = useRef(0);
-  const hiRef = useRef<Map<number, number>>(new Map()); // idx sel -> level highlight 0..1
+  const hiRef = useRef<Map<number, HeatState>>(new Map()); // idx sel -> keadaan panas kursor
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const redrawsRef = useRef(0);
   const mouseOnRef = useRef(true);
@@ -149,6 +152,10 @@ export default function WonderScene() {
       cellsRef.current = cells;
       visibleCells = cells.filter((c) => !c.hole).length;
       hiRef.current.clear();
+      if (heatRaf !== null) {
+        cancelAnimationFrame(heatRaf);
+        heatRaf = null;
+      }
       // SEMUA keadaan efek dibersihkan saat rebuild: sel diganti total,
       // jadi sisa status dari grid lama (kata sisipan, front, scramble,
       // spiral, pita gelombang) hanya akan menggambar di atas sel baru
@@ -700,7 +707,8 @@ export default function WonderScene() {
           !c.shown ||
           altActive.has(i) ||
           frontActive.has(i) ||
-          spiralActive.has(i)
+          spiralActive.has(i) ||
+          hiRef.current.has(i)
         )
           continue;
         const d = distFrom(waveCorner, c.x, c.y);
@@ -780,94 +788,131 @@ export default function WonderScene() {
       restoreBand();
     }
 
-    // HIGHLIGHT MOUSE HALUS (ala Wonder): tiap sel punya level 0..1 yang
-    // mengejar target — target dihitung dari jarak ke kursor dengan falloff
-    // kuadrat (tengah paling terang, tepi memudar). Tick fade 50 ms hanya
-    // berjalan selama ada sel yang sedang menyala/bergerak, dan hanya sel
-    // yang levelnya berubah yang digambar ulang — tetap ringan.
-    let fadeTimer: ReturnType<typeof setInterval> | null = null;
-    function hiTarget(idx: number): number {
-      const m = mouseRef.current;
-      const cell = cellsRef.current[idx];
-      if (!m || !cell || !mouseOnRef.current || reduced) return 0;
-      const dx = cell.x + CW / 2 - m.x;
-      const dy = cell.y + CH / 2 - m.y;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d >= MOUSE_RADIUS) return 0;
-      const t = 1 - d / MOUSE_RADIUS;
-      return Math.pow(t, 1.5); // falloff lebar: area tengah ikut terang, tepi memudar
+    // HIGHLIGHT KURSOR "HEAT" (dari analisa video Muse Wonder): sel di
+    // sekitar kursor berubah jadi karakter blok/dither. Tiap sel punya
+    // heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak/radius +
+    // noise, jadi tepinya bergerigi), mendingin ×0,9 tiap frame (jejak
+    // memudar pelan), lalu kembali ke huruf asli di bawah ambang. Heat
+    // dipetakan ke ░▒▓█: makin dekat kursor makin padat & terang, dengan
+    // peluang kecil karakter glitch agar berkedip. Digambar per slot
+    // huruf supaya tekstur kata grid tetap utuh; hanya sel panas yang
+    // diproses tiap frame rAF — tetap ringan.
+    let heatRaf: number | null = null;
+    let lastMoveAt = 0;
+    function drawHeatCell(c: Cell, hc: HeatState) {
+      const g = ctx!;
+      g.clearRect(c.x, c.y, CW, CH);
+      g.font = FONT;
+      g.textAlign = "left";
+      g.textBaseline = "alphabetic";
+      try {
+        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+          `${LETTER_SPACING}px`;
+      } catch {
+        /* browser non-Chromium: abaikan */
+      }
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
+      const a = Math.min(1, 0.3 + hc.heat * 0.7); // makin panas makin terang
+      g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
+      for (let i = 0; i < WORD.length; i++) {
+        if (!hc.glyphs[i] || Math.random() < 0.2) {
+          // kedip acak: glyph diganti sesekali saja, tidak tiap frame
+          const jitter = (Math.random() - 0.5) * 0.25;
+          const h = Math.max(0, Math.min(1, hc.heat + jitter));
+          hc.glyphs[i] =
+            Math.random() < 0.12
+              ? HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0]
+              : HEAT_RAMP[Math.min(3, (h * 4) | 0)];
+        }
+        g.fillText(hc.glyphs[i], slotX(c, i), c.y + TEXT_Y);
+      }
+      redrawsRef.current++;
     }
-    function stepFade() {
+    function stepHeat() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
-      const levels = hiRef.current;
-      if (!cells.length || !cols) return;
-      const cand = new Set<number>(levels.keys());
       const m = mouseRef.current;
-      if (m && mouseOnRef.current && !reduced) {
-        const c0 = Math.max(0, Math.floor((m.x - MOUSE_RADIUS) / CW));
-        const c1 = Math.min(cols - 1, Math.floor((m.x + MOUSE_RADIUS) / CW));
-        const r0 = Math.max(0, Math.floor((m.y - MOUSE_RADIUS) / CH));
-        const r1 = Math.floor((m.y + MOUSE_RADIUS) / CH);
+      // 1) panaskan sel di sekitar kursor
+      if (cells.length && cols && m && mouseOnRef.current && !reduced) {
+        const c0 = Math.max(0, Math.floor((m.x - HEAT_RADIUS) / CW));
+        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RADIUS) / CW));
+        const r0 = Math.max(0, Math.floor((m.y - HEAT_RADIUS) / CH));
+        const r1 = Math.floor((m.y + HEAT_RADIUS) / CH);
         for (let r = r0; r <= r1; r++) {
-          for (let c = c0; c <= c1; c++) {
-            const idx = r * cols + c;
+          for (let cc = c0; cc <= c1; cc++) {
+            const idx = r * cols + cc;
             const cell = cells[idx];
-            if (cell && cell.shown) cand.add(idx);
+            if (!cell || cell.hole || !cell.shown) continue;
+            if (
+              spiralActive.has(idx) ||
+              altActive.has(idx) ||
+              frontActive.has(idx) ||
+              scrambling.has(idx) ||
+              bandSet.has(idx)
+            )
+              continue; // jangan rebut sel yang sedang tampil khusus (termasuk spiral)
+            const dx = cell.x + CW / 2 - m.x;
+            const dy = cell.y + CH / 2 - m.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d >= HEAT_RADIUS) continue;
+            const h = 1 - d / HEAT_RADIUS + (Math.random() - 0.5) * 0.4;
+            const cur = hiRef.current.get(idx);
+            if (!cur) {
+              if (h > 0.05)
+                hiRef.current.set(idx, {
+                  heat: Math.min(1, Math.max(0.02, h)),
+                  glyphs: [],
+                });
+            } else if (h > cur.heat) {
+              cur.heat = Math.min(1, h);
+            }
           }
         }
       }
-      let anyMoving = false;
-      for (const idx of cand) {
+      // 2) dinginkan + gambar ulang sel panas saja
+      for (const [idx, hc] of Array.from(hiRef.current)) {
         const cell = cells[idx];
-        if (!cell) {
-          levels.delete(idx);
+        if (!cell || cell.hole) {
+          hiRef.current.delete(idx);
           continue;
         }
         if (
-          altActive.has(idx) ||
-          frontActive.has(idx) ||
           spiralActive.has(idx) ||
-          scrambling.has(idx)
+          altActive.has(idx) ||
+          frontActive.has(idx)
         ) {
-          levels.delete(idx); // tampilan khusus tidak ditimpa highlight
+          hiRef.current.delete(idx); // tampilannya diambil alih sistem lain
           continue;
         }
-        const target = hiTarget(idx);
-        const cur = levels.get(idx) ?? 0;
-        let next = cur + (target - cur) * HI_FADE_STEP;
-        if (Math.abs(target - next) < 0.03) next = target;
-        if (next <= 0.01 && target === 0) {
-          if (cur > 0) draw(cell, cell.a);
-          levels.delete(idx);
+        hc.heat *= HEAT_DECAY;
+        if (hc.heat < HEAT_MIN) {
+          hiRef.current.delete(idx);
+          draw(cell, cell.a); // selesai: kembali ke huruf asli
           continue;
         }
-        levels.set(idx, next);
-        if (Math.abs(next - cur) > 0.02) {
-          // terang dihitung menuju puncak absolut — selalu kontras di atas
-          // opasitas dasar sel, tidak peduli sel itu dasarnya terang/redup
-          draw(cell, cell.a + next * (HI_PEAK - cell.a));
-          anyMoving = true;
-        } else if (Math.abs(target - next) > 0.02) {
-          anyMoving = true; // masih merayap menuju target
-        }
+        drawHeatCell(cell, hc);
       }
-      if (!anyMoving && fadeTimer) {
-        clearInterval(fadeTimer);
-        fadeTimer = null;
-      }
+      heatRaf =
+        hiRef.current.size > 0 || performance.now() - lastMoveAt < 150
+          ? requestAnimationFrame(stepHeat)
+          : null;
     }
-    function ensureFade() {
-      if (!fadeTimer && !reduced) fadeTimer = setInterval(stepFade, 50);
+    function ensureHeat() {
+      if (heatRaf === null && !reduced) {
+        lastMoveAt = performance.now();
+        heatRaf = requestAnimationFrame(stepHeat);
+      }
     }
 
     function onPointerMove(e: PointerEvent) {
       mouseRef.current = { x: e.clientX, y: e.clientY };
-      ensureFade();
+      lastMoveAt = performance.now();
+      ensureHeat();
     }
     function onPointerLeave() {
       mouseRef.current = null;
-      ensureFade();
+      ensureHeat();
     }
 
     let resizeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -889,6 +934,7 @@ export default function WonderScene() {
       } else {
         startGlitch();
         scheduleWave();
+        ensureHeat(); // hidupkan lagi loop panas bila sempat terhenti
       }
     }
 
@@ -911,7 +957,7 @@ export default function WonderScene() {
       if (spiralTimer) clearInterval(spiralTimer);
       if (spiralRaf !== null) cancelAnimationFrame(spiralRaf);
       if (scrambleTimer) clearInterval(scrambleTimer);
-      if (fadeTimer) clearInterval(fadeTimer);
+      if (heatRaf !== null) cancelAnimationFrame(heatRaf);
       stopReveal();
       stopWaveAll();
       clearInterval(debugTimer);
