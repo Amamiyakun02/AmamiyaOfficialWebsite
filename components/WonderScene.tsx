@@ -35,11 +35,11 @@ const WAVE_TICK_MS = 80; // interval langkah gelombang sapuan
 const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
 const MATRIX_H_RATIO = 0.72; // tinggi matriks titik: 72% dari ukuran font (± setinggi huruf kapital)
 // --- spiral galaksi per huruf (dari halaman uji /spiral) ---
-const SPIRAL_EVERY_MS = 1200; // jeda pemicu otomatis spiral huruf (dipercepat: kemunculan lebih rame)
-const SPIRAL_MAX = 5; // maks spiral huruf aktif bersamaan
+const SPIRAL_EVERY_MS = 700; // jeda pemicu otomatis spiral huruf (dipercepat lagi: lebih rame)
+const SPIRAL_MAX = 7; // maks spiral huruf aktif bersamaan
 const SPIRAL_GLITCH_MS = 150; // glitch pembuka/penutup urutan spiral
-const SPIRAL_GROW_MS = 600; // spiral tumbuh
-const SPIRAL_SHRINK_MS = 700; // spiral menguncup
+const SPIRAL_GROW_MS = 500; // spiral tumbuh (dipangkas: durasi total lebih singkat)
+const SPIRAL_SHRINK_MS = 550; // spiral menguncup (dipangkas)
 const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong sesaat)
 /* ===================================================================== */
 
@@ -593,7 +593,7 @@ export default function WonderScene() {
           phase: "glitchIn",
           phaseStart: performance.now(),
           rot: Math.random() * Math.PI * 2,
-          holdMs: 1600 + Math.random() * 1400,
+          holdMs: 800 + Math.random() * 700, // hold singkat saja (permintaan user)
           lastGlitchDraw: 0,
         });
         ctx!.clearRect(c.x, c.y, CW, CH);
@@ -675,7 +675,7 @@ export default function WonderScene() {
         }
         // cluster piksel: sekelompok sel tetangga (5–9 sel, tumbuh acak dari
         // satu benih) berubah jadi matriks titik per huruf bersama-sama
-        if (clusterActive.size === 0 && Math.random() < 0.012) {
+        if (clusterActive.size === 0 && Math.random() < 0.006) {
           const cols = colsRef.current;
           const seed = (Math.random() * cells.length) | 0;
           if (cells[seed] && !cells[seed].hole && cols > 0) {
@@ -725,11 +725,11 @@ export default function WonderScene() {
             continue; // lewati lubang, highlight mouse, & sel yang sedang tampil khusus
           }
           const roll = Math.random();
-          if (roll < 0.4) draw(c, c.a); // pulihkan ke kata normal
-          else if (roll < 0.6) draw(c, c.a, glitchText()); // substitusi glyph
-          else if (roll < 0.68) draw(c, c.a, deleteText()); // huruf hilang
-          else if (roll < 0.9)
-            drawDotLetters(c, Math.min(0.85, c.a + 0.4)); // posisi huruf jadi matriks titik acak
+          if (roll < 0.42) draw(c, c.a); // pulihkan ke kata normal
+          else if (roll < 0.64) draw(c, c.a, glitchText()); // substitusi glyph
+          else if (roll < 0.72) draw(c, c.a, deleteText()); // huruf hilang
+          else if (roll < 0.82)
+            drawDotLetters(c, Math.min(0.85, c.a + 0.4)); // matriks titik — jatah diturunkan dari 22% ke 10% (permintaan user: jangan terlalu banyak)
           else startScramble(idx); // scramble
         }
       }, GLITCH_EVERY_MS);
@@ -818,7 +818,7 @@ export default function WonderScene() {
           // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan
           const t = 14 + ((Math.random() * 16) | 0);
           const roll = Math.random();
-          if (roll < 0.45) {
+          if (roll < 0.62) {
             frontActive.set(idx, { t, kind: "alt", start: 0, count: 0 });
             draw(
               c,

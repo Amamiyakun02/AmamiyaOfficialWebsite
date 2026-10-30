@@ -36,7 +36,7 @@ const GLITCH_IN_MS = 150;
 const GROW_MS = 600;
 const SHRINK_MS = 700;
 const GLITCH_OUT_MS = 150;
-const AUTO_EVERY_MS = 1200; // pemicu otomatis berkala (lebih rame, selaras halaman utama)
+const AUTO_EVERY_MS = 700; // pemicu otomatis berkala (selaras halaman utama)
 const STAGGER_MS = 90; // jeda antar sel saat rombongan dipicu
 
 type Cell = { x: number; y: number; a: number; shown: boolean };
@@ -57,8 +57,8 @@ const easeInOutCubic = (t: number) =>
 export default function SpiralScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [autoOn, setAutoOn] = useState(true);
-  const [maxActive, setMaxActive] = useState(5);
-  const [holdSec, setHoldSec] = useState(2);
+  const [maxActive, setMaxActive] = useState(7);
+  const [holdSec, setHoldSec] = useState(1.2);
   const [style, setStyle] = useState<"lengan" | "spiral">("lengan"); // bawaan: 8 lengan bersih
   const autoRef = useRef(autoOn);
   const maxRef = useRef(maxActive);
@@ -547,7 +547,7 @@ export default function SpiralScene() {
             <input
               type="range"
               min={1}
-              max={6}
+              max={8}
               step={1}
               value={maxActive}
               onChange={(e) => setMaxActive(Number(e.target.value))}
