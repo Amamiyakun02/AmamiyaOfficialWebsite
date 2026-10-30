@@ -208,7 +208,7 @@ export default function WonderScene() {
       return arr.join("");
     }
     function scrambleText() {
-      const pool = WORD + "*;^:";
+      const pool = WORD + "01"; // selaras GLYPHS: tanpa simbol (permintaan user)
       return WORD.replace(/./g, () => pool[(Math.random() * pool.length) | 0]);
     }
 
