@@ -1,0 +1,13 @@
+# dependensi & hasil build — tidak perlu masuk git
+node_modules/
+.next/
+out/
+dist/
+
+# log & berkas sistem
+*.log
+.DS_Store
+Thumbs.db
+
+# env lokal
+.env*.local

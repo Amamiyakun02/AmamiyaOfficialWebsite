@@ -1,0 +1,288 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #0a0a0b;
+  color: #f4f4f5;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* Canvas background: tetap di belakang, memenuhi layar */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+/* Nav ala Muse Wonder: brand + menu di kiri, tombol biru pil di kanan */
+.nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.brand {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.brand-mark {
+  color: #0081fb;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.nav nav {
+  display: flex;
+  gap: 24px;
+}
+
+.nav a {
+  color: #e6e6e9;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.nav a:hover {
+  text-decoration: underline;
+}
+
+.nav .nav-cta {
+  background: #0081fb;
+  color: #fff;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: 999px;
+}
+
+.nav .nav-cta:hover {
+  background: #0064e0;
+  text-decoration: none;
+}
+
+.hero {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #8e8e96;
+}
+
+/* Judul besar ala Wonder: putih, ringan, di tengah layar */
+.hero h1 {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(38px, 5.5vw, 64px);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.lead {
+  margin: 0 auto;
+  max-width: 620px;
+  font-size: 17px;
+  line-height: 1.65;
+  color: #b9b9c0;
+}
+
+.cta {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1px solid #3f3f46;
+  color: #f4f4f5;
+  text-decoration: none;
+  font-size: 15px;
+  background: rgba(20, 20, 22, 0.7);
+}
+
+.btn.primary {
+  background: #0064e0;
+  border-color: #0064e0;
+  color: #fff;
+}
+
+.section {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 72px 24px 8px;
+}
+
+.section h2 {
+  margin: 0 0 20px;
+  font-size: 30px;
+  color: #ffffff;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: rgba(18, 18, 20, 0.86);
+  border: 1px solid #232327;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: #ffffff;
+}
+
+.card p {
+  margin: 0;
+  line-height: 1.6;
+  color: #a6a6ad;
+  font-size: 15px;
+}
+
+.body-text {
+  max-width: 720px;
+  line-height: 1.7;
+  color: #a6a6ad;
+  font-size: 16px;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ececf1;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+.footer {
+  text-align: center;
+  padding: 64px 24px 40px;
+  color: #83838b;
+  font-size: 14px;
+}
+
+/* Panel kontrol demo (kiri bawah) */
+.panel {
+  position: fixed;
+  z-index: 3;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: #eeeef2;
+  background: rgba(14, 14, 16, 0.9);
+  border: 1px solid #26262b;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.panel button {
+  cursor: pointer;
+  border: 1px solid #333338;
+  background: #1a1a1e;
+  color: #f0f0f2;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.panel output {
+  color: #9a9aa2;
+  min-width: 170px;
+}
+
+/* --- Halaman uji spiral (/spiral) --- */
+.spiral-head {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #9a9aa2;
+  pointer-events: none;
+}
+.spiral-head a {
+  color: #eeeef2;
+  text-decoration: none;
+  font-weight: 600;
+  pointer-events: auto;
+}
+.panel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c9c9d0;
+}
+.panel input[type="range"] {
+  width: 90px;
+  accent-color: #0081fb;
+}
