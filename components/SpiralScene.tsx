@@ -93,6 +93,8 @@ export default function SpiralScene() {
       } catch { /* abaikan */ }
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
+      ctx.shadowBlur = 0; // cegah bocor bayangan dari gambar spiral (samakan halaman utama)
+      ctx.shadowColor = "rgba(0,0,0,0)";
       ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
       ctx.fillText(text, c.x + (CW - ctx.measureText(text).width) / 2, c.y + TEXT_Y);
       c.shown = true;
@@ -142,6 +144,8 @@ export default function SpiralScene() {
       try {
         (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
       } catch { /* abaikan */ }
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "rgba(0,0,0,0)";
       ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
       ctx.fillText(ch, gx, c.y + TEXT_Y);
     }

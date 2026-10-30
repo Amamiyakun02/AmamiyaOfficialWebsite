@@ -20,7 +20,7 @@ const GLITCH_EVERY_MS = 240; // interval efek glitch (diturunkan dari 120: tempo
 const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
 const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
-const ALT_TICKS = 9; // durasi dasar kata sisipan (ditambah acak 0–14 tick @240 ms → total ±2,2–5,5 detik)
+const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
 const MOUSE_RADIUS = 170; // radius highlight di sekitar kursor (px)
 const HI_PEAK = 0.95; // opasitas puncak highlight tepat di pusat kursor (nyaris putih)
 const HI_FADE_STEP = 0.35; // kecepatan sel mengejar target highlight tiap tick fade (50 ms)
@@ -33,7 +33,7 @@ const HOLE_H_RATIO = 0.36; // tinggi lubang relatif ke layar
 const HOLE_RADIUS = 28; // radius sudut lubang (px)
 const WAVE_TICK_MS = 110; // interval langkah gelombang sapuan (dari 80: sapuan lebih santai)
 const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
-const MATRIX_H_RATIO = 0.72; // tinggi matriks titik: 72% dari ukuran font (± setinggi huruf kapital)
+
 // --- spiral galaksi per huruf (dari halaman uji /spiral) ---
 const SPIRAL_EVERY_MS = 700; // jeda pemicu otomatis spiral huruf (dipercepat lagi: lebih rame)
 const SPIRAL_MAX = 7; // maks spiral huruf aktif bersamaan
@@ -149,7 +149,19 @@ export default function WonderScene() {
       cellsRef.current = cells;
       visibleCells = cells.filter((c) => !c.hole).length;
       hiRef.current.clear();
-      spiralActive.clear(); // sel diganti total saat rebuild — spiral lama gugur
+      // SEMUA keadaan efek dibersihkan saat rebuild: sel diganti total,
+      // jadi sisa status dari grid lama (kata sisipan, front, scramble,
+      // spiral, pita gelombang) hanya akan menggambar di atas sel baru
+      // secara keliru. (Sebelumnya hanya spiral & highlight yang dibersihkan.)
+      spiralActive.clear();
+      altActive.clear();
+      frontActive.clear();
+      scrambling.clear();
+      if (scrambleTimer) {
+        clearInterval(scrambleTimer);
+        scrambleTimer = null;
+      }
+      stopWaveAll();
       stopReveal();
       if (instant || reduced) {
         for (const c of cells) draw(c, c.a);
@@ -254,6 +266,8 @@ export default function WonderScene() {
       } catch {
         /* browser non-Chromium: abaikan */
       }
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
       g.fillStyle = `rgba(${INK},${c.a.toFixed(3)})`;
       for (let i = 0; i < WORD.length; i++) {
         if (i >= start && i < start + count) continue;
@@ -261,94 +275,38 @@ export default function WonderScene() {
       }
     }
 
-    // Pilih rentang huruf untuk matriks titik (maks 3). Rentang disimpan
-    // oleh pemanggil yang persisten (cluster/front) supaya denyut
-    // menggambar ulang rentang yang sama, tidak melompat-lompat.
-    function pickSpan(max: number) {
-      const count = 1 + ((Math.random() * max) | 0);
-      const start = (Math.random() * (WORD.length - count + 1)) | 0;
-      return { start, count };
-    }
+    // (Fungsi matriks titik drawDotLetters/pickSpan DIHAPUS TOTAL — efek itu
+    // sudah diminta user dihilangkan; tidak ada lagi kode gambar per-slot
+    // selain milik spiral, jadi tidak ada jalur yang bisa menggambar huruf
+    // di luar geometri kata normal.)
 
-    // Matriks titik (satu-satunya bentuk pengganti huruf): 1–3 posisi huruf
-    // berurutan DIGANTIKAN matriks titik selebar huruf aslinya. Polanya
-    // ACAK tiap kemunculan — tidak seragam: jumlah kolom 3 atau 4, motif
-    // penuh / acak berkerapatan acak / hanya tepi / selang-seling, dan
-    // ukuran titik sedikit bervariasi.
-    function drawDotLetters(
-      c: Cell,
-      alpha: number,
-      span?: { start: number; count: number },
-    ) {
-      if (c.hole) return;
-      const g = ctx!;
-      const { charW } = slotMetrics();
-      const { start, count } = span ?? pickSpan(3);
-      const gridH = Math.round(FONT_SIZE * MATRIX_H_RATIO);
-      const top = c.y + TEXT_Y - gridH;
-      const cellH = gridH / 5;
-      const colsN = Math.random() < 0.5 ? 3 : 4;
-      const modeRoll = Math.random();
-      const mode =
-        modeRoll < 0.45
-          ? "acak"
-          : modeRoll < 0.65
-            ? "penuh"
-            : modeRoll < 0.85
-              ? "tepi"
-              : "silang";
-      const holeP = 0.15 + Math.random() * 0.35; // kerapatan lubang utk mode acak
-      const rad = 0.9 + Math.random() * 0.5; // jari-jari titik 0,9–1,4
-      const cellW = charW / colsN;
-      g.clearRect(c.x, c.y, CW, CH);
-      drawPlainSlots(c, start, count);
-      g.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
-      for (let i = start; i < start + count; i++) {
-        const sx = slotX(c, i);
-        for (let r = 0; r < 5; r++) {
-          for (let col = 0; col < colsN; col++) {
-            let on = true;
-            if (mode === "acak") on = Math.random() >= holeP;
-            else if (mode === "tepi")
-              on = r === 0 || r === 4 || col === 0 || col === colsN - 1;
-            else if (mode === "silang") on = (r + col) % 2 === 0;
-            if (!on) continue;
-            g.beginPath();
-            g.arc(
-              sx + cellW * (col + 0.5),
-              top + cellH * (r + 0.5),
-              rad,
-              0,
-              Math.PI * 2,
-            );
-            g.fill();
-          }
-        }
-      }
-      c.shown = true;
-      redrawsRef.current++;
-    }
-
-    // Scramble: sedikit sel berputar acak ±60 ms sekali selama ±0,3 detik.
-    const scrambling = new Map<number, number>(); // idx -> sisa tick
+    // Scramble: sedikit sel berputar acak tiap 100 ms selama ±0,3–0,5 detik.
+    // PENTING (perbaikan bug "kata tidak normal berlama-lama"): semua masa
+    // hidup efek di bawah ini disimpan sebagai TENGGAT WAKTU
+    // (performance.now), BUKAN hitungan tick. Versi tick membuat efek
+    // berumur jauh lebih panjang setiap kali timer browser diperlambat
+    // (tab latar belakang/tertutup jendela lain) — efek menumpuk dan
+    // bertahan abnormal. Dengan tenggat, efek selalu berakhir tepat waktu
+    // bagaimanapun timer berjalan.
+    const scrambling = new Map<number, number>(); // idx -> tenggat
     let scrambleTimer: ReturnType<typeof setInterval> | null = null;
     function startScramble(idx: number) {
       if (scrambling.has(idx)) return;
-      scrambling.set(idx, 3 + ((Math.random() * 2) | 0));
+      scrambling.set(idx, performance.now() + 300 + Math.random() * 200);
       if (scrambleTimer) return;
       scrambleTimer = setInterval(() => {
         if (document.hidden) return;
-        for (const [i, left] of Array.from(scrambling)) {
+        const now = performance.now();
+        for (const [i, until] of Array.from(scrambling)) {
           const c = cellsRef.current[i];
           if (!c || c.hole) {
             scrambling.delete(i);
             continue;
           }
-          if (left <= 1) {
+          if (now >= until) {
             scrambling.delete(i);
             draw(c, c.a); // settle kembali ke kata normal
           } else {
-            scrambling.set(i, left - 1);
             draw(c, c.a, scrambleText());
           }
         }
@@ -360,29 +318,13 @@ export default function WonderScene() {
     }
 
     // Kata sisipan: satu sel menampilkan kata lain lebih terang beberapa detik.
-    const altActive = new Map<number, number>(); // idx -> sisa tick glitch
-
-    // Keadaan tampilan khusus yang bertahan beberapa detik (cluster & front):
-    // sisa tick + jenis + rentang hurufnya, supaya matriks bisa berdenyut
-    // (digambar ulang berkala dengan rentang yang sama persis).
-    type FxState = {
-      t: number;
-      kind: "alt" | "dot";
-      start: number;
-      count: number;
-    };
-
-    // Cluster piksel: sekelompok sel tetangga berubah jadi matriks titik per huruf
-    // bersama-sama (bercak seperti pixel-art), bertahan beberapa detik,
-    // lalu larut satu per satu.
-    const clusterActive = new Map<number, FxState>();
+    const altActive = new Map<number, number>(); // idx -> tenggat
 
     // Front aktivitas berjalan (ala Wonder): sel yang dilewati gelombang
-    // sapuan bisa "teraktivasi" — tampil sebagai kata sisipan /
-    // matriks titik selama beberapa detik — jadi sapuan terasa seperti
-    // gelombang aktivitas yang merambat melintasi grid, bukan sekadar pita
-    // yang lebih terang, lalu reda kembali di belakangnya.
-    const frontActive = new Map<number, FxState>();
+    // sapuan bisa "teraktivasi" jadi kata sisipan selama beberapa detik —
+    // sapuan terasa seperti gelombang aktivitas yang merambat melintasi
+    // grid, lalu reda kembali di belakangnya.
+    const frontActive = new Map<number, number>(); // idx -> tenggat
 
     /* ============ SPIRAL GALAKSI PER HURUF ============
        Dari halaman uji /spiral, diterapkan ke halaman utama atas
@@ -421,6 +363,8 @@ export default function WonderScene() {
         (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
           `${LETTER_SPACING}px`;
       } catch { /* abaikan */ }
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
       g.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
       g.fillText(ch, slotX(c, i), c.y + TEXT_Y);
     }
@@ -480,6 +424,9 @@ export default function WonderScene() {
       g.beginPath();
       g.arc(cx, cy, 1.3 * Math.max(0.35, p), 0, Math.PI * 2);
       g.fill();
+      // matikan bayangan spiral di sumbernya juga (jangan bocor ke gambar lain)
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
       redrawsRef.current++;
     }
     function stepSpiralMain(idx: number, s: SpiralState, now: number, dt: number) {
@@ -567,7 +514,6 @@ export default function WonderScene() {
         if (!c || c.hole || !c.shown) continue;
         if (
           altActive.has(idx) ||
-          clusterActive.has(idx) ||
           frontActive.has(idx) ||
           scrambling.has(idx) ||
           hiRef.current.has(idx) ||
@@ -605,7 +551,25 @@ export default function WonderScene() {
     const spiralTimer = reduced
       ? null
       : setInterval(() => {
-          if (!document.hidden) spawnSpiral();
+          if (document.hidden) return;
+          // WATCHDOG SPIRAL: loop rAF bisa berhenti tanpa kabar (tab
+          // tertutup jendela lain / rAF kelaparan) sementara spiral masih
+          // tercatat aktif — selnya membeku sebagai "kata tanpa huruf"
+          // tanpa batas waktu dan semua sistem lain melewatinya. Bila
+          // frame terakhir sudah terlalu lama, paksa selesaikan semua
+          // spiral: huruf dikembalikan dan antrean dibersihkan.
+          if (
+            spiralActive.size > 0 &&
+            performance.now() - spiralLastFrame > 2500
+          ) {
+            for (const idx of Array.from(spiralActive.keys())) {
+              const c = cellsRef.current[idx];
+              if (c && !c.hole) draw(c, c.a);
+            }
+            spiralActive.clear();
+            spiralRaf = null;
+          }
+          spawnSpiral();
         }, SPIRAL_EVERY_MS);
 
     // KUNCI RINGAN #2: interval lambat + sedikit sel acak, BUKAN loop 60fps
@@ -619,39 +583,17 @@ export default function WonderScene() {
         if (!cells.length) return;
         const occupied = (idx: number) =>
           altActive.has(idx) ||
-          clusterActive.has(idx) ||
           scrambling.has(idx) ||
           frontActive.has(idx) ||
           spiralActive.has(idx);
-        // urus kata sisipan & cluster yang sedang tampil: hitung mundur, pulihkan
-        for (const [i, left] of Array.from(altActive)) {
-          if (left <= 1) {
-            altActive.delete(i);
+        // pulihkan kata sisipan & front yang tenggat waktunya sudah lewat
+        const now = performance.now();
+        for (const map of [altActive, frontActive]) {
+          for (const [i, until] of Array.from(map)) {
+            if (now < until) continue;
+            map.delete(i);
             const c = cells[i];
             if (c && !c.hole) draw(c, c.a);
-          } else altActive.set(i, left - 1);
-        }
-        // hitung mundur cluster & front; matriks yang bertahan
-        // BERDENYUT halus: digambar ulang tiap 2 tick dengan alpha
-        // berosilasi ±20% pada rentang huruf yang sama (tidak melompat)
-        for (const [map, del] of [
-          [clusterActive, (i: number) => clusterActive.delete(i)],
-          [frontActive, (i: number) => frontActive.delete(i)],
-        ] as const) {
-          for (const [i, st] of Array.from(map)) {
-            const c = cells[i];
-            if (st.t <= 1) {
-              del(i);
-              if (c && !c.hole) draw(c, c.a);
-              continue;
-            }
-            st.t -= 1;
-            if (st.kind === "dot" && st.t % 2 === 0 && c && !c.hole) {
-              const pulse =
-                0.8 + 0.2 * (0.5 + 0.5 * Math.sin(st.t * 0.9 + i * 1.7));
-              const a = Math.min(0.85, (c.a + 0.4) * pulse);
-              drawDotLetters(c, a, st);
-            }
           }
         }
         // kata sisipan: muncul berkelompok kecil (1–3 sel), bertahan
@@ -665,7 +607,7 @@ export default function WonderScene() {
             if (!c || c.hole || hiRef.current.has(idx) || occupied(idx)) {
               continue;
             }
-            altActive.set(idx, ALT_TICKS + ((Math.random() * 14) | 0));
+            altActive.set(idx, now + ALT_MS + Math.random() * 3300); // tampil ±2,2–5,5 detik (tenggat waktu)
             draw(
               c,
               Math.min(0.65, c.a + ALT_BOOST),
@@ -757,7 +699,6 @@ export default function WonderScene() {
         if (
           !c.shown ||
           altActive.has(i) ||
-          clusterActive.has(i) ||
           frontActive.has(i) ||
           spiralActive.has(i)
         )
@@ -765,15 +706,21 @@ export default function WonderScene() {
         const d = distFrom(waveCorner, c.x, c.y);
         if (d <= waveFront && d > waveFront - WAVE_BAND) next.add(i);
       }
+      // Batas jumlah front aktif bersamaan: tanpa batas ini, satu sapuan
+      // (yang melewati SEMUA sel) bisa mengaktivasi ±50% isi grid jadi kata
+      // sisipan sekaligus — grid "banjir" kata asing dan terlihat tidak
+      // normal (terbukti dari tangkapan diagnostik: 39 front aktif).
+      const maxFront = Math.max(4, Math.floor(visibleCells * 0.07));
       for (const idx of next) {
         if (bandSet.has(idx) || hiRef.current.has(idx)) continue;
         const c = cells[idx];
-        if (Math.random() < 0.5) {
+        if (Math.random() < 0.18 && frontActive.size < maxFront) {
           // AKTIVASI FRONT: sel jadi kata sisipan selama ±1,7–3,6 detik —
           // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan.
-          // (Varian matriks titik DIHAPUS atas permintaan user.)
-          const t = 7 + ((Math.random() * 8) | 0); // tick @240 ms -> ±1,7–3,6 detik, sama seperti sebelumnya
-          frontActive.set(idx, { t, kind: "alt", start: 0, count: 0 });
+          frontActive.set(
+            idx,
+            performance.now() + 1700 + Math.random() * 1900,
+          );
           draw(
             c,
             Math.min(0.65, c.a + ALT_BOOST),
@@ -879,9 +826,9 @@ export default function WonderScene() {
         }
         if (
           altActive.has(idx) ||
-          clusterActive.has(idx) ||
           frontActive.has(idx) ||
-          spiralActive.has(idx)
+          spiralActive.has(idx) ||
+          scrambling.has(idx)
         ) {
           levels.delete(idx); // tampilan khusus tidak ditimpa highlight
           continue;
@@ -992,6 +939,12 @@ export default function WonderScene() {
       `${LETTER_SPACING}px`;
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
+    // Bayangan HARUS mati di sini: drawSpiralGlyph menyalakan shadowBlur
+    // untuk cahaya spiral dan state canvas itu MENETAP — tanpa reset ini
+    // semua kata yang digambar setelahnya tercetak dengan bayangan cahaya
+    // (tampak lebih tebal/ganda, "tidak normal") selamanya.
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "rgba(0,0,0,0)";
     ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
     // kata selalu terpusat horizontal di tengah selnya
     const w = ctx.measureText(text).width;
