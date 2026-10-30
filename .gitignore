@@ -11,3 +11,6 @@ Thumbs.db
 
 # env lokal
 .env*.local
+
+# cache build TypeScript
+*.tsbuildinfo
