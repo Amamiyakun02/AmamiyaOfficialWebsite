@@ -3,59 +3,103 @@
 import { useEffect, useRef, useState } from "react";
 
 /* =====================================================================
-   KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
+   DEFINISI SISTEM (rombak ulang 30 Okt — mengikuti gaya Muse Wonder)
+
+   GRID  : bidang karakter yang menerus memenuhi hero. Teks pola
+           "AMAMIYA " (kata + satu spasi) diulang tanpa putus di tiap
+           baris, seperti grid karakter halaman Wonder asli.
+   CELL  : SATU karakter. Punya posisi, karakter pola, opasitas dasar,
+           dan keadaan efek. Semua efek mengalamati cell (karakter),
+           bukan kata — tambalan glitch bisa menyeberang batas kata.
+   ITEM GLITCH (katalog):
+     1. SPIRAL — aspek utama: satu karakter digantikan galaksi
+        vertikal (switch sungguhan) dengan fase glitch -> tumbuh ->
+        bertahan -> menguncup -> glitch -> kembali.
+     2. HEAT — highlight kursor per karakter: tambalan ±6 huruf ke
+        samping x ±3 baris, glyph blok/dither mengikuti panas,
+        sekali per lintasan, memudar lalu kembali.
+     3. SISIPAN — kata DEV/BUILD/CODE menimpa run karakter pola,
+        muncul berjenjang mengikuti arah diagonal, lalu reda.
+     4. SUBSTITUSI — karakter acak sesekali berganti glyph lain
+        (huruf/angka/simbol) sebentar, ala "W1NDER" di aslinya.
+     5. SCRAMBLE — beberapa karakter berputar huruf acak ±0,3-0,5 dtk.
+   Semua masa hidup efek = tenggat waktu (performance.now), bukan
+   hitungan tick. DPR dikunci 1; hanya cell yang berubah digambar
+   ulang; loop berhenti saat tidak ada efek aktif / tab tersembunyi.
    ===================================================================== */
-const WORD = "AMAMIYA"; // kata yang diulang menjadi pola grid
-const GLYPHS = "AMAMIYA"; // karakter pengganti glitch — hanya huruf penyusun kata (simbol & angka dihapus atas permintaan user)
-const FONT_SIZE = 20; // ukuran font grid (px)
-const CW = 170; // lebar satu sel (px) — kira-kira selebar kata + letter-spacing
-const CH = 38; // tinggi satu sel / spasi antarbaris (px)
+const PATTERN = "AMAMIYA "; // teks pola grid (kata + spasi), diulang menerus
+const GLYPH_POOL = "AMAMIYA"; // huruf penyusun kata — pool glitch & scramble
+const SUBST_POOL = "AMAMIYA0123456789#*:^"; // pool substitusi (huruf dominan, angka/simbol sesekali)
+const INSERT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan
+const INSERT_BOOST = 0.32; // tambahan opasitas kata sisipan
+const FONT_SIZE = 20;
+const CH = 38; // tinggi baris (px)
 const FONT = `${FONT_SIZE}px monospace`;
-const LETTER_SPACING = 9; // spasi antarhuruf kata grid (px) — gaya Wonder: huruf renggang
-const TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8; // baseline teks, terpusat vertikal di sel
-const INK = "206,206,214"; // warna grid (R,G,B) — abu-abu terang di atas hitam
-const BASE_ALPHA = 0.3; // opasitas dasar minimum per sel
-const BASE_ALPHA_RANGE = 0.15; // rentang acak opasitas dasar
-const GLITCH_EVERY_MS = 240; // interval efek glitch (diturunkan dari 120: tempo perubahan teks lebih tenang, tidak bikin pusing)
-const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
-const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
-const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
-const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
-const HEAT_RX = 78; // jangkauan panas per HURUF: ±3 huruf lebih dari kursor -> tambalan ±6 huruf ke samping (pengamatan user dari video Wonder asli)
-const HEAT_RY = 57; // ±1,5 baris -> tambalan ±3 blok huruf ke atas/bawah
-const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
-const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
-const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
-const HEAT_RAMP = ["░", "▒", "▓", "█"]; // kepadatan blok mengikuti heat
-const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
-const WAVE_BOOST = 0.22; // tambahan opasitas sel saat dilewati gelombang sapuan
-const WAVE_BAND = 260; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal)
-const HOLE_MAX_W = 660; // lebar maksimum lubang tengah (px)
-const HOLE_MAX_H = 210; // tinggi maksimum lubang tengah (px)
-const HOLE_W_RATIO = 0.86; // lebar lubang relatif ke layar (bila layar sempit)
-const HOLE_H_RATIO = 0.36; // tinggi lubang relatif ke layar
-const HOLE_RADIUS = 28; // radius sudut lubang (px)
-const WAVE_TICK_MS = 110; // interval langkah gelombang sapuan (dari 80: sapuan lebih santai)
-const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
+const LETTER_SPACING = 9;
+const TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8;
+const INK = "206,206,214";
+const BASE_ALPHA = 0.3;
+const BASE_ALPHA_RANGE = 0.15;
 
-// --- spiral galaksi per huruf (dari halaman uji /spiral) ---
-const SPIRAL_EVERY_MS = 700; // jeda pemicu otomatis spiral huruf (dipercepat lagi: lebih rame)
-const SPIRAL_MAX = 7; // maks spiral huruf aktif bersamaan
-const SPIRAL_GLITCH_MS = 150; // glitch pembuka/penutup urutan spiral
-const SPIRAL_GROW_MS = 500; // spiral tumbuh (dipangkas: durasi total lebih singkat)
-const SPIRAL_SHRINK_MS = 550; // spiral menguncup (dipangkas)
-const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong sesaat)
-/* ===================================================================== */
+// --- heat (highlight kursor per karakter) ---
+const HEAT_RX = 78; // ±3 karakter ke samping -> tambalan ±6 huruf
+const HEAT_RY = 57; // ±1,5 baris -> tambalan ±3 baris
+const HEAT_DECAY = 0.9;
+const HEAT_MIN = 0.08;
+const HEAT_MAX_MS = 1400;
+const HEAT_RAMP = ["░", "▒", "▓", "█"];
+const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"];
 
-type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
-type SlotHeat = { heat: number; glyph: string; born: number }; // panas per slot huruf
-type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (per slot)
+// --- lubang judul di tengah hero ---
+const HOLE_MAX_W = 660;
+const HOLE_MAX_H = 210;
+const HOLE_W_RATIO = 0.86;
+const HOLE_H_RATIO = 0.36;
+const HOLE_RADIUS = 28;
+
+// --- spiral galaksi per karakter (aspek utama; geometri final) ---
+const SPIRAL_EVERY_MS = 700;
+const SPIRAL_MAX = 7;
+const SPIRAL_GLITCH_MS = 150;
+const SPIRAL_GROW_MS = 500;
+const SPIRAL_SHRINK_MS = 550;
+const SPIRAL_P_MIN = 0.12;
+
+type SpiralState = {
+  phase: "glitchIn" | "grow" | "hold" | "shrink" | "glitchOut";
+  phaseStart: number;
+  rot: number;
+  holdMs: number;
+  lastGlitchDraw: number;
+};
+
+type Cell = {
+  x: number;
+  y: number;
+  ch: string; // karakter pola cell ini
+  a: number; // opasitas dasar
+  hole: boolean;
+  shown: boolean;
+  // heat
+  heat: number;
+  heatGlyph: string;
+  heatBorn: number;
+  spent: boolean; // sudah menyala pada lintasan kursor kali ini
+  // tampilan sementara (sisipan / substitusi / scramble)
+  temp: string;
+  tempAlpha: number;
+  tempFrom: number;
+  tempUntil: number;
+  tempCycle: boolean;
+  tempDrawn: boolean;
+  // spiral
+  spiral: SpiralState | null;
+};
 
 export default function WonderScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cellsRef = useRef<Cell[]>([]);
   const colsRef = useRef(0);
-  const hiRef = useRef<Map<number, HeatState>>(new Map()); // idx sel -> keadaan panas kursor
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const redrawsRef = useRef(0);
   const mouseOnRef = useRef(true);
@@ -68,15 +112,31 @@ export default function WonderScene() {
   useEffect(() => {
     mouseOnRef.current = mouseOn;
     if (!mouseOn) {
-      // matikan semua highlight yang sedang menyala
-      const ctx = canvasRef.current?.getContext("2d");
-      if (ctx) {
-        for (const i of hiRef.current.keys()) {
-          const c = cellsRef.current[i];
-          if (c) drawCell(ctx, c, c.a);
+      // matikan semua heat yang sedang menyala: gambar ulang karakter pola
+      const g = canvasRef.current?.getContext("2d");
+      if (g) {
+        g.font = FONT;
+        try {
+          (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+            `${LETTER_SPACING}px`;
+        } catch {
+          /* abaikan */
+        }
+        g.textAlign = "left";
+        g.textBaseline = "alphabetic";
+        g.shadowBlur = 0;
+        g.shadowColor = "rgba(0,0,0,0)";
+        for (const c of cellsRef.current) {
+          if (c.heat > 0) {
+            c.heat = 0;
+            if (!c.hole && !c.spiral && !(c.tempUntil > performance.now())) {
+              g.clearRect(c.x, c.y, 40, CH);
+              g.fillStyle = `rgba(${INK},${c.a.toFixed(3)})`;
+              g.fillText(c.ch, c.x, c.y + TEXT_Y);
+            }
+          }
         }
       }
-      hiRef.current.clear();
     }
   }, [mouseOn]);
 
@@ -93,13 +153,42 @@ export default function WonderScene() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    function draw(c: Cell, alpha: number, text: string = WORD) {
-      if (c.hole) return; // sel di lubang tengah tidak pernah digambar
-      c.shown = true;
-      drawCell(ctx!, c, alpha, text);
+    let PITCH = 24; // lebar satu karakter termasuk spasi (diukur saat build)
+    let CHARW = PITCH - LETTER_SPACING; // lebar tinta satu karakter
+
+    function setTextState(g: CanvasRenderingContext2D) {
+      g.font = FONT;
+      try {
+        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+          `${LETTER_SPACING}px`;
+      } catch {
+        /* browser non-Chromium: abaikan */
+      }
+      g.textAlign = "left";
+      g.textBaseline = "alphabetic";
+      // Bayangan HARUS mati: drawSpiralGlyph menyalakan shadowBlur dan
+      // state canvas menetap — tanpa reset, gambar berikutnya ikut
+      // berbayang (bug "teks tidak normal" yang sudah terbukti).
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
     }
 
-    let visibleCells = 0; // jumlah sel di luar lubang, dihitung saat build
+    // Primitif gambar satu-satunya: satu karakter pada cell-nya.
+    function drawChar(c: Cell, ch: string, alpha: number) {
+      if (c.hole) return;
+      const g = ctx!;
+      g.clearRect(c.x, c.y, PITCH, CH);
+      setTextState(g);
+      g.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
+      g.fillText(ch, c.x, c.y + TEXT_Y);
+      redrawsRef.current++;
+    }
+    function renderCell(c: Cell) {
+      c.shown = true;
+      drawChar(c, c.ch, c.a);
+    }
+
+    /* ---------------- BUILD GRID ---------------- */
     let revealTimer: ReturnType<typeof setInterval> | null = null;
     function stopReveal() {
       if (revealTimer) {
@@ -107,19 +196,38 @@ export default function WonderScene() {
         revealTimer = null;
       }
     }
+    let lastCorner = -1;
+    function nextCorner() {
+      let cn = (Math.random() * 4) | 0;
+      while (cn === lastCorner) cn = (Math.random() * 4) | 0;
+      lastCorner = cn;
+      return cn;
+    }
+    function distFrom(corner: number, x: number, y: number) {
+      const W = cvs!.width;
+      const H = cvs!.height;
+      return corner === 0
+        ? x + y
+        : corner === 1
+          ? W - x + y
+          : corner === 2
+            ? x + (H - y)
+            : W - x + (H - y);
+    }
 
     function build(instant = false) {
-      // KUNCI RINGAN #1: DPR dikunci 1 — jangan ikut retina (3x = 9x piksel).
       cvs!.width = window.innerWidth;
       cvs!.height = window.innerHeight;
       ctx!.font = FONT;
-      // letter-spacing renggang ala Wonder (Chromium; browser lain mengabaikan)
-      (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-        `${LETTER_SPACING}px`;
-      ctx!.textBaseline = "alphabetic";
-      // LUBANG TENGAH: area di balik konten hero dikosongkan — sel yang
-      // titik tengahnya masuk lubang (persegi bersudut membulat di tengah
-      // layar) tidak pernah digambar, jadi grid tampak berlubang.
+      try {
+        (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+          `${LETTER_SPACING}px`;
+      } catch {
+        /* abaikan */
+      }
+      // pitch karakter = lebar teks pola terukur / jumlah karakternya
+      PITCH = ctx!.measureText(PATTERN).width / PATTERN.length;
+      CHARW = PITCH - LETTER_SPACING;
       const holeW = Math.min(HOLE_MAX_W, cvs!.width * HOLE_W_RATIO);
       const holeH = Math.min(HOLE_MAX_H, cvs!.height * HOLE_H_RATIO);
       const holeX = (cvs!.width - holeW) / 2;
@@ -127,276 +235,97 @@ export default function WonderScene() {
       const inHole = (px: number, py: number) => {
         if (px < holeX || px > holeX + holeW || py < holeY || py > holeY + holeH)
           return false;
-        const nx = Math.max(
-          holeX + HOLE_RADIUS,
-          Math.min(px, holeX + holeW - HOLE_RADIUS),
-        );
-        const ny = Math.max(
-          holeY + HOLE_RADIUS,
-          Math.min(py, holeY + holeH - HOLE_RADIUS),
-        );
+        const nx = Math.max(holeX + HOLE_RADIUS, Math.min(px, holeX + holeW - HOLE_RADIUS));
+        const ny = Math.max(holeY + HOLE_RADIUS, Math.min(py, holeY + holeH - HOLE_RADIUS));
         const dx = px - nx;
         const dy = py - ny;
         return dx * dx + dy * dy <= HOLE_RADIUS * HOLE_RADIUS;
       };
-      const cells: Cell[] = [];
-      colsRef.current = Math.ceil(cvs!.width / CW);
-      for (let y = 0; y * CH < cvs!.height; y++) {
-        for (let x = 0; x * CW < cvs!.width; x++) {
-          cells.push({
-            x: x * CW,
-            y: y * CH,
-            a: BASE_ALPHA + Math.random() * BASE_ALPHA_RANGE,
-            shown: false,
-            hole: inHole(x * CW + CW / 2, y * CH + CH / 2),
-          });
-        }
-      }
-      cellsRef.current = cells;
-      visibleCells = cells.filter((c) => !c.hole).length;
-      hiRef.current.clear();
+      // bersihkan semua keadaan efek: grid diganti total
+      hotCells.clear();
+      spentCells.clear();
+      tempCells.clear();
+      spiralCells.clear();
+      insertActiveChars = 0;
       if (heatRaf !== null) {
         cancelAnimationFrame(heatRaf);
         heatRaf = null;
       }
-      // SEMUA keadaan efek dibersihkan saat rebuild: sel diganti total,
-      // jadi sisa status dari grid lama (kata sisipan, front, scramble,
-      // spiral, pita gelombang) hanya akan menggambar di atas sel baru
-      // secara keliru. (Sebelumnya hanya spiral & highlight yang dibersihkan.)
-      spiralActive.clear();
-      altActive.clear();
-      frontActive.clear();
-      scrambling.clear();
-      spentSet.clear();
-      if (scrambleTimer) {
-        clearInterval(scrambleTimer);
-        scrambleTimer = null;
+      if (spiralRaf !== null) {
+        cancelAnimationFrame(spiralRaf);
+        spiralRaf = null;
       }
-      stopWaveAll();
       stopReveal();
+      const cells: Cell[] = [];
+      const cols = Math.ceil(cvs!.width / PITCH) + 1;
+      colsRef.current = cols;
+      for (let r = 0; r * CH < cvs!.height + CH; r++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * PITCH;
+          const y = r * CH;
+          cells.push({
+            x,
+            y,
+            ch: PATTERN[col % PATTERN.length],
+            a: BASE_ALPHA + Math.random() * BASE_ALPHA_RANGE,
+            hole: inHole(x + CHARW / 2, y + CH / 2),
+            shown: false,
+            heat: 0,
+            heatGlyph: "",
+            heatBorn: 0,
+            spent: false,
+            temp: "",
+            tempAlpha: 0,
+            tempFrom: 0,
+            tempUntil: 0,
+            tempCycle: false,
+            tempDrawn: false,
+            spiral: null,
+          });
+        }
+      }
+      cellsRef.current = cells;
       if (instant || reduced) {
-        for (const c of cells) draw(c, c.a);
-        afterReveal();
+        for (const c of cells) if (!c.hole) renderCell(c);
         return;
       }
-      // ANIMASI MASUK: sel-sel muncul menyapu secara diagonal dari satu
-      // sudut layar ke sudut berseberangannya (±1 detik). Sudut awal
-      // dipilih acak tiap kali halaman dimuat: 0 = kiri atas,
-      // 1 = kanan atas, 2 = kiri bawah, 3 = kanan bawah.
-      // Jarak dihitung dalam PIKSEL (bukan indeks sel): sel berukuran
-      // 124×30 px, jadi sapuan berbasis indeks akan terlihat condong
-      // vertikal seperti tirai, bukan diagonal sudut-ke-sudut.
-      // Tiap sel tetap hanya digambar sekali — bukan loop per-frame.
-      const W = cvs!.width;
-      const H = cvs!.height;
+      // animasi masuk: sapuan diagonal sudut-ke-sudut ±1 detik
+      const maxDiag = cvs!.width + cvs!.height;
+      const step = maxDiag / 25;
       const corner = nextCorner();
-      const maxDiag = W + H;
-      const step = maxDiag / 25; // ±25 langkah × 40 ms ≈ 1 detik
       let diag = 0;
       revealTimer = setInterval(() => {
         diag += step;
         for (const c of cells) {
-          if (c.shown) continue;
-          const d = distFrom(corner, c.x, c.y);
-          if (d <= diag) draw(c, c.a);
+          if (c.shown || c.hole) continue;
+          if (distFrom(corner, c.x, c.y) <= diag) renderCell(c);
         }
-        if (diag >= maxDiag) {
-          stopReveal();
-          afterReveal();
-        }
+        if (diag >= maxDiag) stopReveal();
       }, 40);
     }
 
-    function afterReveal() {
-      startGlitch();
-      scheduleWave();
-    }
-
-    /* ---------- Efek glitch (semua digambar dari kode, tanpa aset) ----------
-       Jenis kerusakan yang dipilih acak per sel:
-       substitusi glyph · huruf hilang · posisi huruf jadi MATRIKS TITIK
-       acak (satu-satunya bentuk pengganti huruf — bentuk balok sudah
-       dihapus atas permintaan user, 29 Okt) · scramble (huruf berputar
-       acak sebentar) — plus kata sisipan yang sesekali muncul lebih
-       terang di satu sel lalu kembali. */
-    function glitchText() {
-      return WORD.replace(/./g, (ch) =>
-        Math.random() < 0.35 ? GLYPHS[(Math.random() * GLYPHS.length) | 0] : ch,
-      );
-    }
-    function deleteText() {
-      const arr = WORD.split("");
-      arr[(Math.random() * arr.length) | 0] = " ";
-      if (Math.random() < 0.4) arr[(Math.random() * arr.length) | 0] = " ";
-      return arr.join("");
-    }
-    function scrambleText() {
-      const pool = WORD; // selaras GLYPHS: tanpa simbol (permintaan user)
-      return WORD.replace(/./g, () => pool[(Math.random() * pool.length) | 0]);
-    }
-
-    // Metrik slot huruf: diturunkan dari LEBAR KATA UTUH persis seperti
-    // yang digambar draw() (satu-satunya sumber kebenaran). Font grid
-    // monospace — tiap huruf sama lebar — jadi lebar per huruf = lebar
-    // kata dibagi jumlah huruf, TANPA pembulatan apa pun. (Pembulatan
-    // per huruf yang lama menumpuk ±1 px/huruf dan menggeser kata di sel
-    // glitch sampai menabrak sel tetangga — di Wonder asli semua huruf
-    // tetap sama ukuran dan tidak pernah saling menggeser.)
-    let slotCache: { adv: number; charW: number; total: number } | null = null;
-    function slotMetrics() {
-      if (!slotCache) {
-        const g = ctx!;
-        g.font = FONT;
-        try {
-          (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-            `${LETTER_SPACING}px`;
-        } catch {
-          /* browser non-Chromium: abaikan */
-        }
-        const total = g.measureText(WORD).width;
-        const adv = total / WORD.length;
-        slotCache = { adv, charW: adv - LETTER_SPACING, total };
-      }
-      return slotCache;
-    }
-    function slotX(c: Cell, i: number) {
-      const { adv, total } = slotMetrics();
-      return c.x + (CW - total) / 2 + adv * i;
-    }
-    // Gambar huruf-huruf di luar rentang [start, start+count) satu per satu
-    // pada slotnya masing-masing, alpha dasar. Slot di dalam rentang tidak
-    // digambar sama sekali — digantikan penuh oleh matriks titik.
-    function drawPlainSlots(c: Cell, start: number, count: number) {
-      const g = ctx!;
-      g.font = FONT;
-      g.textAlign = "left";
-      g.textBaseline = "alphabetic";
-      try {
-        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-          `${LETTER_SPACING}px`;
-      } catch {
-        /* browser non-Chromium: abaikan */
-      }
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      g.fillStyle = `rgba(${INK},${c.a.toFixed(3)})`;
-      for (let i = 0; i < WORD.length; i++) {
-        if (i >= start && i < start + count) continue;
-        g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
-      }
-    }
-
-    // (Fungsi matriks titik drawDotLetters/pickSpan DIHAPUS TOTAL — efek itu
-    // sudah diminta user dihilangkan; tidak ada lagi kode gambar per-slot
-    // selain milik spiral, jadi tidak ada jalur yang bisa menggambar huruf
-    // di luar geometri kata normal.)
-
-    // Scramble: sedikit sel berputar acak tiap 100 ms selama ±0,3–0,5 detik.
-    // PENTING (perbaikan bug "kata tidak normal berlama-lama"): semua masa
-    // hidup efek di bawah ini disimpan sebagai TENGGAT WAKTU
-    // (performance.now), BUKAN hitungan tick. Versi tick membuat efek
-    // berumur jauh lebih panjang setiap kali timer browser diperlambat
-    // (tab latar belakang/tertutup jendela lain) — efek menumpuk dan
-    // bertahan abnormal. Dengan tenggat, efek selalu berakhir tepat waktu
-    // bagaimanapun timer berjalan.
-    const scrambling = new Map<number, number>(); // idx -> tenggat
-    let scrambleTimer: ReturnType<typeof setInterval> | null = null;
-    function startScramble(idx: number) {
-      if (scrambling.has(idx)) return;
-      scrambling.set(idx, performance.now() + 300 + Math.random() * 200);
-      if (scrambleTimer) return;
-      scrambleTimer = setInterval(() => {
-        if (document.hidden) return;
-        const now = performance.now();
-        for (const [i, until] of Array.from(scrambling)) {
-          const c = cellsRef.current[i];
-          if (!c || c.hole) {
-            scrambling.delete(i);
-            continue;
-          }
-          if (now >= until) {
-            scrambling.delete(i);
-            draw(c, c.a); // settle kembali ke kata normal
-          } else {
-            draw(c, c.a, scrambleText());
-          }
-        }
-        if (scrambling.size === 0 && scrambleTimer) {
-          clearInterval(scrambleTimer);
-          scrambleTimer = null;
-        }
-      }, 100);
-    }
-
-    // Kata sisipan: satu sel menampilkan kata lain lebih terang beberapa detik.
-    const altActive = new Map<number, number>(); // idx -> tenggat
-
-    // Front aktivitas berjalan (ala Wonder): sel yang dilewati gelombang
-    // sapuan bisa "teraktivasi" jadi kata sisipan selama beberapa detik —
-    // sapuan terasa seperti gelombang aktivitas yang merambat melintasi
-    // grid, lalu reda kembali di belakangnya.
-    const frontActive = new Map<number, number>(); // idx -> tenggat
-
-    /* ============ SPIRAL GALAKSI PER HURUF ============
-       Dari halaman uji /spiral, diterapkan ke halaman utama atas
-       permintaan user (30 Okt). Satu huruf di dalam kata digantikan
-       pusaran galaksi vertikal: glitch ±150 ms -> tumbuh ±600 ms ->
-       hold ±1,6-3 detik -> menguncup ±700 ms (putaran berlawanan) ->
-       glitch -> huruf kembali. SWITCH sungguhan: huruf itu tidak
-       digambar sama sekali selama urutan berjalan, dan semua sistem
-       lain (glitch, cluster, front, gelombang, highlight) melewati
-       selnya. Loop rAF hanya hidup selama ada spiral aktif. */
-    type SpiralState = {
-      letter: number;
-      phase: "glitchIn" | "grow" | "hold" | "shrink" | "glitchOut";
-      phaseStart: number;
-      rot: number;
-      holdMs: number;
-      lastGlitchDraw: number;
-    };
-    const spiralActive = new Map<number, SpiralState>();
+    /* ================= SPIRAL — ASPEK UTAMA =================
+       Satu karakter digantikan galaksi vertikal (switch sungguhan:
+       karakter tidak digambar sama sekali selama urutan berjalan).
+       Fase: glitch ±150 ms -> tumbuh ±500 ms -> bertahan 0,8-1,5 dtk
+       -> menguncup ±550 ms -> glitch -> karakter kembali. Geometri
+       final yang disetujui user: 8 lengan logaritmik tipis, elips
+       vertikal (0,8 x 1,55) dipasang sekali sebelum putaran, massa
+       lengan diredupkan saat mengarah ke kiri/kanan layar. */
+    const spiralCells = new Set<number>();
     let spiralRaf: number | null = null;
     let spiralLastFrame = 0;
     const easeOutCubicS = (t: number) => 1 - Math.pow(1 - t, 3);
     const easeInOutCubicS = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-    function clearSpiralSlot(c: Cell, i: number) {
-      const { charW } = slotMetrics();
-      ctx!.clearRect(slotX(c, i) - 1, c.y, charW + 2, CH);
-    }
-    function drawSpiralChar(c: Cell, i: number, ch: string, alpha: number) {
+    function drawSpiralGlyph(c: Cell, s: SpiralState, p: number, rot: number, alpha: number) {
       const g = ctx!;
-      g.font = FONT;
-      g.textAlign = "left";
-      g.textBaseline = "alphabetic";
-      try {
-        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-          `${LETTER_SPACING}px`;
-      } catch { /* abaikan */ }
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      g.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
-      g.fillText(ch, slotX(c, i), c.y + TEXT_Y);
-    }
-    function drawSpiralGlyph(
-      c: Cell,
-      s: SpiralState,
-      p: number,
-      rot: number,
-      alpha: number,
-    ) {
-      const g = ctx!;
-      clearSpiralSlot(c, s.letter);
-      const { charW } = slotMetrics();
-      const cx = slotX(c, s.letter) + charW / 2;
+      g.clearRect(c.x, c.y, PITCH, CH);
+      const cx = c.x + CHARW / 2;
       const cy = c.y + CH / 2 + 1;
       g.fillStyle = `rgba(238,238,244,${alpha.toFixed(3)})`;
       g.shadowColor = "rgba(238,238,244,0.8)";
-      // Galaksi vertikal di slot huruf tegak (tinggi > lebar): elips
-      // (0,8 x 1,55) dipasang sekali sebelum putaran; lengan digambar
-      // per potongan dengan alpha memudar saat mengarah ke kiri/kanan
-      // layar — terang penuh di atas/bawah saja (koreksi user).
       const R = 9.2;
       const R0 = 1.1;
       const ARM_TURNS = Math.PI * 2 * 0.38;
@@ -435,25 +364,23 @@ export default function WonderScene() {
       g.beginPath();
       g.arc(cx, cy, 1.3 * Math.max(0.35, p), 0, Math.PI * 2);
       g.fill();
-      // matikan bayangan spiral di sumbernya juga (jangan bocor ke gambar lain)
       g.shadowBlur = 0;
       g.shadowColor = "rgba(0,0,0,0)";
       redrawsRef.current++;
     }
-    function stepSpiralMain(idx: number, s: SpiralState, now: number, dt: number) {
+
+    function stepSpiral(idx: number, s: SpiralState, now: number, dt: number) {
       const c = cellsRef.current[idx];
-      if (!c || c.hole) {
-        spiralActive.delete(idx);
+      if (!c || c.hole || !c.spiral) {
+        spiralCells.delete(idx);
         return;
       }
       const elapsed = now - s.phaseStart;
       if (s.phase === "glitchIn" || s.phase === "glitchOut") {
         if (now - s.lastGlitchDraw > 50) {
-          clearSpiralSlot(c, s.letter);
-          drawSpiralChar(
+          drawChar(
             c,
-            s.letter,
-            GLYPHS[(Math.random() * GLYPHS.length) | 0],
+            GLYPH_POOL[(Math.random() * GLYPH_POOL.length) | 0],
             Math.min(0.85, c.a + 0.35),
           );
           s.lastGlitchDraw = now;
@@ -463,8 +390,9 @@ export default function WonderScene() {
             s.phase = "grow";
             s.phaseStart = now;
           } else {
-            spiralActive.delete(idx);
-            draw(c, c.a); // huruf asli kembali
+            c.spiral = null;
+            spiralCells.delete(idx);
+            renderCell(c); // karakter asli kembali
           }
         }
         return;
@@ -507,36 +435,30 @@ export default function WonderScene() {
       const loop = (now: number) => {
         const dt = Math.min(0.05, (now - spiralLastFrame) / 1000);
         spiralLastFrame = now;
-        for (const [idx, s] of Array.from(spiralActive)) {
-          stepSpiralMain(idx, s, now, dt);
+        for (const idx of Array.from(spiralCells)) {
+          const c = cellsRef.current[idx];
+          if (c?.spiral) stepSpiral(idx, c.spiral, now, dt);
+          else spiralCells.delete(idx);
         }
-        spiralRaf = spiralActive.size > 0 ? requestAnimationFrame(loop) : null;
+        spiralRaf = spiralCells.size > 0 ? requestAnimationFrame(loop) : null;
       };
       spiralRaf = requestAnimationFrame(loop);
     }
     function spawnSpiral() {
-      if (reduced || spiralActive.size >= SPIRAL_MAX) return;
+      if (reduced || spiralCells.size >= SPIRAL_MAX) return;
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
-      for (let tries = 0; tries < 24; tries++) {
+      for (let tries = 0; tries < 30; tries++) {
         const idx = (Math.random() * cells.length) | 0;
         const c = cells[idx];
-        if (!c || c.hole || !c.shown) continue;
-        if (
-          altActive.has(idx) ||
-          frontActive.has(idx) ||
-          scrambling.has(idx) ||
-          hiRef.current.has(idx) ||
-          spiralActive.has(idx) ||
-          bandSet.has(idx)
-        )
-          continue;
-        // jangan bersebelahan dengan spiral lain (pola halaman uji)
+        if (!c || c.hole || !c.shown || c.spiral) continue;
+        if (c.heat > 0 || c.tempUntil > performance.now()) continue;
+        // jangan berdekatan dengan spiral lain
         let nearOther = false;
-        for (const other of spiralActive.keys()) {
+        for (const other of spiralCells) {
           if (
-            Math.abs((other % cols) - (idx % cols)) <= 1 &&
+            Math.abs((other % cols) - (idx % cols)) <= 2 &&
             Math.abs(Math.floor(other / cols) - Math.floor(idx / cols)) <= 1
           ) {
             nearOther = true;
@@ -544,17 +466,14 @@ export default function WonderScene() {
           }
         }
         if (nearOther) continue;
-        const letter = (Math.random() * WORD.length) | 0;
-        spiralActive.set(idx, {
-          letter,
+        c.spiral = {
           phase: "glitchIn",
           phaseStart: performance.now(),
           rot: Math.random() * Math.PI * 2,
-          holdMs: 800 + Math.random() * 700, // hold singkat saja (permintaan user)
+          holdMs: 800 + Math.random() * 700,
           lastGlitchDraw: 0,
-        });
-        ctx!.clearRect(c.x, c.y, CW, CH);
-        drawPlainSlots(c, letter, 1); // kata tanpa huruf itu
+        };
+        spiralCells.add(idx);
         ensureSpiralLoop();
         break;
       }
@@ -563,395 +482,233 @@ export default function WonderScene() {
       ? null
       : setInterval(() => {
           if (document.hidden) return;
-          // WATCHDOG SPIRAL: loop rAF bisa berhenti tanpa kabar (tab
-          // tertutup jendela lain / rAF kelaparan) sementara spiral masih
-          // tercatat aktif — selnya membeku sebagai "kata tanpa huruf"
-          // tanpa batas waktu dan semua sistem lain melewatinya. Bila
-          // frame terakhir sudah terlalu lama, paksa selesaikan semua
-          // spiral: huruf dikembalikan dan antrean dibersihkan.
-          if (
-            spiralActive.size > 0 &&
-            performance.now() - spiralLastFrame > 2500
-          ) {
-            for (const idx of Array.from(spiralActive.keys())) {
+          // WATCHDOG: bila loop rAF mati > 2,5 dtk sementara spiral
+          // tercatat aktif, paksa selesaikan semua (karakter kembali).
+          if (spiralCells.size > 0 && performance.now() - spiralLastFrame > 2500) {
+            for (const idx of Array.from(spiralCells)) {
               const c = cellsRef.current[idx];
-              if (c && !c.hole) draw(c, c.a);
+              if (c) {
+                c.spiral = null;
+                if (!c.hole) renderCell(c);
+              }
             }
-            spiralActive.clear();
+            spiralCells.clear();
             spiralRaf = null;
           }
           spawnSpiral();
         }, SPIRAL_EVERY_MS);
 
-    // KUNCI RINGAN #2: interval lambat + sedikit sel acak, BUKAN loop 60fps
-    // yang menggambar ulang seluruh layar.
-    let glitchTimer: ReturnType<typeof setInterval> | null = null;
-    function startGlitch() {
-      if (reduced || glitchTimer) return;
-      glitchTimer = setInterval(() => {
-        if (document.hidden) return;
-        const cells = cellsRef.current;
-        if (!cells.length) return;
-        const occupied = (idx: number) =>
-          altActive.has(idx) ||
-          scrambling.has(idx) ||
-          frontActive.has(idx) ||
-          spiralActive.has(idx);
-        // pulihkan kata sisipan & front yang tenggat waktunya sudah lewat
-        const now = performance.now();
-        for (const map of [altActive, frontActive]) {
-          for (const [i, until] of Array.from(map)) {
-            if (now < until) continue;
-            map.delete(i);
-            const c = cells[i];
-            if (c && !c.hole) draw(c, c.a);
+    /* ============ TAMPILAN SEMENTARA: SISIPAN · SUBSTITUSI · SCRAMBLE ============
+       Semua berbasis tenggat waktu dan dilayani satu ticker lambat
+       (120 ms). Cell yang sedang ditempati spiral/heat tidak disentuh. */
+    const tempCells = new Set<number>();
+    let nextInsertAt = performance.now() + 2500;
+    let insertActiveChars = 0;
+
+    function cellBusy(c: Cell, now: number) {
+      return !!c.spiral || c.heat > 0 || c.tempUntil > now;
+    }
+    function setTemp(
+      idx: number,
+      ch: string,
+      alpha: number,
+      from: number,
+      until: number,
+      cycle = false,
+    ) {
+      const c = cellsRef.current[idx];
+      if (!c) return;
+      c.temp = ch;
+      c.tempAlpha = alpha;
+      c.tempFrom = from;
+      c.tempUntil = until;
+      c.tempCycle = cycle;
+      c.tempDrawn = false;
+      tempCells.add(idx);
+    }
+    function spawnInsert(now: number) {
+      const cells = cellsRef.current;
+      const cols = colsRef.current;
+      if (!cells.length || !cols || insertActiveChars > 60) return;
+      const word = INSERT_WORDS[(Math.random() * INSERT_WORDS.length) | 0];
+      const rows = Math.floor(cells.length / cols);
+      const row = (Math.random() * rows) | 0;
+      const startCol = (Math.random() * Math.max(1, cols - word.length)) | 0;
+      const corner = nextCorner();
+      let placed = 0;
+      for (let k = 0; k < word.length; k++) {
+        const idx = row * cols + startCol + k;
+        const c = cells[idx];
+        if (!c || c.hole || !c.shown || cellBusy(c, now)) continue;
+        // muncul berjenjang mengikuti jarak diagonal dari sudut acak
+        const from = now + distFrom(corner, c.x, c.y) * 0.22;
+        setTemp(
+          idx,
+          word[k],
+          Math.min(0.65, c.a + INSERT_BOOST),
+          from,
+          from + 1700 + Math.random() * 1900,
+        );
+        placed++;
+      }
+      insertActiveChars += placed;
+    }
+    function stepTemp() {
+      if (document.hidden) return;
+      const now = performance.now();
+      const cells = cellsRef.current;
+      for (const idx of Array.from(tempCells)) {
+        const c = cells[idx];
+        if (!c || c.hole) {
+          tempCells.delete(idx);
+          continue;
+        }
+        if (c.spiral) {
+          // spiral mengambil alih cell: batalkan temp tanpa menggambar
+          c.tempUntil = 0;
+          c.tempCycle = false;
+          tempCells.delete(idx);
+          continue;
+        }
+        if (now >= c.tempUntil) {
+          const wasInsert = !c.tempCycle && c.tempUntil - c.tempFrom > 1000;
+          c.tempUntil = 0;
+          c.tempCycle = false;
+          c.tempDrawn = false;
+          tempCells.delete(idx);
+          if (wasInsert) insertActiveChars = Math.max(0, insertActiveChars - 1);
+          if (c.heat <= 0) renderCell(c);
+          continue;
+        }
+        if (now >= c.tempFrom) {
+          if (c.tempCycle) {
+            drawChar(c, GLYPH_POOL[(Math.random() * GLYPH_POOL.length) | 0], c.tempAlpha);
+          } else if (!c.tempDrawn) {
+            c.tempDrawn = true;
+            drawChar(c, c.temp, c.tempAlpha);
           }
         }
-        // kata sisipan: muncul berkelompok kecil (1–3 sel), bertahan
-        // ±2,2–5,8 detik; jumlah aktif dibatasi ±8% sel yang terlihat
-        const maxAlt = Math.max(3, Math.floor(visibleCells * 0.08));
-        if (altActive.size < maxAlt && Math.random() < 0.06) {
-          const group = 1 + ((Math.random() * 3) | 0);
-          for (let k = 0; k < group; k++) {
-            const idx = (Math.random() * cells.length) | 0;
-            const c = cells[idx];
-            if (!c || c.hole || hiRef.current.has(idx) || occupied(idx)) {
-              continue;
-            }
-            altActive.set(idx, now + ALT_MS + Math.random() * 3300); // tampil ±2,2–5,5 detik (tenggat waktu)
-            draw(
-              c,
-              Math.min(0.65, c.a + ALT_BOOST),
-              ALT_WORDS[(Math.random() * ALT_WORDS.length) | 0],
-            );
-          }
-        }
-        // (Cluster matriks titik DIHAPUS atas permintaan user — satu-satunya
-        // efek khusus yang tersisa adalah spiral huruf.)
-        for (let i = 0; i < GLITCH_CELLS; i++) {
+      }
+      if (reduced) return;
+      // pemicu sisipan berkala
+      if (now >= nextInsertAt) {
+        spawnInsert(now);
+        nextInsertAt = now + 2600 + Math.random() * 2600;
+      }
+      // substitusi: beberapa karakter berganti glyph sebentar
+      for (let k = 0; k < 3; k++) {
+        const idx = (Math.random() * cells.length) | 0;
+        const c = cells[idx];
+        if (!c || c.hole || !c.shown || cellBusy(c, now)) continue;
+        setTemp(
+          idx,
+          SUBST_POOL[(Math.random() * SUBST_POOL.length) | 0],
+          Math.min(0.7, c.a + 0.18),
+          now,
+          now + 280 + Math.random() * 250,
+        );
+      }
+      // scramble: beberapa karakter berputar huruf acak sebentar
+      if (Math.random() < 0.3) {
+        for (let k = 0; k < 2; k++) {
           const idx = (Math.random() * cells.length) | 0;
           const c = cells[idx];
-          if (c.hole || hiRef.current.has(idx) || occupied(idx)) {
-            continue; // lewati lubang, highlight mouse, & sel yang sedang tampil khusus
-          }
-          const roll = Math.random();
-          if (roll < 0.42) draw(c, c.a); // pulihkan ke kata normal
-          else if (roll < 0.66) draw(c, c.a, glitchText()); // substitusi glyph
-          else if (roll < 0.76) draw(c, c.a, deleteText()); // huruf hilang
-          else startScramble(idx); // scramble (matriks titik DIHAPUS atas permintaan user — efek khusus yang tersisa hanya spiral)
-        }
-      }, GLITCH_EVERY_MS);
-    }
-    function stopGlitch() {
-      if (glitchTimer) {
-        clearInterval(glitchTimer);
-        glitchTimer = null;
-      }
-    }
-
-    // Pemilihan sudut acak anti-tekak: sudut berikutnya tidak pernah sama
-    // dengan sudut sapuan sebelumnya (berlaku untuk animasi masuk maupun
-    // gelombang sapuan, karena keduanya memakai fungsi ini).
-    let lastCorner = -1;
-    function nextCorner() {
-      let c = (Math.random() * 4) | 0;
-      while (c === lastCorner) c = (Math.random() * 4) | 0;
-      lastCorner = c;
-      return c;
-    }
-
-    // Jarak diagonal sebuah titik dari salah satu sudut layar, dalam
-    // piksel. Penomoran sudut mengikuti kuadran trigonometri:
-    // 0 = kiri atas (kuadran 2), 1 = kanan atas (kuadran 1),
-    // 2 = kiri bawah (kuadran 3), 3 = kanan bawah (kuadran 4).
-    function distFrom(corner: number, x: number, y: number) {
-      const W = cvs!.width;
-      const H = cvs!.height;
-      return corner === 0
-        ? x + y
-        : corner === 1
-          ? W - x + y
-          : corner === 2
-            ? x + (H - y)
-            : W - x + (H - y);
-    }
-
-    // GELOMBANG SAPUAN DIAGONAL: pita diagonal selebar WAVE_BAND (dalam
-    // jarak piksel dari sudut asal) menyapu layar dari satu sudut ke sudut
-    // berseberangannya — kuadran 2 → 4, kuadran 1 → 3, atau sebaliknya —
-    // dipilih acak tiap sapuan. Hanya sel yang masuk/keluar pita yang
-    // digambar ulang — tetap sejalan dengan prinsip "sentuh seperlunya".
-    let waveTimer: ReturnType<typeof setInterval> | null = null;
-    let waveTimeout: ReturnType<typeof setTimeout> | null = null;
-    let waveCorner = 0;
-    let waveFront = 0;
-    let bandSet = new Set<number>();
-
-    function restoreBand() {
-      const cells = cellsRef.current;
-      for (const idx of bandSet) {
-        if (hiRef.current.has(idx)) continue; // jangan timpa highlight mouse
-        if (frontActive.has(idx)) continue; // aktivasi front dipulihkan oleh hitung mundurnya sendiri
-        if (spiralActive.has(idx)) continue; // sel spiral mengurus tampilannya sendiri
-        const c = cells[idx];
-        if (c && c.shown) draw(c, c.a);
-      }
-      bandSet = new Set();
-    }
-
-    function stepWave() {
-      if (document.hidden) return;
-      const cells = cellsRef.current;
-      const maxDiag = cvs!.width + cvs!.height;
-      waveFront += maxDiag / 20; // satu sapuan penuh ±1,6 detik
-      const next = new Set<number>();
-      for (let i = 0; i < cells.length; i++) {
-        const c = cells[i];
-        if (
-          !c.shown ||
-          altActive.has(i) ||
-          frontActive.has(i) ||
-          spiralActive.has(i) ||
-          hiRef.current.has(i)
-        )
-          continue;
-        const d = distFrom(waveCorner, c.x, c.y);
-        if (d <= waveFront && d > waveFront - WAVE_BAND) next.add(i);
-      }
-      // Batas jumlah front aktif bersamaan: tanpa batas ini, satu sapuan
-      // (yang melewati SEMUA sel) bisa mengaktivasi ±50% isi grid jadi kata
-      // sisipan sekaligus — grid "banjir" kata asing dan terlihat tidak
-      // normal (terbukti dari tangkapan diagnostik: 39 front aktif).
-      const maxFront = Math.max(4, Math.floor(visibleCells * 0.07));
-      for (const idx of next) {
-        if (bandSet.has(idx) || hiRef.current.has(idx)) continue;
-        const c = cells[idx];
-        if (Math.random() < 0.18 && frontActive.size < maxFront) {
-          // AKTIVASI FRONT: sel jadi kata sisipan selama ±1,7–3,6 detik —
-          // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan.
-          frontActive.set(
-            idx,
-            performance.now() + 1700 + Math.random() * 1900,
-          );
-          draw(
-            c,
-            Math.min(0.65, c.a + ALT_BOOST),
-            ALT_WORDS[(Math.random() * ALT_WORDS.length) | 0],
-          );
-        } else {
-          draw(c, Math.min(0.45, c.a + WAVE_BOOST));
+          if (!c || c.hole || !c.shown || cellBusy(c, now)) continue;
+          setTemp(idx, "", Math.min(0.7, c.a + 0.1), now, now + 300 + Math.random() * 200, true);
         }
       }
-      for (const idx of bandSet) {
-        if (
-          next.has(idx) ||
-          hiRef.current.has(idx) ||
-          frontActive.has(idx) ||
-          spiralActive.has(idx)
-        )
-          continue;
-        const c = cells[idx];
-        if (c) draw(c, c.a);
-      }
-      bandSet = next;
-      if (waveFront - WAVE_BAND > maxDiag) endWave();
     }
+    const tempTimer = setInterval(stepTemp, 120);
 
-    function startWave() {
-      if (reduced || waveTimer) return;
-      waveCorner = nextCorner();
-      waveFront = 0;
-      bandSet = new Set();
-      waveTimer = setInterval(stepWave, WAVE_TICK_MS);
-    }
-
-    function endWave() {
-      if (waveTimer) {
-        clearInterval(waveTimer);
-        waveTimer = null;
-      }
-      restoreBand();
-      scheduleWave();
-    }
-
-    function scheduleWave() {
-      if (reduced) return;
-      if (waveTimeout) clearTimeout(waveTimeout);
-      waveTimeout = setTimeout(startWave, WAVE_GAP_MS);
-    }
-
-    function stopWaveAll() {
-      if (waveTimer) {
-        clearInterval(waveTimer);
-        waveTimer = null;
-      }
-      if (waveTimeout) {
-        clearTimeout(waveTimeout);
-        waveTimeout = null;
-      }
-      restoreBand();
-    }
-
-    // HIGHLIGHT KURSOR "HEAT" (dari analisa video Muse Wonder): huruf di
-    // sekitar kursor berubah jadi karakter blok/dither. Panas dihitung PER
-    // HURUF (bukan per kata) — tambalannya ±6 huruf ke samping dan ±3 baris
-    // ke atas/bawah mengikuti kursor, menyeberang batas kata seperti grid
-    // karakter aslinya (pengamatan user dari video Wonder). Tiap huruf
-    // punya heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak +
-    // noise, jadi tepinya bergerigi), mendingin ×0,9 tiap frame (jejak
-    // memudar pelan), lalu kembali ke huruf asli di bawah ambang. Heat
-    // dipetakan ke ░▒▓█: makin dekat kursor makin padat & terang, dengan
-    // peluang kecil karakter glitch agar berkedip. Digambar per slot
-    // huruf supaya tekstur kata grid tetap utuh; hanya sel panas yang
-    // diproses tiap frame rAF — tetap ringan.
+    /* ================= HEAT — HIGHLIGHT KURSOR PER KARAKTER =================
+       Tambalan ±6 huruf ke samping x ±3 baris mengikuti kursor (panas
+       dihitung per karakter dari titik tengahnya). Sekali per lintasan:
+       karakter yang sudah menyala ditandai spent dan tidak dipanaskan
+       lagi sampai kursor keluar dari jangkauannya. Jejak memudar
+       x0,9/frame dengan batas keras HEAT_MAX_MS. */
+    const hotCells = new Set<number>();
+    const spentCells = new Set<number>();
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
-    // Sel yang sudah menyala pada lintasan kursor kali ini: TIDAK dipanaskan
-    // lagi sampai kursor benar-benar keluar dari jangkauannya — efeknya
-    // sekali saja per geseran kursor, bukan menyala terus selama kursor dekat.
-    const spentSet = new Set<number>(); // kunci slot: idx * WORD.length + slot
-    function slotCenterX(c: Cell, i: number) {
-      return slotX(c, i) + slotMetrics().charW / 2;
-    }
-    function drawHeatCell(c: Cell, hc: HeatState) {
-      const g = ctx!;
-      g.clearRect(c.x, c.y, CW, CH);
-      g.font = FONT;
-      g.textAlign = "left";
-      g.textBaseline = "alphabetic";
-      try {
-        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-          `${LETTER_SPACING}px`;
-      } catch {
-        /* browser non-Chromium: abaikan */
-      }
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      for (let i = 0; i < WORD.length; i++) {
-        const s = hc.slots[i];
-        if (!s) {
-          // slot dingin: huruf asli pada opasitas dasar kata
-          g.fillStyle = `rgba(${INK},${c.a})`;
-          g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
-          continue;
-        }
-        if (!s.glyph || Math.random() < 0.2) {
-          // kedip acak: glyph diganti sesekali saja, tidak tiap frame
-          const jitter = (Math.random() - 0.5) * 0.25;
-          const h = Math.max(0, Math.min(1, s.heat + jitter));
-          s.glyph =
-            Math.random() < 0.12
-              ? HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0]
-              : HEAT_RAMP[Math.min(3, (h * 4) | 0)];
-        }
-        const a = Math.min(0.9, 0.25 + s.heat * 0.6);
-        g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
-        g.fillText(s.glyph, slotX(c, i), c.y + TEXT_Y);
-      }
-      redrawsRef.current++;
-    }
+
     function stepHeat() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
       const m = mouseRef.current;
       const now = performance.now();
-      // 0) bebaskan slot "habis pakai" yang kursornya sudah jauh / pergi
-      for (const key of Array.from(spentSet)) {
-        const idx = Math.floor(key / WORD.length);
-        const i = key % WORD.length;
-        const cell = cells[idx];
-        if (!cell || !m) {
-          spentSet.delete(key);
+      // bebaskan karakter spent yang kursornya sudah jauh / pergi
+      for (const idx of Array.from(spentCells)) {
+        const c = cells[idx];
+        if (!c || !m) {
+          spentCells.delete(idx);
+          if (c) c.spent = false;
           continue;
         }
-        const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
-        const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-        if (dx * dx + dy * dy >= 1) spentSet.delete(key);
+        const dx = (c.x + CHARW / 2 - m.x) / HEAT_RX;
+        const dy = (c.y + CH / 2 - m.y) / HEAT_RY;
+        if (dx * dx + dy * dy >= 1) {
+          spentCells.delete(idx);
+          c.spent = false;
+        }
       }
-      // 1) panaskan HURUF di sekitar kursor — panas dihitung per slot huruf
-      // dari jarak titik tengah huruf ke kursor (elips ±3 huruf x ±1,5
-      // baris): tambalannya ±6 huruf ke samping dan ±3 baris ke atas/bawah,
-      // bisa menyeberang batas kata seperti grid karakter aslinya.
-      // SEKALI per lintasan: slot yang sedang/baru menyala tidak dipanaskan
-      // lagi sampai kursor keluar dari jangkauannya.
+      // panaskan karakter di sekitar kursor
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
-        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX - CW) / CW));
-        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW));
+        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX) / PITCH));
+        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / PITCH));
         const r0 = Math.max(0, Math.floor((m.y - HEAT_RY) / CH));
         const r1 = Math.floor((m.y + HEAT_RY) / CH);
         for (let r = r0; r <= r1; r++) {
           for (let cc = c0; cc <= c1; cc++) {
             const idx = r * cols + cc;
-            const cell = cells[idx];
-            if (!cell || cell.hole || !cell.shown) continue;
-            if (
-              spiralActive.has(idx) ||
-              altActive.has(idx) ||
-              frontActive.has(idx) ||
-              scrambling.has(idx) ||
-              bandSet.has(idx)
-            )
-              continue; // jangan rebut kata yang sedang tampil khusus (termasuk spiral)
-            let hc = hiRef.current.get(idx);
-            for (let i = 0; i < WORD.length; i++) {
-              if (hc?.slots[i]) continue;
-              const key = idx * WORD.length + i;
-              if (spentSet.has(key)) continue;
-              const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
-              const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-              const dd = dx * dx + dy * dy;
-              if (dd >= 1) continue;
-              const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
-              if (h <= 0.05) continue;
-              if (!hc) {
-                hc = { slots: new Array(WORD.length).fill(null) };
-                hiRef.current.set(idx, hc);
-              }
-              hc.slots[i] = {
-                heat: Math.min(1, Math.max(0.02, h)),
-                glyph: "",
-                born: now,
-              };
-            }
+            const c = cells[idx];
+            if (!c || c.hole || !c.shown) continue;
+            if (c.spent || c.heat > 0 || cellBusy(c, now)) continue;
+            const dx = (c.x + CHARW / 2 - m.x) / HEAT_RX;
+            const dy = (c.y + CH / 2 - m.y) / HEAT_RY;
+            const dd = dx * dx + dy * dy;
+            if (dd >= 1) continue;
+            const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
+            if (h <= 0.05) continue;
+            c.heat = Math.min(1, Math.max(0.02, h));
+            c.heatGlyph = "";
+            c.heatBorn = now;
+            hotCells.add(idx);
           }
         }
       }
-      // 2) dinginkan per slot + gambar ulang kata yang masih punya slot panas
-      for (const [idx, hc] of Array.from(hiRef.current)) {
-        const cell = cells[idx];
-        if (!cell || cell.hole) {
-          hiRef.current.delete(idx);
+      // dinginkan + gambar karakter panas saja
+      for (const idx of Array.from(hotCells)) {
+        const c = cells[idx];
+        if (!c || c.hole) {
+          hotCells.delete(idx);
           continue;
         }
-        if (
-          spiralActive.has(idx) ||
-          altActive.has(idx) ||
-          frontActive.has(idx)
-        ) {
-          hiRef.current.delete(idx); // tampilannya diambil alih sistem lain
+        if (c.spiral || c.tempUntil > now) {
+          c.heat = 0;
+          hotCells.delete(idx);
+          continue; // tampilannya diambil alih sistem lain
+        }
+        c.heat *= HEAT_DECAY;
+        if (c.heat < HEAT_MIN || now - c.heatBorn > HEAT_MAX_MS) {
+          c.heat = 0;
+          hotCells.delete(idx);
+          c.spent = true;
+          spentCells.add(idx);
+          renderCell(c);
           continue;
         }
-        let anyHot = false;
-        for (let i = 0; i < WORD.length; i++) {
-          const s = hc.slots[i];
-          if (!s) continue;
-          s.heat *= HEAT_DECAY;
-          if (s.heat < HEAT_MIN || now - s.born > HEAT_MAX_MS) {
-            hc.slots[i] = null;
-            spentSet.add(idx * WORD.length + i); // jangan menyala lagi pada lintasan yang sama
-          } else {
-            anyHot = true;
-          }
+        if (!c.heatGlyph || Math.random() < 0.2) {
+          const jitter = (Math.random() - 0.5) * 0.25;
+          const h = Math.max(0, Math.min(1, c.heat + jitter));
+          c.heatGlyph =
+            Math.random() < 0.12
+              ? HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0]
+              : HEAT_RAMP[Math.min(3, (h * 4) | 0)];
         }
-        if (!anyHot) {
-          hiRef.current.delete(idx);
-          draw(cell, cell.a); // semua slot dingin: kata kembali utuh
-          continue;
-        }
-        drawHeatCell(cell, hc);
+        drawChar(c, c.heatGlyph, Math.min(0.9, 0.25 + c.heat * 0.6));
       }
       heatRaf =
-        hiRef.current.size > 0 || performance.now() - lastMoveAt < 150
+        hotCells.size > 0 || performance.now() - lastMoveAt < 150
           ? requestAnimationFrame(stepHeat)
           : null;
     }
@@ -961,7 +718,6 @@ export default function WonderScene() {
         heatRaf = requestAnimationFrame(stepHeat);
       }
     }
-
     function onPointerMove(e: PointerEvent) {
       mouseRef.current = { x: e.clientX, y: e.clientY };
       lastMoveAt = performance.now();
@@ -972,33 +728,19 @@ export default function WonderScene() {
       ensureHeat();
     }
 
+    /* ---------------- LISTENERS & CLEANUP ---------------- */
     let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     function onResize() {
       if (resizeTimer) clearTimeout(resizeTimer);
-      // debounce: jangan rebuild tiap piksel; rebuild saat resize tanpa animasi masuk
-      resizeTimer = setTimeout(() => {
-        build(true);
-        startGlitch();
-        scheduleWave();
-      }, 150);
+      resizeTimer = setTimeout(() => build(true), 150);
     }
-
-    // KUNCI RINGAN #4: berhenti total saat tab tidak aktif.
     function onVisibility() {
-      if (document.hidden) {
-        stopGlitch();
-        stopWaveAll();
-      } else {
-        startGlitch();
-        scheduleWave();
-        ensureHeat(); // hidupkan lagi loop panas bila sempat terhenti
-      }
+      if (!document.hidden) ensureHeat();
     }
-
     const debugTimer = setInterval(() => {
       if (!debugOnRef.current) return;
       setDebugText(
-        `${redrawsRef.current} sel digambar/detik · ${cellsRef.current.length} sel total`,
+        `${redrawsRef.current} karakter digambar/detik · ${cellsRef.current.length} cell total`,
       );
       redrawsRef.current = 0;
     }, 1000);
@@ -1010,13 +752,11 @@ export default function WonderScene() {
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      stopGlitch();
       if (spiralTimer) clearInterval(spiralTimer);
       if (spiralRaf !== null) cancelAnimationFrame(spiralRaf);
-      if (scrambleTimer) clearInterval(scrambleTimer);
+      clearInterval(tempTimer);
       if (heatRaf !== null) cancelAnimationFrame(heatRaf);
       stopReveal();
-      stopWaveAll();
       clearInterval(debugTimer);
       if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener("pointermove", onPointerMove);
@@ -1026,34 +766,6 @@ export default function WonderScene() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function drawCell(
-    ctx: CanvasRenderingContext2D,
-    c: Cell,
-    alpha: number,
-    text: string = WORD,
-  ) {
-    ctx.clearRect(c.x, c.y, CW, CH);
-    // Set SEMUA state teks secara eksplisit di sini: posisi kata dihitung dari
-    // measureText, jadi font/letterSpacing ambient yang tertinggal dari jalur
-    // gambar lain (atau reset state canvas) bisa menggeser kata keluar selnya.
-    ctx.font = FONT;
-    (ctx as unknown as { letterSpacing: string }).letterSpacing =
-      `${LETTER_SPACING}px`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    // Bayangan HARUS mati di sini: drawSpiralGlyph menyalakan shadowBlur
-    // untuk cahaya spiral dan state canvas itu MENETAP — tanpa reset ini
-    // semua kata yang digambar setelahnya tercetak dengan bayangan cahaya
-    // (tampak lebih tebal/ganda, "tidak normal") selamanya.
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = "rgba(0,0,0,0)";
-    ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
-    // kata selalu terpusat horizontal di tengah selnya
-    const w = ctx.measureText(text).width;
-    ctx.fillText(text, c.x + (CW - w) / 2, c.y + TEXT_Y);
-    redrawsRef.current++;
-  }
 
   return (
     <>
@@ -1066,77 +778,23 @@ export default function WonderScene() {
               <span className="brand-mark">∞</span> Amamiya
             </span>
             <nav>
-              <a href="#cara-kerja">Cara kerja ▾</a>
+              <a href="#spiral">Spiral</a>
+              <a href="#grid">Grid &amp; Cell</a>
+              <a href="#glitch">Glitch</a>
               <a href="#performa">Performa</a>
             </nav>
           </div>
-          <a className="nav-cta" href="#cara-kerja">
+          <a className="nav-cta" href="#spiral">
             Coba Demo
           </a>
         </header>
 
-        <main>
-          <section className="hero">
-            <h1>Amamiya</h1>
-          </section>
-
-          <section id="cara-kerja" className="section">
-            <h2>Cara kerja</h2>
-            <div className="cards">
-              <article className="card">
-                <h3>1 · Gambar sekali</h3>
-                <p>
-                  Grid di-render satu kali saat load dan resize (di-debounce).
-                  Tidak ada gambar latar, tidak ada video, tidak ada ribuan
-                  elemen DOM — hanya satu canvas. Area di balik teks utama
-                  dikosongkan, jadi grid tampak berlubang di tengah.
-                </p>
-              </article>
-              <article className="card">
-                <h3>2 · Sentuh seperlunya</h3>
-                <p>
-                  Animasi memakai interval lambat: ±24 sel acak digambar ulang
-                  tiap 120&nbsp;ms — diganti glyph glitch (<code>AMA^IYA</code>),
-                  huruf hilang, atau posisi hurufnya berubah jadi matriks
-                  titik acak yang terang ala Wonder —
-                  lalu kembali normal dengan sendirinya.
-                  Kata sisipan (<code>DEV</code>, <code>BUILD</code>,{" "}
-                  <code>CODE</code>) muncul berkelompok
-                  lebih terang, dan kadang beberapa sel tetangga rusak
-                  bersamaan membentuk bercak piksel seperti pixel-art.
-                </p>
-              </article>
-              <article className="card">
-                <h3>3 · Lokal di sekitar kursor</h3>
-                <p>
-                  Highlight mouse hanya menghitung sel dalam radius 170&nbsp;px
-                  di sekitar kursor — sub-grid kecil, bukan seluruh layar.
-                  Terangnya bergradasi mengikuti jarak dan menyala/memudar
-                  dengan lembut, tidak menyentak.
-                </p>
-              </article>
-            </div>
-          </section>
-
-          <section id="performa" className="section">
-            <h2>Kenapa ringan?</h2>
-            <p className="body-text">
-              Background interaktif biasanya berat karena menggambar ulang
-              seluruh layar 60 kali per detik, memakai resolusi retina penuh,
-              dan tetap berjalan saat tab tidak terlihat. Di sini keempatnya
-              dihindari: DPR canvas dikunci 1, tidak ada loop per-frame,
-              animasi berhenti saat tab tidak aktif, dan{" "}
-              <code>prefers-reduced-motion</code> dihormati. Buktinya bisa kamu
-              lihat sendiri — nyalakan tombol <strong>Debug</strong> di kiri
-              bawah dan bandingkan angka "sel digambar/detik" dengan total
-              sel di layar.
-            </p>
-          </section>
-        </main>
-
-        <footer className="footer">
-          Demo background grid tipografi · Next.js + Canvas 2D
-        </footer>
+        <section className="hero">
+          <h1>Amamiya</h1>
+          <a className="scroll-hint" href="#tentang" aria-label="Gulir ke bawah">
+            ↓
+          </a>
+        </section>
       </div>
 
       <div className="panel">
