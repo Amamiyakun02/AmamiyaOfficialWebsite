@@ -307,6 +307,20 @@ export default function WonderScene() {
       const step = a0Cache + LETTER_SPACING;
       return c.x + CW / 2 - (step * WORD.length) / 2 + step * i + a0Cache / 2;
     }
+    // Tinggi tinta huruf kapital font grid (dari metrik teks "A"):
+    // patokan tinggi spiral agar sebesar huruf di sekitarnya.
+    let capHCache: number | null = null;
+    function capHeight() {
+      if (capHCache === null) {
+        const g = ctx!;
+        g.font = FONT;
+        const m = g.measureText("A");
+        const h =
+          (m.actualBoundingBoxAscent ?? 14) + (m.actualBoundingBoxDescent ?? 0);
+        capHCache = h > 4 ? h : 14;
+      }
+      return capHCache;
+    }
 
     // (Fungsi matriks titik drawDotLetters/pickSpan DIHAPUS TOTAL — efek itu
     // sudah diminta user dihilangkan; tidak ada lagi kode gambar per-slot
@@ -405,10 +419,12 @@ export default function WonderScene() {
       const cy = c.y + CH / 2 + 1;
       g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.shadowColor = "rgba(245,245,255,0.8)";
-      // Galaksi vertikal di slot huruf tegak (tinggi > lebar): elips
-      // (0,8 x 1,55) dipasang sekali sebelum putaran; lengan digambar
-      // per potongan dengan alpha memudar saat mengarah ke kiri/kanan
-      // layar — terang penuh di atas/bawah saja (koreksi user).
+      // Tinggi galaksi = tinggi huruf di sekitarnya (permintaan user):
+      // skala Y dihitung dari tinggi tinta huruf kapital "A" pada font
+      // grid yang benar-benar terpakai, jadi diameter vertikal galaksi
+      // (2 * R * skalaY) persis setinggi huruf tetangganya. Lengan tetap
+      // digambar per potongan dengan alpha memudar saat mengarah ke
+      // kiri/kanan layar — terang penuh di atas/bawah saja.
       const R = 9.2;
       const R0 = 1.1;
       const ARM_TURNS = Math.PI * 2 * 0.38;
@@ -418,7 +434,7 @@ export default function WonderScene() {
       g.shadowBlur = 2.2; // cahaya bintang lebih menyala
       g.save();
       g.translate(cx, cy);
-      g.scale(0.8, 1.55);
+      g.scale(0.8, capHeight() / 2 / R);
       g.rotate(rot);
       const steps = 48;
       const CHUNK = 4;
