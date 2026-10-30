@@ -21,8 +21,8 @@ const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
 const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
 const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
-const HEAT_RX = 150; // jangkauan panas kursor horizontal (px) — elips, bukan lingkaran
-const HEAT_RY = 82; // jangkauan vertikal lebih sempit: sel grid lebar 170x38, radius lingkaran menelan terlalu banyak baris
+const HEAT_RX = 78; // jangkauan panas per HURUF: ±3 huruf lebih dari kursor -> tambalan ±6 huruf ke samping (pengamatan user dari video Wonder asli)
+const HEAT_RY = 57; // ±1,5 baris -> tambalan ±3 blok huruf ke atas/bawah
 const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
 const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
 const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
@@ -48,7 +48,8 @@ const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
-type HeatState = { heat: number; glyphs: string[]; born: number }; // keadaan panas kursor per sel
+type SlotHeat = { heat: number; glyph: string; born: number }; // panas per slot huruf
+type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (per slot)
 
 export default function WonderScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -791,9 +792,12 @@ export default function WonderScene() {
       restoreBand();
     }
 
-    // HIGHLIGHT KURSOR "HEAT" (dari analisa video Muse Wonder): sel di
-    // sekitar kursor berubah jadi karakter blok/dither. Tiap sel punya
-    // heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak/radius +
+    // HIGHLIGHT KURSOR "HEAT" (dari analisa video Muse Wonder): huruf di
+    // sekitar kursor berubah jadi karakter blok/dither. Panas dihitung PER
+    // HURUF (bukan per kata) — tambalannya ±6 huruf ke samping dan ±3 baris
+    // ke atas/bawah mengikuti kursor, menyeberang batas kata seperti grid
+    // karakter aslinya (pengamatan user dari video Wonder). Tiap huruf
+    // punya heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak +
     // noise, jadi tepinya bergerigi), mendingin ×0,9 tiap frame (jejak
     // memudar pelan), lalu kembali ke huruf asli di bawah ambang. Heat
     // dipetakan ke ░▒▓█: makin dekat kursor makin padat & terang, dengan
@@ -805,7 +809,10 @@ export default function WonderScene() {
     // Sel yang sudah menyala pada lintasan kursor kali ini: TIDAK dipanaskan
     // lagi sampai kursor benar-benar keluar dari jangkauannya — efeknya
     // sekali saja per geseran kursor, bukan menyala terus selama kursor dekat.
-    const spentSet = new Set<number>();
+    const spentSet = new Set<number>(); // kunci slot: idx * WORD.length + slot
+    function slotCenterX(c: Cell, i: number) {
+      return slotX(c, i) + slotMetrics().charW / 2;
+    }
     function drawHeatCell(c: Cell, hc: HeatState) {
       const g = ctx!;
       g.clearRect(c.x, c.y, CW, CH);
@@ -820,19 +827,26 @@ export default function WonderScene() {
       }
       g.shadowBlur = 0;
       g.shadowColor = "rgba(0,0,0,0)";
-      const a = Math.min(0.9, 0.25 + hc.heat * 0.6); // makin panas makin terang (diredam sedikit)
-      g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
       for (let i = 0; i < WORD.length; i++) {
-        if (!hc.glyphs[i] || Math.random() < 0.2) {
+        const s = hc.slots[i];
+        if (!s) {
+          // slot dingin: huruf asli pada opasitas dasar kata
+          g.fillStyle = `rgba(${INK},${c.a})`;
+          g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
+          continue;
+        }
+        if (!s.glyph || Math.random() < 0.2) {
           // kedip acak: glyph diganti sesekali saja, tidak tiap frame
           const jitter = (Math.random() - 0.5) * 0.25;
-          const h = Math.max(0, Math.min(1, hc.heat + jitter));
-          hc.glyphs[i] =
+          const h = Math.max(0, Math.min(1, s.heat + jitter));
+          s.glyph =
             Math.random() < 0.12
               ? HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0]
               : HEAT_RAMP[Math.min(3, (h * 4) | 0)];
         }
-        g.fillText(hc.glyphs[i], slotX(c, i), c.y + TEXT_Y);
+        const a = Math.min(0.9, 0.25 + s.heat * 0.6);
+        g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
+        g.fillText(s.glyph, slotX(c, i), c.y + TEXT_Y);
       }
       redrawsRef.current++;
     }
@@ -841,21 +855,27 @@ export default function WonderScene() {
       const cols = colsRef.current;
       const m = mouseRef.current;
       const now = performance.now();
-      // 0) bebaskan sel "habis pakai" yang kursornya sudah jauh / pergi
-      for (const idx of Array.from(spentSet)) {
+      // 0) bebaskan slot "habis pakai" yang kursornya sudah jauh / pergi
+      for (const key of Array.from(spentSet)) {
+        const idx = Math.floor(key / WORD.length);
+        const i = key % WORD.length;
         const cell = cells[idx];
         if (!cell || !m) {
-          spentSet.delete(idx);
+          spentSet.delete(key);
           continue;
         }
-        const dx = (cell.x + CW / 2 - m.x) / HEAT_RX;
+        const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
         const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-        if (dx * dx + dy * dy >= 1) spentSet.delete(idx);
+        if (dx * dx + dy * dy >= 1) spentSet.delete(key);
       }
-      // 1) panaskan sel di sekitar kursor — SEKALI per lintasan: sel yang
-      // sedang/baru menyala tidak ditambah panasnya lagi
+      // 1) panaskan HURUF di sekitar kursor — panas dihitung per slot huruf
+      // dari jarak titik tengah huruf ke kursor (elips ±3 huruf x ±1,5
+      // baris): tambalannya ±6 huruf ke samping dan ±3 baris ke atas/bawah,
+      // bisa menyeberang batas kata seperti grid karakter aslinya.
+      // SEKALI per lintasan: slot yang sedang/baru menyala tidak dipanaskan
+      // lagi sampai kursor keluar dari jangkauannya.
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
-        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX) / CW));
+        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX - CW) / CW));
         const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW));
         const r0 = Math.max(0, Math.floor((m.y - HEAT_RY) / CH));
         const r1 = Math.floor((m.y + HEAT_RY) / CH);
@@ -864,7 +884,6 @@ export default function WonderScene() {
             const idx = r * cols + cc;
             const cell = cells[idx];
             if (!cell || cell.hole || !cell.shown) continue;
-            if (hiRef.current.has(idx) || spentSet.has(idx)) continue;
             if (
               spiralActive.has(idx) ||
               altActive.has(idx) ||
@@ -872,22 +891,32 @@ export default function WonderScene() {
               scrambling.has(idx) ||
               bandSet.has(idx)
             )
-              continue; // jangan rebut sel yang sedang tampil khusus (termasuk spiral)
-            const dx = (cell.x + CW / 2 - m.x) / HEAT_RX;
-            const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-            const dd = dx * dx + dy * dy;
-            if (dd >= 1) continue;
-            const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
-            if (h > 0.05)
-              hiRef.current.set(idx, {
+              continue; // jangan rebut kata yang sedang tampil khusus (termasuk spiral)
+            let hc = hiRef.current.get(idx);
+            for (let i = 0; i < WORD.length; i++) {
+              if (hc?.slots[i]) continue;
+              const key = idx * WORD.length + i;
+              if (spentSet.has(key)) continue;
+              const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
+              const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
+              const dd = dx * dx + dy * dy;
+              if (dd >= 1) continue;
+              const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
+              if (h <= 0.05) continue;
+              if (!hc) {
+                hc = { slots: new Array(WORD.length).fill(null) };
+                hiRef.current.set(idx, hc);
+              }
+              hc.slots[i] = {
                 heat: Math.min(1, Math.max(0.02, h)),
-                glyphs: [],
+                glyph: "",
                 born: now,
-              });
+              };
+            }
           }
         }
       }
-      // 2) dinginkan + gambar ulang sel panas saja
+      // 2) dinginkan per slot + gambar ulang kata yang masih punya slot panas
       for (const [idx, hc] of Array.from(hiRef.current)) {
         const cell = cells[idx];
         if (!cell || cell.hole) {
@@ -902,11 +931,21 @@ export default function WonderScene() {
           hiRef.current.delete(idx); // tampilannya diambil alih sistem lain
           continue;
         }
-        hc.heat *= HEAT_DECAY;
-        if (hc.heat < HEAT_MIN || now - hc.born > HEAT_MAX_MS) {
+        let anyHot = false;
+        for (let i = 0; i < WORD.length; i++) {
+          const s = hc.slots[i];
+          if (!s) continue;
+          s.heat *= HEAT_DECAY;
+          if (s.heat < HEAT_MIN || now - s.born > HEAT_MAX_MS) {
+            hc.slots[i] = null;
+            spentSet.add(idx * WORD.length + i); // jangan menyala lagi pada lintasan yang sama
+          } else {
+            anyHot = true;
+          }
+        }
+        if (!anyHot) {
           hiRef.current.delete(idx);
-          spentSet.add(idx); // jangan menyala lagi pada lintasan yang sama
-          draw(cell, cell.a); // selesai: kembali ke huruf asli
+          draw(cell, cell.a); // semua slot dingin: kata kembali utuh
           continue;
         }
         drawHeatCell(cell, hc);
