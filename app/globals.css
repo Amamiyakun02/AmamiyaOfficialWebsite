@@ -6,8 +6,9 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  height: 100%;
 }
 
 body {
@@ -20,34 +21,30 @@ body {
     "Segoe UI",
     Roboto,
     sans-serif;
+  overflow: hidden; /* page tunggal setinggi layar — tidak ada scroll */
 }
 
-/* Canvas background: tetap di belakang, memenuhi layar */
-.bg-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  z-index: 0;
+/* Kerangka page tunggal: navbar di atas, stage memenuhi sisa layar.
+   Scene grid adalah ISI page (di dalam <main>), bukan background. */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
 }
 
-.page {
+/* Navbar: bar tersendiri di bagian atas (dulu nav melayang di atas
+   background; sekarang elemen layout yang nyata). */
+.navbar {
+  flex: none;
   position: relative;
-  z-index: 1;
-}
-
-/* Nav ala Muse Wonder: brand + menu di kiri, tombol biru pil di kanan */
-.nav {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
+  z-index: 5;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 28px;
+  padding: 12px 28px;
+  background: rgba(13, 13, 15, 0.94);
+  border-bottom: 1px solid #1f1f23;
 }
 
 .nav-left {
@@ -69,22 +66,22 @@ body {
   font-weight: 700;
 }
 
-.nav nav {
+.navbar nav {
   display: flex;
   gap: 24px;
 }
 
-.nav a {
+.navbar a {
   color: #e6e6e9;
   text-decoration: none;
   font-size: 15px;
 }
 
-.nav a:hover {
+.navbar a:hover {
   text-decoration: underline;
 }
 
-.nav .nav-cta {
+.navbar .nav-cta {
   background: #0081fb;
   color: #fff;
   font-weight: 600;
@@ -92,119 +89,47 @@ body {
   border-radius: 999px;
 }
 
-.nav .nav-cta:hover {
+.navbar .nav-cta:hover {
   background: #0064e0;
   text-decoration: none;
 }
 
-.hero {
-  min-height: 100svh;
+/* Stage: sisa layar di bawah navbar, tempat scene grid tinggal. */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Canvas scene: mengisi stage sepenuhnya sebagai konten page. */
+.stage-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Judul besar ala Wonder: putih, ringan, tepat di tengah stage
+   (di dalam lubang grid). */
+.stage-title {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: grid;
   place-content: center;
   text-align: center;
-  padding: 24px;
+  pointer-events: none;
 }
 
-.eyebrow {
-  margin: 0 0 10px;
-  font-size: 13px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: #8e8e96;
-}
-
-/* Judul besar ala Wonder: putih, ringan, di tengah layar */
-.hero h1 {
+.stage-title h1 {
   margin: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(38px, 5.5vw, 64px);
   font-weight: 400;
   letter-spacing: 0.02em;
   color: #ffffff;
-}
-
-.lead {
-  margin: 0 auto;
-  max-width: 620px;
-  font-size: 17px;
-  line-height: 1.65;
-  color: #b9b9c0;
-}
-
-.cta {
-  margin-top: 28px;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-block;
-  padding: 11px 22px;
-  border-radius: 999px;
-  border: 1px solid #3f3f46;
-  color: #f4f4f5;
-  text-decoration: none;
-  font-size: 15px;
-  background: rgba(20, 20, 22, 0.7);
-}
-
-.btn.primary {
-  background: #0064e0;
-  border-color: #0064e0;
-  color: #fff;
-}
-
-.section {
-  max-width: 1024px;
-  margin: 0 auto;
-  padding: 72px 24px 8px;
-}
-
-.section h2 {
-  margin: 0 0 20px;
-  font-size: 30px;
-  color: #ffffff;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 760px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
-}
-
-.card {
-  background: rgba(18, 18, 20, 0.86);
-  border: 1px solid #232327;
-  border-radius: 14px;
-  padding: 20px;
-}
-
-.card h3 {
-  margin: 0 0 8px;
-  font-size: 17px;
-  color: #ffffff;
-}
-
-.card p {
-  margin: 0;
-  line-height: 1.6;
-  color: #a6a6ad;
-  font-size: 15px;
-}
-
-.body-text {
-  max-width: 720px;
-  line-height: 1.7;
-  color: #a6a6ad;
-  font-size: 16px;
 }
 
 code {
@@ -216,16 +141,9 @@ code {
   border-radius: 5px;
 }
 
-.footer {
-  text-align: center;
-  padding: 64px 24px 40px;
-  color: #83838b;
-  font-size: 14px;
-}
-
-/* Panel kontrol demo (kiri bawah) */
+/* Panel kontrol demo (kiri bawah stage) */
 .panel {
-  position: fixed;
+  position: absolute;
   z-index: 3;
   left: 12px;
   bottom: 12px;
@@ -256,6 +174,23 @@ code {
 }
 
 /* --- Halaman uji spiral (/spiral) --- */
+/* Halaman uji mempertahankan tata letak lamanya: kanvas fixed seukuran
+   jendela + panel fixed — tidak ikut restruktur page utama. */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+.spiral-page {
+  position: relative;
+  z-index: 1;
+}
+.spiral-page .panel {
+  position: fixed;
+}
 .spiral-head {
   position: fixed;
   top: 0;

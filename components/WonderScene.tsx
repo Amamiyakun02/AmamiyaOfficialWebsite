@@ -117,8 +117,10 @@ export default function WonderScene() {
 
     function build(instant = false) {
       // KUNCI RINGAN #1: DPR dikunci 1 — jangan ikut retina (3x = 9x piksel).
-      cvs!.width = window.innerWidth;
-      cvs!.height = window.innerHeight;
+      // Ukuran diambil dari elemen canvas sendiri (sekarang canvas adalah
+      // isi <main> di bawah navbar, bukan lagi lapisan seukuran jendela).
+      cvs!.width = cvs!.clientWidth || window.innerWidth;
+      cvs!.height = cvs!.clientHeight || window.innerHeight;
       ctx!.font = FONT;
       // letter-spacing renggang ala Wonder (Chromium; browser lain mengabaikan)
       (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
@@ -1017,7 +1019,10 @@ export default function WonderScene() {
     }
 
     function onPointerMove(e: PointerEvent) {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
+      // Koordinat kursor diubah ke ruang canvas (canvas kini mulai di
+      // bawah navbar, bukan di pojok jendela).
+      const r = cvs!.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - r.left, y: e.clientY - r.top };
       lastMoveAt = performance.now();
       ensureHeat();
     }
@@ -1090,8 +1095,22 @@ export default function WonderScene() {
     document.documentElement.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
+    // Ukuran stage bisa berubah tanpa resize jendela (navbar membungkus,
+    // panel berorentasi ulang) — amati elemen canvas-nya langsung.
+    // Panggilan pertama RO selalu datang sekali saat observe dimulai:
+    // lewati, supaya tidak memotong animasi reveal pembuka.
+    let roFirst = true;
+    const stageObserver = new ResizeObserver(() => {
+      if (roFirst) {
+        roFirst = false;
+        return;
+      }
+      onResize();
+    });
+    stageObserver.observe(cvs!);
 
     return () => {
+      stageObserver.disconnect();
       stopGlitch();
       if (spiralTimer) clearInterval(spiralTimer);
       if (spiralRaf !== null) cancelAnimationFrame(spiralRaf);
@@ -1139,98 +1158,43 @@ export default function WonderScene() {
   }
 
   return (
-    <>
-      <canvas ref={canvasRef} className="bg-canvas" aria-hidden="true" />
+    <div className="app">
+      {/* Navbar: dulu nav melayang di atas background; sekarang bar
+          tersendiri di bagian atas page. */}
+      <header className="navbar">
+        <div className="nav-left">
+          <span className="brand">
+            <span className="brand-mark">∞</span> Amamiya
+          </span>
+          <nav>
+            <a href="#">Cara kerja ▾</a>
+            <a href="#">Performa</a>
+          </nav>
+        </div>
+        <a className="nav-cta" href="#">
+          Coba Demo
+        </a>
+      </header>
 
-      <div className="page">
-        <header className="nav">
-          <div className="nav-left">
-            <span className="brand">
-              <span className="brand-mark">∞</span> Amamiya
-            </span>
-            <nav>
-              <a href="#cara-kerja">Cara kerja ▾</a>
-              <a href="#performa">Performa</a>
-            </nav>
-          </div>
-          <a className="nav-cta" href="#cara-kerja">
-            Coba Demo
-          </a>
-        </header>
+      {/* Stage: satu-satunya isi page — scene grid memenuhi sisa layar
+          di bawah navbar sebagai konten page itu sendiri. */}
+      <main className="stage">
+        <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
 
-        <main>
-          <section className="hero">
-            <h1>Amamiya</h1>
-          </section>
+        <div className="stage-title">
+          <h1>Amamiya</h1>
+        </div>
 
-          <section id="cara-kerja" className="section">
-            <h2>Cara kerja</h2>
-            <div className="cards">
-              <article className="card">
-                <h3>1 · Gambar sekali</h3>
-                <p>
-                  Grid di-render satu kali saat load dan resize (di-debounce).
-                  Tidak ada gambar latar, tidak ada video, tidak ada ribuan
-                  elemen DOM — hanya satu canvas. Area di balik teks utama
-                  dikosongkan, jadi grid tampak berlubang di tengah.
-                </p>
-              </article>
-              <article className="card">
-                <h3>2 · Sentuh seperlunya</h3>
-                <p>
-                  Animasi memakai interval lambat: ±24 sel acak digambar ulang
-                  tiap 120&nbsp;ms — diganti glyph glitch (<code>AMA^IYA</code>),
-                  huruf hilang, atau posisi hurufnya berubah jadi matriks
-                  titik acak yang terang ala Wonder —
-                  lalu kembali normal dengan sendirinya.
-                  Kata sisipan (<code>DEV</code>, <code>BUILD</code>,{" "}
-                  <code>CODE</code>) muncul berkelompok
-                  lebih terang, dan kadang beberapa sel tetangga rusak
-                  bersamaan membentuk bercak piksel seperti pixel-art.
-                </p>
-              </article>
-              <article className="card">
-                <h3>3 · Lokal di sekitar kursor</h3>
-                <p>
-                  Highlight mouse hanya menghitung sel dalam radius 170&nbsp;px
-                  di sekitar kursor — sub-grid kecil, bukan seluruh layar.
-                  Terangnya bergradasi mengikuti jarak dan menyala/memudar
-                  dengan lembut, tidak menyentak.
-                </p>
-              </article>
-            </div>
-          </section>
-
-          <section id="performa" className="section">
-            <h2>Kenapa ringan?</h2>
-            <p className="body-text">
-              Background interaktif biasanya berat karena menggambar ulang
-              seluruh layar 60 kali per detik, memakai resolusi retina penuh,
-              dan tetap berjalan saat tab tidak terlihat. Di sini keempatnya
-              dihindari: DPR canvas dikunci 1, tidak ada loop per-frame,
-              animasi berhenti saat tab tidak aktif, dan{" "}
-              <code>prefers-reduced-motion</code> dihormati. Buktinya bisa kamu
-              lihat sendiri — nyalakan tombol <strong>Debug</strong> di kiri
-              bawah dan bandingkan angka "sel digambar/detik" dengan total
-              sel di layar.
-            </p>
-          </section>
-        </main>
-
-        <footer className="footer">
-          Demo background grid tipografi · Next.js + Canvas 2D
-        </footer>
-      </div>
-
-      <div className="panel">
-        <button type="button" onClick={() => setMouseOn((v) => !v)}>
-          Highlight mouse: {mouseOn ? "ON" : "OFF"}
-        </button>
-        <button type="button" onClick={() => setDebugOn((v) => !v)}>
-          Debug: {debugOn ? "ON" : "OFF"}
-        </button>
-        <output>{debugText}</output>
-      </div>
-    </>
+        <div className="panel">
+          <button type="button" onClick={() => setMouseOn((v) => !v)}>
+            Highlight mouse: {mouseOn ? "ON" : "OFF"}
+          </button>
+          <button type="button" onClick={() => setDebugOn((v) => !v)}>
+            Debug: {debugOn ? "ON" : "OFF"}
+          </button>
+          <output>{debugText}</output>
+        </div>
+      </main>
+    </div>
   );
 }
