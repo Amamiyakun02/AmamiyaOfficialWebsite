@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import FxCards from "./FxCards";
 
 /* =====================================================================
    KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
@@ -34,8 +35,8 @@ const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor me
 const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
 const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
 const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
-const WAVE_BOOST = 0.26; // tambahan opasitas sel saat dilewati gelombang sapuan
-const WAVE_BAND = 260; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal)
+const WAVE_BOOST = 0.45; // tambahan opasitas sel saat dilewati gelombang sapuan (0,26 -> 0,45: efek jalan dari sudut DIPERJELAS, permintaan user 30 Okt)
+const WAVE_BAND = 200; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal) — dipersempit dari 260 agar garis depannya lebih tegas
 const HOLE_MAX_W = 660; // lebar maksimum lubang tengah (px)
 const HOLE_MAX_H = 210; // tinggi maksimum lubang tengah (px)
 const HOLE_W_RATIO = 0.86; // lebar lubang relatif ke layar (bila layar sempit)
@@ -1354,7 +1355,7 @@ export default function WonderScene() {
       for (const idx of next) {
         if (bandSet.has(idx) || hiRef.current.has(idx)) continue;
         const c = cells[idx];
-        if (Math.random() < 0.18 && frontActive.size < maxFront) {
+        if (Math.random() < 0.26 && frontActive.size < maxFront) {
           // AKTIVASI FRONT: sel jadi kata sisipan selama ±1,7–3,6 detik —
           // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan.
           frontActive.set(
@@ -1363,11 +1364,11 @@ export default function WonderScene() {
           );
           draw(
             c,
-            Math.min(0.65, c.a + ALT_BOOST),
+            Math.min(0.78, c.a + ALT_BOOST),
             ALT_WORDS[(Math.random() * ALT_WORDS.length) | 0],
           );
         } else {
-          draw(c, Math.min(0.45, c.a + WAVE_BOOST));
+          draw(c, Math.min(0.78, c.a + WAVE_BOOST));
         }
       }
       for (const idx of bandSet) {
@@ -1486,7 +1487,7 @@ export default function WonderScene() {
           continue;
         }
         const h = Math.max(0, Math.min(1, s.heat));
-        const a = 0.55 + 0.45 * h;
+        const a = 0.65 + 0.35 * h;
         g.fillStyle = `rgba(245,245,255,${a.toFixed(3)})`;
         const x0 = slotX(c, i);
         const charW = slotMetrics().charW;
@@ -1507,7 +1508,7 @@ export default function WonderScene() {
         const dx = charW * 0.24;
         const rowStep = capH / 4;
         const top = c.y + TEXT_Y - capH;
-        const r = Math.max(1, charW * 0.13);
+        const r = Math.max(1.2, charW * 0.17); // titik besar & tegas seperti referensi
         for (let d = 0; d < lit; d++) {
           const p = s.order[d];
           const px = x0 + charW / 2 + (p % 2 === 0 ? -dx : dx);
@@ -1842,6 +1843,9 @@ export default function WonderScene() {
           </button>
           <output>{debugText}</output>
         </div>
+
+        {/* Layer paling depan: 3 card penjelasan efek (Spiral/Sparkle/Atom) */}
+        <FxCards />
       </main>
     </div>
   );
