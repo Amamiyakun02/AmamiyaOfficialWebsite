@@ -68,6 +68,7 @@ const SPARK_GROW_MS = 450; // sparkle tumbuh masuk
 const SPARK_SHRINK_MS = 400; // sparkle menguncup
 const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
+const GRID_COLS = 9; // kolom grid DITETAPKAN 9 untuk desktop (pilihan user 30 Okt dari screenshot zoom-nya: huruf besar & lega); lebar sel = lebar stage / 9 dan semua ukuran diskalakan proporsional, jadi zoom sebesar apa pun jumlah sel tidak meledak. Tampilan mobile disesuaikan menyusul.
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
@@ -79,6 +80,20 @@ export default function WonderScene() {
   const cellsRef = useRef<Cell[]>([]);
   const colsRef = useRef(0);
   const hiRef = useRef<Map<number, HeatState>>(new Map()); // idx sel -> keadaan panas kursor
+  // Metrik grid dasar (skala 1) + metrik aktif hasil skala 9 kolom:
+  // drawCell (di luar effect utama) membaca gridRef; effect utama
+  // memakai bayangan variabel lokal yang diselaraskan build().
+  const gridBase = {
+    cw: CW,
+    ch: CH,
+    font: FONT,
+    fs: FONT_SIZE,
+    ls: LETTER_SPACING,
+    ty: TEXT_Y,
+    hrx: HEAT_RX,
+    hry: HEAT_RY,
+  };
+  const gridRef = useRef({ ...gridBase, scale: 1 });
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const redrawsRef = useRef(0);
   const mouseOnRef = useRef(true);
@@ -116,6 +131,19 @@ export default function WonderScene() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Metrik grid dinamis — bayangan variabel dari konstanta modul.
+    // build() menghitungnya dari aturan 9 kolom; semua geometri di
+    // effect ini membaca variabel lokal ini.
+    let gScale = 1;
+    let CW = gridRef.current.cw;
+    let CH = gridRef.current.ch;
+    let FONT = gridRef.current.font;
+    let FONT_SIZE = gridRef.current.fs;
+    let LETTER_SPACING = gridRef.current.ls;
+    let TEXT_Y = gridRef.current.ty;
+    let HEAT_RX = gridRef.current.hrx;
+    let HEAT_RY = gridRef.current.hry;
+
     function draw(c: Cell, alpha: number, text: string = WORD) {
       if (c.hole) return; // sel di lubang tengah tidak pernah digambar
       c.shown = true;
@@ -137,6 +165,33 @@ export default function WonderScene() {
       // isi <main> di bawah navbar, bukan lagi lapisan seukuran jendela).
       cvs!.width = cvs!.clientWidth || window.innerWidth;
       cvs!.height = cvs!.clientHeight || window.innerHeight;
+      // ATURAN 9 KOLOM: lebar sel = lebar stage / 9; font, tinggi sel,
+      // letter-spacing, jangkauan heat, dan cache geometri diskalakan
+      // proporsional. Zoom/jendela sebesar apa pun, kolom tetap 9 dan
+      // jumlah sel tidak meledak (permintaan user 30 Okt).
+      gScale = cvs!.width / (GRID_COLS * gridBase.cw);
+      CW = cvs!.width / GRID_COLS;
+      CH = gridBase.ch * gScale;
+      FONT_SIZE = gridBase.fs * gScale;
+      FONT = `${FONT_SIZE}px monospace`;
+      LETTER_SPACING = gridBase.ls * gScale;
+      TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8;
+      HEAT_RX = gridBase.hrx * gScale;
+      HEAT_RY = gridBase.hry * gScale;
+      gridRef.current = {
+        cw: CW,
+        ch: CH,
+        font: FONT,
+        fs: FONT_SIZE,
+        ls: LETTER_SPACING,
+        ty: TEXT_Y,
+        hrx: HEAT_RX,
+        hry: HEAT_RY,
+        scale: gScale,
+      };
+      slotCache = null;
+      a0Cache = null;
+      capHCache = null;
       ctx!.font = FONT;
       // letter-spacing renggang ala Wonder (Chromium; browser lain mengabaikan)
       (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
@@ -165,9 +220,9 @@ export default function WonderScene() {
         return dx * dx + dy * dy <= HOLE_RADIUS * HOLE_RADIUS;
       };
       const cells: Cell[] = [];
-      colsRef.current = Math.ceil(cvs!.width / CW);
+      colsRef.current = GRID_COLS;
       for (let y = 0; y * CH < cvs!.height; y++) {
-        for (let x = 0; x * CW < cvs!.width; x++) {
+        for (let x = 0; x < GRID_COLS; x++) {
           cells.push({
             x: x * CW,
             y: y * CH,
@@ -448,11 +503,11 @@ export default function WonderScene() {
       // (2 * R * skalaY) persis setinggi huruf tetangganya. Lengan tetap
       // digambar per potongan dengan alpha memudar saat mengarah ke
       // kiri/kanan layar — terang penuh di atas/bawah saja.
-      const R = 9.2;
-      const R0 = 1.1;
+      const R = 9.2 * gScale;
+      const R0 = 1.1 * gScale;
       const ARM_TURNS = Math.PI * 2 * 0.38;
       const upto = ARM_TURNS * p;
-      g.lineWidth = 1.35;
+      g.lineWidth = 1.35 * gScale;
       g.lineCap = "round";
       g.shadowBlur = 2.2; // cahaya bintang lebih menyala
       g.save();
@@ -486,7 +541,7 @@ export default function WonderScene() {
       }
       g.restore();
       g.beginPath();
-      g.arc(cx, cy, 1.3 * Math.max(0.35, p), 0, Math.PI * 2);
+      g.arc(cx, cy, 1.3 * gScale * Math.max(0.35, p), 0, Math.PI * 2);
       g.fill();
       // matikan bayangan spiral di sumbernya juga (jangan bocor ke gambar lain)
       g.shadowBlur = 0;
@@ -1415,13 +1470,14 @@ export default function WonderScene() {
     alpha: number,
     text: string = WORD,
   ) {
-    ctx.clearRect(c.x, c.y, CW, CH);
+    const G = gridRef.current; // metrik aktif (hasil skala 9 kolom)
+    ctx.clearRect(c.x, c.y, G.cw, G.ch);
     // Set SEMUA state teks secara eksplisit di sini: posisi kata dihitung dari
     // measureText, jadi font/letterSpacing ambient yang tertinggal dari jalur
     // gambar lain (atau reset state canvas) bisa menggeser kata keluar selnya.
-    ctx.font = FONT;
+    ctx.font = G.font;
     (ctx as unknown as { letterSpacing: string }).letterSpacing =
-      `${LETTER_SPACING}px`;
+      `${G.ls}px`;
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     // Bayangan HARUS mati di sini: drawSpiralGlyph menyalakan shadowBlur
@@ -1433,7 +1489,7 @@ export default function WonderScene() {
     ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
     // kata selalu terpusat horizontal di tengah selnya
     const w = ctx.measureText(text).width;
-    ctx.fillText(text, c.x + (CW - w) / 2, c.y + TEXT_Y);
+    ctx.fillText(text, c.x + (G.cw - w) / 2, c.y + G.ty);
     redrawsRef.current++;
   }
 
