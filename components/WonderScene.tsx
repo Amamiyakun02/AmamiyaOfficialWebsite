@@ -742,6 +742,31 @@ export default function WonderScene() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
+      // Sesekali (18%) sengaja dipasangkan ke kata yang sedang berisi
+      // sparkle — user ingin keduanya bisa tampil bersama dalam satu
+      // kata di huruf berbeda (sel berefek dijamin bersih dari sistem
+      // lain karena semua sistem melewati sel berefek).
+      if (sparkActive.size > 0 && Math.random() < 0.18) {
+        const hosts = Array.from(sparkActive.entries());
+        const [idx, sk] = hosts[(Math.random() * hosts.length) | 0];
+        const c = cells[idx];
+        if (c && !c.hole && c.shown && !spiralActive.has(idx)) {
+          let letter = (Math.random() * WORD.length) | 0;
+          if (letter === sk.letter) letter = (letter + 1) % WORD.length;
+          spiralActive.set(idx, {
+            letter,
+            phase: "glitchIn",
+            phaseStart: performance.now(),
+            rot: Math.random() * Math.PI * 2,
+            holdMs: 800 + Math.random() * 700,
+            lastGlitchDraw: 0,
+            jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+          });
+          renderFxCell(idx, performance.now());
+          ensureSpiralLoop();
+          return;
+        }
+      }
       for (let tries = 0; tries < 24; tries++) {
         const idx = (Math.random() * cells.length) | 0;
         const c = cells[idx];
@@ -780,6 +805,27 @@ export default function WonderScene() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
+      // Pasangan cermin spawnSpiral: sesekali menumpang kata berspiral.
+      if (spiralActive.size > 0 && Math.random() < 0.18) {
+        const hosts = Array.from(spiralActive.entries());
+        const [idx, sp] = hosts[(Math.random() * hosts.length) | 0];
+        const c = cells[idx];
+        if (c && !c.hole && c.shown && !sparkActive.has(idx)) {
+          let letter = (Math.random() * WORD.length) | 0;
+          if (letter === sp.letter) letter = (letter + 1) % WORD.length;
+          sparkActive.set(idx, {
+            letter,
+            phase: "glitchIn",
+            phaseStart: performance.now(),
+            holdMs: SPARK_HOLD_MS * (0.8 + Math.random() * 0.4),
+            lastGlitchDraw: 0,
+            jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+          });
+          renderFxCell(idx, performance.now());
+          ensureSpiralLoop();
+          return;
+        }
+      }
       for (let tries = 0; tries < 24; tries++) {
         const idx = (Math.random() * cells.length) | 0;
         const c = cells[idx];
