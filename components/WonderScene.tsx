@@ -271,27 +271,40 @@ export default function WonderScene() {
       const { adv, total } = slotMetrics();
       return c.x + (CW - total) / 2 + adv * i;
     }
-    // Gambar huruf-huruf di luar rentang [start, start+count) satu per satu
-    // pada slotnya masing-masing, alpha dasar. Slot di dalam rentang tidak
-    // digambar sama sekali — digantikan penuh oleh matriks titik.
-    function drawPlainSlots(c: Cell, start: number, count: number) {
-      const g = ctx!;
-      g.font = FONT;
-      g.textAlign = "left";
-      g.textBaseline = "alphabetic";
-      try {
-        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-          `${LETTER_SPACING}px`;
-      } catch {
-        /* browser non-Chromium: abaikan */
+    // === Kata bertopeng (mekanisme spiral sekarang) ===
+    // Huruf tuan rumah spiral TIDAK lagi dihapus/digambar per slot dari
+    // hitungan lebar manual — cara itu meleset beberapa piksel dari posisi
+    // huruf yang benar-benar digambar browser, jadi penghapusnya tidak
+    // menutupi huruf dengan pas dan menyisakan goresan (fragmen "/" dan
+    // "," di sekitar spiral pada screenshot user). Sekarang huruf
+    // disembunyikan dengan menggantinya menjadi SPASI lalu kata dirender
+    // ulang lewat draw() biasa: satu fillText yang sama persis dengan kata
+    // utuh, jadi posisi semua huruf lain identik piksel per piksel dan
+    // tidak ada yang perlu "dihapus".
+    function maskedWord(k: number, ch?: string): string {
+      const arr = WORD.split("");
+      arr[k] = ch ?? " ";
+      return arr.join("");
+    }
+    // Pusat galaksi: diturunkan dari advance murni huruf (letterSpacing 0,
+    // tanpa ambiguitas spasi-ekor pengukuran) + langkah per huruf.
+    let a0Cache: number | null = null;
+    function spiralCenterX(c: Cell, i: number) {
+      if (a0Cache === null) {
+        const g = ctx!;
+        g.font = FONT;
+        try {
+          (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+            "0px";
+        } catch { /* abaikan */ }
+        a0Cache = g.measureText(WORD).width / WORD.length;
+        try {
+          (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+            `${LETTER_SPACING}px`;
+        } catch { /* abaikan */ }
       }
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      g.fillStyle = `rgba(${INK},${c.a.toFixed(3)})`;
-      for (let i = 0; i < WORD.length; i++) {
-        if (i >= start && i < start + count) continue;
-        g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
-      }
+      const step = a0Cache + LETTER_SPACING;
+      return c.x + CW / 2 - (step * WORD.length) / 2 + step * i + a0Cache / 2;
     }
 
     // (Fungsi matriks titik drawDotLetters/pickSpan DIHAPUS TOTAL — efek itu
@@ -377,24 +390,8 @@ export default function WonderScene() {
     const easeInOutCubicS = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-    function clearSpiralSlot(c: Cell, i: number) {
-      const { charW } = slotMetrics();
-      ctx!.clearRect(slotX(c, i) - 1, c.y, charW + 2, CH);
-    }
-    function drawSpiralChar(c: Cell, i: number, ch: string, alpha: number) {
-      const g = ctx!;
-      g.font = FONT;
-      g.textAlign = "left";
-      g.textBaseline = "alphabetic";
-      try {
-        (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
-          `${LETTER_SPACING}px`;
-      } catch { /* abaikan */ }
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      g.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
-      g.fillText(ch, slotX(c, i), c.y + TEXT_Y);
-    }
+    // Menggambar lengan galaksi saja — sel (termasuk kata bertopengnya)
+    // sudah dilukis pemanggil lewat draw() sebelum fungsi ini dipanggil.
     function drawSpiralGlyph(
       c: Cell,
       s: SpiralState,
@@ -403,9 +400,7 @@ export default function WonderScene() {
       alpha: number,
     ) {
       const g = ctx!;
-      clearSpiralSlot(c, s.letter);
-      const { charW } = slotMetrics();
-      const cx = slotX(c, s.letter) + charW / 2;
+      const cx = spiralCenterX(c, s.letter);
       const cy = c.y + CH / 2 + 1;
       g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.shadowColor = "rgba(245,245,255,0.8)";
@@ -465,12 +460,12 @@ export default function WonderScene() {
       const elapsed = now - s.phaseStart;
       if (s.phase === "glitchIn" || s.phase === "glitchOut") {
         if (now - s.lastGlitchDraw > 50) {
-          clearSpiralSlot(c, s.letter);
-          drawSpiralChar(
+          // karakter kedip digambar sebagai kata bertopeng: huruf lain
+          // tetap di posisi aslinya, hanya slot spiral yang berkedip
+          draw(
             c,
-            s.letter,
-            GLYPHS[(Math.random() * GLYPHS.length) | 0],
-            Math.min(0.85, c.a + 0.35),
+            c.a,
+            maskedWord(s.letter, GLYPHS[(Math.random() * GLYPHS.length) | 0]),
           );
           s.lastGlitchDraw = now;
         }
@@ -489,6 +484,7 @@ export default function WonderScene() {
         const t = Math.min(1, elapsed / SPIRAL_GROW_MS);
         const p = SPIRAL_P_MIN + (1 - SPIRAL_P_MIN) * easeOutCubicS(t);
         s.rot += dt * (3.4 * (1 - t) + 0.5);
+        draw(c, c.a, maskedWord(s.letter)); // kata tanpa huruf tuan rumah
         drawSpiralGlyph(c, s, p, s.rot, 1);
         if (t >= 1) {
           s.phase = "hold";
@@ -498,6 +494,7 @@ export default function WonderScene() {
       }
       if (s.phase === "hold") {
         s.rot += dt * 0.5;
+        draw(c, c.a, maskedWord(s.letter));
         drawSpiralGlyph(c, s, 1, s.rot, 0.92 + 0.08 * Math.sin(now / 280));
         if (elapsed >= s.holdMs) {
           s.phase = "shrink";
@@ -509,6 +506,7 @@ export default function WonderScene() {
         const t = Math.min(1, elapsed / SPIRAL_SHRINK_MS);
         const p = 1 - (1 - SPIRAL_P_MIN) * easeInOutCubicS(t);
         s.rot -= dt * 2.3;
+        draw(c, c.a, maskedWord(s.letter));
         drawSpiralGlyph(c, s, p, s.rot, 1);
         if (t >= 1) {
           s.phase = "glitchOut";
@@ -569,8 +567,7 @@ export default function WonderScene() {
           holdMs: 800 + Math.random() * 700, // hold singkat saja (permintaan user)
           lastGlitchDraw: 0,
         });
-        ctx!.clearRect(c.x, c.y, CW, CH);
-        drawPlainSlots(c, letter, 1); // kata tanpa huruf itu
+        draw(c, c.a, maskedWord(letter)); // kata utuh tanpa huruf tuan rumah
         ensureSpiralLoop();
         break;
       }
