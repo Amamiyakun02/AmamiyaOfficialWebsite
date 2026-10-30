@@ -58,7 +58,7 @@ const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong
 // lekuk 0,10, glow 4, hold 1,5 detik, maks 10 aktif. Berjalan BERSAMA
 // spiral: satu cell boleh berisi spiral + sparkle di huruf berbeda,
 // tapi tidak pernah di huruf yang sama.
-const SPARK_MAX = 14; // maks sparkle aktif bersamaan (10 -> 14: kemunculan diperbanyak, permintaan user 30 Okt); pemicu otomatisnya menumpang timer efek huruf
+const SPARK_MAX = 10; // maks sparkle aktif bersamaan — disamaratakan 10/10/10 untuk ketiga efek (permintaan user 30 Okt)
 const SPARK_SIZE = 1.3; // ukuran relatif ke tinggi huruf (setelan user)
 const SPARK_PINCH = 0.1; // kedalaman lekuk cekung sisi sparkle (setelan user)
 const SPARK_GLOW = 4; // shadowBlur sparkle (setelan user)
@@ -69,6 +69,21 @@ const SPARK_SHRINK_MS = 400; // sparkle menguncup
 const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
 const GRID_COLS = 9; // kolom grid DITETAPKAN 9 untuk desktop (pilihan user 30 Okt dari screenshot zoom-nya: huruf besar & lega); lebar sel = lebar stage / 9 dan semua ukuran diskalakan proporsional, jadi zoom sebesar apa pun jumlah sel tidak meledak. Tampilan mobile disesuaikan menyusul.
+
+// --- atom Rutherford per huruf (dari halaman uji /atom) ---
+// Konfigurasi hasil setelan user di bancuh uji (30 Okt): ukuran 1,3x,
+// elips 0,25, putaran 3,0x, glow 4, hold 1,5 detik, maks 10.
+const ATOM_MAX = 10; // maks atom aktif bersamaan (disamaratakan 10/10/10)
+const ATOM_SIZE = 1.3; // ukuran relatif ke tinggi huruf (setelan user)
+const ATOM_FLAT = 0.25; // kegepengan orbit elips (setelan user)
+const ATOM_SPIN = 3.0; // kecepatan putaran atom + elektron (setelan user)
+const ATOM_GLOW = 4; // shadowBlur atom (setelan user)
+const ATOM_HOLD_MS = 1500; // lama tampil penuh (setelan user, divariasi ±20%)
+const ATOM_GLITCH_MS = 150; // glitch pembuka/penutup (selaras efek lain)
+const ATOM_GROW_MS = 450; // atom tumbuh masuk
+const ATOM_SHRINK_MS = 400; // atom menguncup
+const ATOM_P_MIN = 0.25; // skala awal/akhir atom
+const ATOM_ORBITS = 3; // 3 orbit elips bersilangan 60° (ciri logo React)
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
@@ -245,6 +260,7 @@ export default function WonderScene() {
       // secara keliru. (Sebelumnya hanya spiral & highlight yang dibersihkan.)
       spiralActive.clear();
       sparkActive.clear();
+      atomActive.clear();
       altActive.clear();
       frontActive.clear();
       scrambling.clear();
@@ -477,6 +493,16 @@ export default function WonderScene() {
       jitter: string;
     };
     const sparkActive = new Map<number, SparkState>();
+    type AtomState = {
+      letter: number;
+      phase: "glitchIn" | "grow" | "hold" | "shrink" | "glitchOut";
+      phaseStart: number;
+      holdMs: number;
+      lastGlitchDraw: number;
+      jitter: string;
+      baseRot: number; // orientasi awal atom (acak per kemunculan)
+    };
+    const atomActive = new Map<number, AtomState>();
     let spiralRaf: number | null = null;
     let spiralLastFrame = 0;
     const easeOutCubicS = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -583,6 +609,57 @@ export default function WonderScene() {
       redrawsRef.current++;
     }
 
+    // Atom Rutherford ala logo React — nukleus + 3 orbit elips +
+    // elektron; seluruhnya berputar mengikuti waktu (now). Sel (kata
+    // bertopengnya) sudah dilukis renderFxCell sebelum fungsi ini.
+    function drawAtomGlyph(
+      c: Cell,
+      s: AtomState,
+      scale: number,
+      alpha: number,
+      now: number,
+    ) {
+      const g = ctx!;
+      const cx = spiralCenterX(c, s.letter);
+      const cy = c.y + CH / 2 + 1;
+      const R = (capHeight() * ATOM_SIZE * scale) / 2;
+      const rot = s.baseRot + (now / 1000) * 0.45 * ATOM_SPIN;
+      g.save();
+      g.shadowColor = "rgba(245,245,255,0.85)";
+      g.shadowBlur = ATOM_GLOW;
+      g.strokeStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
+      g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
+      g.lineWidth = 1.2 * gScale;
+      for (let k = 0; k < ATOM_ORBITS; k++) {
+        const ang = rot + (k * Math.PI) / 3;
+        g.beginPath();
+        g.ellipse(cx, cy, R, R * ATOM_FLAT, ang, 0, Math.PI * 2);
+        g.stroke();
+      }
+      // nukleus
+      g.beginPath();
+      g.arc(cx, cy, Math.max(0.8, R * 0.15), 0, Math.PI * 2);
+      g.fill();
+      // elektron: satu per orbit, sudutnya bergerak mengelilingi
+      for (let k = 0; k < ATOM_ORBITS; k++) {
+        const ang = rot + (k * Math.PI) / 3;
+        const th =
+          (now / 1000) * (0.9 + k * 0.17) * Math.max(0.15, ATOM_SPIN) +
+          k * 2.1;
+        const ex = R * Math.cos(th);
+        const ey = R * ATOM_FLAT * Math.sin(th);
+        const sx = cx + ex * Math.cos(ang) - ey * Math.sin(ang);
+        const sy = cy + ex * Math.sin(ang) + ey * Math.cos(ang);
+        g.beginPath();
+        g.arc(sx, sy, Math.max(0.7, R * 0.085), 0, Math.PI * 2);
+        g.fill();
+      }
+      g.restore();
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
+      redrawsRef.current++;
+    }
+
     // GAMBAR KOMPOSIT SEL EFEK: satu-satunya jalur menggambar sel yang
     // memiliki spiral dan/atau sparkle. Kata bertopeng menyembunyikan
     // huruf milik SEMUA efek aktif di sel itu (karakter kedip untuk yang
@@ -595,7 +672,8 @@ export default function WonderScene() {
       if (!c || c.hole) return;
       const sp = spiralActive.get(idx);
       const sk = sparkActive.get(idx);
-      if (!sp && !sk) {
+      const at = atomActive.get(idx);
+      if (!sp && !sk && !at) {
         draw(c, c.a);
         return;
       }
@@ -606,6 +684,9 @@ export default function WonderScene() {
       if (sk)
         arr[sk.letter] =
           sk.phase === "glitchIn" || sk.phase === "glitchOut" ? sk.jitter : " ";
+      if (at)
+        arr[at.letter] =
+          at.phase === "glitchIn" || at.phase === "glitchOut" ? at.jitter : " ";
       draw(c, c.a, arr.join(""));
       if (sp && sp.phase !== "glitchIn" && sp.phase !== "glitchOut") {
         const elapsed = now - sp.phaseStart;
@@ -655,6 +736,24 @@ export default function WonderScene() {
           const t = Math.min(1, elapsed / SPARK_SHRINK_MS);
           const e = easeInOutCubicS(t);
           drawSparkGlyph(c, sk, 1 - (1 - SPARK_P_MIN) * e, 0.25 * e, 1);
+        }
+      }
+      if (at && at.phase !== "glitchIn" && at.phase !== "glitchOut") {
+        const elapsed = now - at.phaseStart;
+        if (at.phase === "grow") {
+          const t = Math.min(1, elapsed / ATOM_GROW_MS);
+          drawAtomGlyph(
+            c,
+            at,
+            ATOM_P_MIN + (1 - ATOM_P_MIN) * easeOutCubicS(t),
+            1,
+            now,
+          );
+        } else if (at.phase === "hold") {
+          drawAtomGlyph(c, at, 1, 0.92 + 0.08 * Math.sin(now / 310), now);
+        } else {
+          const t = Math.min(1, elapsed / ATOM_SHRINK_MS);
+          drawAtomGlyph(c, at, 1 - (1 - ATOM_P_MIN) * easeInOutCubicS(t), 1, now);
         }
       }
     }
@@ -752,8 +851,52 @@ export default function WonderScene() {
         s.lastGlitchDraw = 0;
       }
     }
-    // Loop gabungan spiral + sparkle: majukan keadaan semua efek, lalu
-    // gambar komposit tiap sel yang tersentuh tepat sekali per frame.
+    // Langkah keadaan atom — pola yang sama seperti sparkle.
+    function stepAtomFx(idx: number, s: AtomState, now: number) {
+      const c = cellsRef.current[idx];
+      if (!c || c.hole) {
+        atomActive.delete(idx);
+        return;
+      }
+      const elapsed = now - s.phaseStart;
+      if (s.phase === "glitchIn" || s.phase === "glitchOut") {
+        if (now - s.lastGlitchDraw > 50) {
+          s.jitter = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+          s.lastGlitchDraw = now;
+        }
+        if (elapsed >= ATOM_GLITCH_MS) {
+          if (s.phase === "glitchIn") {
+            s.phase = "grow";
+            s.phaseStart = now;
+          } else {
+            atomActive.delete(idx);
+          }
+        }
+        return;
+      }
+      if (s.phase === "grow") {
+        if (elapsed >= ATOM_GROW_MS) {
+          s.phase = "hold";
+          s.phaseStart = now;
+        }
+        return;
+      }
+      if (s.phase === "hold") {
+        if (elapsed >= s.holdMs) {
+          s.phase = "shrink";
+          s.phaseStart = now;
+        }
+        return;
+      }
+      if (elapsed >= ATOM_SHRINK_MS) {
+        s.phase = "glitchOut";
+        s.phaseStart = now;
+        s.lastGlitchDraw = 0;
+      }
+    }
+    // Loop gabungan spiral + sparkle + atom: majukan keadaan semua
+    // efek, lalu gambar komposit tiap sel yang tersentuh tepat sekali
+    // per frame.
     function ensureSpiralLoop() {
       if (spiralRaf !== null) return;
       spiralLastFrame = performance.now();
@@ -769,9 +912,13 @@ export default function WonderScene() {
           stepSparkFx(idx, s, now);
           touched.add(idx);
         }
+        for (const [idx, s] of Array.from(atomActive)) {
+          stepAtomFx(idx, s, now);
+          touched.add(idx);
+        }
         for (const idx of touched) renderFxCell(idx, now);
         spiralRaf =
-          spiralActive.size > 0 || sparkActive.size > 0
+          spiralActive.size > 0 || sparkActive.size > 0 || atomActive.size > 0
             ? requestAnimationFrame(loop)
             : null;
       };
@@ -780,7 +927,7 @@ export default function WonderScene() {
     // true bila ada efek huruf aktif di sel TETANGGA (sel yang sama
     // dikecualikan — spiral & sparkle boleh berbagi satu kata).
     function nearFx(idx: number, cols: number) {
-      for (const map of [spiralActive, sparkActive] as const) {
+      for (const map of [spiralActive, sparkActive, atomActive] as const) {
         for (const other of map.keys()) {
           if (other === idx) continue;
           if (
@@ -792,24 +939,35 @@ export default function WonderScene() {
       }
       return false;
     }
+    // Pilih huruf acak yang TIDAK dipakai penghuni lain sel ini —
+    // aturan hidup bersama ketiga efek: satu kata boleh berisi spiral
+    // + sparkle + atom, tapi tidak pernah di huruf yang sama.
+    function pickFreeLetter(others: ({ letter: number } | undefined)[]) {
+      const used = new Set<number>();
+      for (const o of others) if (o) used.add(o.letter);
+      let letter = (Math.random() * WORD.length) | 0;
+      for (let k = 0; k < WORD.length && used.has(letter); k++)
+        letter = (letter + 1) % WORD.length;
+      return letter;
+    }
     function spawnSpiral() {
       if (reduced || spiralActive.size >= SPIRAL_MAX) return;
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
       // Sesekali (18%) sengaja dipasangkan ke kata yang sedang berisi
-      // sparkle — user ingin keduanya bisa tampil bersama dalam satu
-      // kata di huruf berbeda (sel berefek dijamin bersih dari sistem
-      // lain karena semua sistem melewati sel berefek).
-      if (sparkActive.size > 0 && Math.random() < 0.18) {
-        const hosts = Array.from(sparkActive.entries());
-        const [idx, sk] = hosts[(Math.random() * hosts.length) | 0];
+      // efek lain — user ingin efek-efeknya bisa tampil bersama dalam
+      // satu kata di huruf berbeda (sel berefek dijamin bersih dari
+      // sistem lain karena semua sistem melewati sel berefek).
+      const hosts: number[] = [];
+      for (const m of [sparkActive, atomActive] as const)
+        for (const idx of m.keys()) if (!spiralActive.has(idx)) hosts.push(idx);
+      if (hosts.length > 0 && Math.random() < 0.18) {
+        const idx = hosts[(Math.random() * hosts.length) | 0];
         const c = cells[idx];
-        if (c && !c.hole && c.shown && !spiralActive.has(idx)) {
-          let letter = (Math.random() * WORD.length) | 0;
-          if (letter === sk.letter) letter = (letter + 1) % WORD.length;
+        if (c && !c.hole && c.shown) {
           spiralActive.set(idx, {
-            letter,
+            letter: pickFreeLetter([sparkActive.get(idx), atomActive.get(idx)]),
             phase: "glitchIn",
             phaseStart: performance.now(),
             rot: Math.random() * Math.PI * 2,
@@ -836,10 +994,12 @@ export default function WonderScene() {
         )
           continue;
         const letter = (Math.random() * WORD.length) | 0;
-        // TIDAK BOLEH berebut huruf yang sedang dipakai sparkle di sel
-        // yang sama (huruf lain di kata yang sama boleh — permintaan user)
+        // TIDAK BOLEH berebut huruf yang sedang dipakai efek lain di
+        // sel yang sama (huruf lain di kata yang sama boleh)
         const sk = sparkActive.get(idx);
-        if (sk && sk.letter === letter) continue;
+        const at = atomActive.get(idx);
+        if ((sk && sk.letter === letter) || (at && at.letter === letter))
+          continue;
         if (nearFx(idx, cols)) continue; // jangan bersebelahan efek lain
         spiralActive.set(idx, {
           letter,
@@ -860,16 +1020,16 @@ export default function WonderScene() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
-      // Pasangan cermin spawnSpiral: sesekali menumpang kata berspiral.
-      if (spiralActive.size > 0 && Math.random() < 0.18) {
-        const hosts = Array.from(spiralActive.entries());
-        const [idx, sp] = hosts[(Math.random() * hosts.length) | 0];
+      // Pasangan cermin spawnSpiral: sesekali menumpang kata berefek lain.
+      const hosts: number[] = [];
+      for (const m of [spiralActive, atomActive] as const)
+        for (const idx of m.keys()) if (!sparkActive.has(idx)) hosts.push(idx);
+      if (hosts.length > 0 && Math.random() < 0.18) {
+        const idx = hosts[(Math.random() * hosts.length) | 0];
         const c = cells[idx];
-        if (c && !c.hole && c.shown && !sparkActive.has(idx)) {
-          let letter = (Math.random() * WORD.length) | 0;
-          if (letter === sp.letter) letter = (letter + 1) % WORD.length;
+        if (c && !c.hole && c.shown) {
           sparkActive.set(idx, {
-            letter,
+            letter: pickFreeLetter([spiralActive.get(idx), atomActive.get(idx)]),
             phase: "glitchIn",
             phaseStart: performance.now(),
             holdMs: SPARK_HOLD_MS * (0.8 + Math.random() * 0.4),
@@ -895,10 +1055,10 @@ export default function WonderScene() {
         )
           continue;
         const letter = (Math.random() * WORD.length) | 0;
-        // TIDAK BOLEH berebut huruf yang sedang dipakai spiral di sel
-        // yang sama (huruf lain di kata yang sama boleh)
         const sp = spiralActive.get(idx);
-        if (sp && sp.letter === letter) continue;
+        const at = atomActive.get(idx);
+        if ((sp && sp.letter === letter) || (at && at.letter === letter))
+          continue;
         if (nearFx(idx, cols)) continue;
         sparkActive.set(idx, {
           letter,
@@ -907,6 +1067,66 @@ export default function WonderScene() {
           holdMs: SPARK_HOLD_MS * (0.8 + Math.random() * 0.4),
           lastGlitchDraw: 0,
           jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+        });
+        renderFxCell(idx, performance.now());
+        ensureSpiralLoop();
+        break;
+      }
+    }
+    function spawnAtom() {
+      if (reduced || atomActive.size >= ATOM_MAX) return;
+      const cells = cellsRef.current;
+      const cols = colsRef.current;
+      if (!cells.length || !cols) return;
+      // Pasangan cermin: sesekali menumpang kata berefek lain.
+      const hosts: number[] = [];
+      for (const m of [spiralActive, sparkActive] as const)
+        for (const idx of m.keys()) if (!atomActive.has(idx)) hosts.push(idx);
+      if (hosts.length > 0 && Math.random() < 0.18) {
+        const idx = hosts[(Math.random() * hosts.length) | 0];
+        const c = cells[idx];
+        if (c && !c.hole && c.shown) {
+          atomActive.set(idx, {
+            letter: pickFreeLetter([spiralActive.get(idx), sparkActive.get(idx)]),
+            phase: "glitchIn",
+            phaseStart: performance.now(),
+            holdMs: ATOM_HOLD_MS * (0.8 + Math.random() * 0.4),
+            lastGlitchDraw: 0,
+            jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+            baseRot: Math.random() * Math.PI,
+          });
+          renderFxCell(idx, performance.now());
+          ensureSpiralLoop();
+          return;
+        }
+      }
+      for (let tries = 0; tries < 24; tries++) {
+        const idx = (Math.random() * cells.length) | 0;
+        const c = cells[idx];
+        if (!c || c.hole || !c.shown) continue;
+        if (
+          altActive.has(idx) ||
+          frontActive.has(idx) ||
+          scrambling.has(idx) ||
+          hiRef.current.has(idx) ||
+          atomActive.has(idx) ||
+          bandSet.has(idx)
+        )
+          continue;
+        const letter = (Math.random() * WORD.length) | 0;
+        const sp = spiralActive.get(idx);
+        const sk = sparkActive.get(idx);
+        if ((sp && sp.letter === letter) || (sk && sk.letter === letter))
+          continue;
+        if (nearFx(idx, cols)) continue;
+        atomActive.set(idx, {
+          letter,
+          phase: "glitchIn",
+          phaseStart: performance.now(),
+          holdMs: ATOM_HOLD_MS * (0.8 + Math.random() * 0.4),
+          lastGlitchDraw: 0,
+          jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+          baseRot: Math.random() * Math.PI,
         });
         renderFxCell(idx, performance.now());
         ensureSpiralLoop();
@@ -924,15 +1144,19 @@ export default function WonderScene() {
           // frame terakhir sudah terlalu lama, paksa selesaikan semua
           // spiral: huruf dikembalikan dan antrean dibersihkan.
           if (
-            (spiralActive.size > 0 || sparkActive.size > 0) &&
+            (spiralActive.size > 0 ||
+              sparkActive.size > 0 ||
+              atomActive.size > 0) &&
             performance.now() - spiralLastFrame > 2500
           ) {
             const stuck = new Set([
               ...spiralActive.keys(),
               ...sparkActive.keys(),
+              ...atomActive.keys(),
             ]);
             spiralActive.clear();
             sparkActive.clear();
+            atomActive.clear();
             spiralRaf = null;
             for (const idx of stuck) {
               const c = cellsRef.current[idx];
@@ -941,6 +1165,7 @@ export default function WonderScene() {
           }
           spawnSpiral();
           spawnSpark();
+          spawnAtom();
         }, SPIRAL_EVERY_MS);
 
     // KUNCI RINGAN #2: interval lambat + sedikit sel acak, BUKAN loop 60fps
@@ -957,7 +1182,8 @@ export default function WonderScene() {
           scrambling.has(idx) ||
           frontActive.has(idx) ||
           spiralActive.has(idx) ||
-          sparkActive.has(idx);
+          sparkActive.has(idx) ||
+          atomActive.has(idx);
         // pulihkan kata sisipan & front yang tenggat waktunya sudah lewat
         const now = performance.now();
         for (const map of [altActive, frontActive]) {
@@ -1078,6 +1304,7 @@ export default function WonderScene() {
         if (frontActive.has(idx)) continue; // aktivasi front dipulihkan oleh hitung mundurnya sendiri
         if (spiralActive.has(idx)) continue; // sel spiral mengurus tampilannya sendiri
         if (sparkActive.has(idx)) continue; // sel sparkle juga
+        if (atomActive.has(idx)) continue; // sel atom juga
         const c = cells[idx];
         if (c && c.shown) draw(c, c.a);
       }
@@ -1098,6 +1325,7 @@ export default function WonderScene() {
           frontActive.has(i) ||
           spiralActive.has(i) ||
           sparkActive.has(i) ||
+          atomActive.has(i) ||
           hiRef.current.has(i)
         )
           continue;
@@ -1134,7 +1362,8 @@ export default function WonderScene() {
           hiRef.current.has(idx) ||
           frontActive.has(idx) ||
           spiralActive.has(idx) ||
-          sparkActive.has(idx)
+          sparkActive.has(idx) ||
+          atomActive.has(idx)
         )
           continue;
         const c = cells[idx];
@@ -1274,12 +1503,13 @@ export default function WonderScene() {
             if (
               spiralActive.has(idx) ||
               sparkActive.has(idx) ||
+              atomActive.has(idx) ||
               altActive.has(idx) ||
               frontActive.has(idx) ||
               scrambling.has(idx) ||
               bandSet.has(idx)
             )
-              continue; // jangan rebut kata yang sedang tampil khusus (termasuk spiral/sparkle)
+              continue; // jangan rebut kata yang sedang tampil khusus (termasuk spiral/sparkle/atom)
             let hc = hiRef.current.get(idx);
             for (let i = 0; i < WORD.length; i++) {
               if (hc?.slots[i]) continue;
@@ -1314,6 +1544,7 @@ export default function WonderScene() {
         if (
           spiralActive.has(idx) ||
           sparkActive.has(idx) ||
+          atomActive.has(idx) ||
           altActive.has(idx) ||
           frontActive.has(idx)
         ) {
@@ -1413,6 +1644,7 @@ export default function WonderScene() {
             if (
               spiralActive.has(i) ||
               sparkActive.has(i) ||
+              atomActive.has(i) ||
               altActive.has(i) ||
               frontActive.has(i) ||
               scrambling.has(i) ||
