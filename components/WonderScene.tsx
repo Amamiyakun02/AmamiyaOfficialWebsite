@@ -33,7 +33,6 @@ const HEAT_RY = 57; // ±1,5 baris -> tambalan ±3 blok huruf ke atas/bawah
 const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
 const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
 const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
-const HEAT_RAMP = ["░", "▒", "▓", "█"]; // kepadatan blok mengikuti heat
 const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
 const WAVE_BOOST = 0.26; // tambahan opasitas sel saat dilewati gelombang sapuan
 const WAVE_BAND = 260; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal)
@@ -87,7 +86,7 @@ const ATOM_ORBITS = 3; // 3 orbit elips bersilangan 60° (ciri logo React)
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
-type SlotHeat = { heat: number; glyph: string; born: number }; // panas per slot huruf
+type SlotHeat = { heat: number; glyph: string; born: number; order: number[] }; // panas per slot huruf; order = urutan menyala 8 titiknya
 type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (per slot)
 
 export default function WonderScene() {
@@ -1431,7 +1430,8 @@ export default function WonderScene() {
     // punya heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak +
     // noise, jadi tepinya bergerigi), mendingin ×0,9 tiap frame (jejak
     // memudar pelan), lalu kembali ke huruf asli di bawah ambang. Heat
-    // dipetakan ke ░▒▓█: makin dekat kursor makin padat & terang, dengan
+    // dipetakan ke matriks 8 titik terang: makin dekat kursor makin
+    // banyak titik menyala (puncaknya blok padat), dengan
     // peluang kecil karakter glitch agar berkedip. Digambar per slot
     // huruf supaya tekstur kata grid tetap utuh; hanya sel panas yang
     // diproses tiap frame rAF — tetap ringan.
@@ -1467,18 +1467,55 @@ export default function WonderScene() {
           g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
           continue;
         }
-        if (!s.glyph || Math.random() < 0.2) {
-          // kedip acak: glyph diganti sesekali saja, tidak tiap frame
-          const jitter = (Math.random() - 0.5) * 0.25;
-          const h = Math.max(0, Math.min(1, s.heat + jitter));
-          s.glyph =
-            Math.random() < 0.12
-              ? HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0]
-              : HEAT_RAMP[Math.min(3, (h * 4) | 0)];
+        // EFEK 8 TITIK (permintaan user dari gambar referensi Wonder):
+        // huruf panas digambar sebagai matriks 8 titik (2 kolom x 4
+        // baris) — jumlah titik menyala mengikuti panasnya, urutan
+        // menyala acak per slot (ditentukan saat slot dinyalakan) agar
+        // teksturnya organik; panas hampir penuh menjadi blok padat.
+        // Warnanya nyaris putih terang (lebih menyala dari blok ░▒▓█
+        // versi sebelumnya yang tampak kusam).
+        if (Math.random() < 0.08) {
+          // kedip huruf glitch sesekali, dipertahankan dari versi lama
+          const a = Math.min(1, 0.5 + s.heat * 0.5);
+          g.fillStyle = `rgba(245,245,255,${a.toFixed(3)})`;
+          g.fillText(
+            HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0],
+            slotX(c, i),
+            c.y + TEXT_Y,
+          );
+          continue;
         }
-        const a = Math.min(1, 0.35 + s.heat * 0.65);
-        g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
-        g.fillText(s.glyph, slotX(c, i), c.y + TEXT_Y);
+        const h = Math.max(0, Math.min(1, s.heat));
+        const a = 0.55 + 0.45 * h;
+        g.fillStyle = `rgba(245,245,255,${a.toFixed(3)})`;
+        const x0 = slotX(c, i);
+        const charW = slotMetrics().charW;
+        const capH = capHeight();
+        if (h >= 0.92) {
+          // puncak panas: blok padat terang (seperti referensi)
+          const bw = charW * 0.96;
+          const bh = capH * 1.08;
+          g.fillRect(
+            x0 + (charW - bw) / 2,
+            c.y + TEXT_Y - capH - (bh - capH) / 2,
+            bw,
+            bh,
+          );
+          continue;
+        }
+        const lit = Math.max(1, Math.round(h * 8));
+        const dx = charW * 0.24;
+        const rowStep = capH / 4;
+        const top = c.y + TEXT_Y - capH;
+        const r = Math.max(1, charW * 0.13);
+        for (let d = 0; d < lit; d++) {
+          const p = s.order[d];
+          const px = x0 + charW / 2 + (p % 2 === 0 ? -dx : dx);
+          const py = top + rowStep * (((p / 2) | 0) + 0.5);
+          g.beginPath();
+          g.arc(px, py, r, 0, Math.PI * 2);
+          g.fill();
+        }
       }
       redrawsRef.current++;
     }
@@ -1552,10 +1589,19 @@ export default function WonderScene() {
                 hc = { slots: new Array(WORD.length).fill(null) };
                 hiRef.current.set(idx, hc);
               }
+              // urutan menyala 8 titik diacak sekali saat slot menyala
+              const order = [0, 1, 2, 3, 4, 5, 6, 7];
+              for (let k = order.length - 1; k > 0; k--) {
+                const j = (Math.random() * (k + 1)) | 0;
+                const tmp = order[k];
+                order[k] = order[j];
+                order[j] = tmp;
+              }
               hc.slots[i] = {
                 heat: Math.min(1, Math.max(0.02, h)),
                 glyph: "",
                 born: now,
+                order,
               };
             }
           }
