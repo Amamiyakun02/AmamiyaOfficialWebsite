@@ -21,9 +21,11 @@ const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
 const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
 const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
-const HEAT_RADIUS = 110; // radius panas kursor (px) — highlight blok/dither
+const HEAT_RX = 150; // jangkauan panas kursor horizontal (px) — elips, bukan lingkaran
+const HEAT_RY = 82; // jangkauan vertikal lebih sempit: sel grid lebar 170x38, radius lingkaran menelan terlalu banyak baris
 const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
 const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
+const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
 const HEAT_RAMP = ["░", "▒", "▓", "█"]; // kepadatan blok mengikuti heat
 const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
 const WAVE_BOOST = 0.22; // tambahan opasitas sel saat dilewati gelombang sapuan
@@ -46,7 +48,7 @@ const SPIRAL_P_MIN = 0.2; // progres awal/akhir spiral (slot tidak terasa kosong
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
-type HeatState = { heat: number; glyphs: string[] }; // keadaan panas kursor per sel
+type HeatState = { heat: number; glyphs: string[]; born: number }; // keadaan panas kursor per sel
 
 export default function WonderScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -164,6 +166,7 @@ export default function WonderScene() {
       altActive.clear();
       frontActive.clear();
       scrambling.clear();
+      spentSet.clear();
       if (scrambleTimer) {
         clearInterval(scrambleTimer);
         scrambleTimer = null;
@@ -799,6 +802,10 @@ export default function WonderScene() {
     // diproses tiap frame rAF — tetap ringan.
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
+    // Sel yang sudah menyala pada lintasan kursor kali ini: TIDAK dipanaskan
+    // lagi sampai kursor benar-benar keluar dari jangkauannya — efeknya
+    // sekali saja per geseran kursor, bukan menyala terus selama kursor dekat.
+    const spentSet = new Set<number>();
     function drawHeatCell(c: Cell, hc: HeatState) {
       const g = ctx!;
       g.clearRect(c.x, c.y, CW, CH);
@@ -813,7 +820,7 @@ export default function WonderScene() {
       }
       g.shadowBlur = 0;
       g.shadowColor = "rgba(0,0,0,0)";
-      const a = Math.min(1, 0.3 + hc.heat * 0.7); // makin panas makin terang
+      const a = Math.min(0.9, 0.25 + hc.heat * 0.6); // makin panas makin terang (diredam sedikit)
       g.fillStyle = `rgba(${INK},${a.toFixed(3)})`;
       for (let i = 0; i < WORD.length; i++) {
         if (!hc.glyphs[i] || Math.random() < 0.2) {
@@ -833,17 +840,31 @@ export default function WonderScene() {
       const cells = cellsRef.current;
       const cols = colsRef.current;
       const m = mouseRef.current;
-      // 1) panaskan sel di sekitar kursor
+      const now = performance.now();
+      // 0) bebaskan sel "habis pakai" yang kursornya sudah jauh / pergi
+      for (const idx of Array.from(spentSet)) {
+        const cell = cells[idx];
+        if (!cell || !m) {
+          spentSet.delete(idx);
+          continue;
+        }
+        const dx = (cell.x + CW / 2 - m.x) / HEAT_RX;
+        const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
+        if (dx * dx + dy * dy >= 1) spentSet.delete(idx);
+      }
+      // 1) panaskan sel di sekitar kursor — SEKALI per lintasan: sel yang
+      // sedang/baru menyala tidak ditambah panasnya lagi
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
-        const c0 = Math.max(0, Math.floor((m.x - HEAT_RADIUS) / CW));
-        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RADIUS) / CW));
-        const r0 = Math.max(0, Math.floor((m.y - HEAT_RADIUS) / CH));
-        const r1 = Math.floor((m.y + HEAT_RADIUS) / CH);
+        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX) / CW));
+        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW));
+        const r0 = Math.max(0, Math.floor((m.y - HEAT_RY) / CH));
+        const r1 = Math.floor((m.y + HEAT_RY) / CH);
         for (let r = r0; r <= r1; r++) {
           for (let cc = c0; cc <= c1; cc++) {
             const idx = r * cols + cc;
             const cell = cells[idx];
             if (!cell || cell.hole || !cell.shown) continue;
+            if (hiRef.current.has(idx) || spentSet.has(idx)) continue;
             if (
               spiralActive.has(idx) ||
               altActive.has(idx) ||
@@ -852,21 +873,17 @@ export default function WonderScene() {
               bandSet.has(idx)
             )
               continue; // jangan rebut sel yang sedang tampil khusus (termasuk spiral)
-            const dx = cell.x + CW / 2 - m.x;
-            const dy = cell.y + CH / 2 - m.y;
-            const d = Math.sqrt(dx * dx + dy * dy);
-            if (d >= HEAT_RADIUS) continue;
-            const h = 1 - d / HEAT_RADIUS + (Math.random() - 0.5) * 0.4;
-            const cur = hiRef.current.get(idx);
-            if (!cur) {
-              if (h > 0.05)
-                hiRef.current.set(idx, {
-                  heat: Math.min(1, Math.max(0.02, h)),
-                  glyphs: [],
-                });
-            } else if (h > cur.heat) {
-              cur.heat = Math.min(1, h);
-            }
+            const dx = (cell.x + CW / 2 - m.x) / HEAT_RX;
+            const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
+            const dd = dx * dx + dy * dy;
+            if (dd >= 1) continue;
+            const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
+            if (h > 0.05)
+              hiRef.current.set(idx, {
+                heat: Math.min(1, Math.max(0.02, h)),
+                glyphs: [],
+                born: now,
+              });
           }
         }
       }
@@ -886,8 +903,9 @@ export default function WonderScene() {
           continue;
         }
         hc.heat *= HEAT_DECAY;
-        if (hc.heat < HEAT_MIN) {
+        if (hc.heat < HEAT_MIN || now - hc.born > HEAT_MAX_MS) {
           hiRef.current.delete(idx);
+          spentSet.add(idx); // jangan menyala lagi pada lintasan yang sama
           draw(cell, cell.a); // selesai: kembali ke huruf asli
           continue;
         }
