@@ -26,8 +26,8 @@ const TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8;
 const INK = "206,206,214";
 const BASE_ALPHA = 0.3;
 const BASE_ALPHA_RANGE = 0.15;
-const GLITCH_EVERY_MS = 120;
-const GLITCH_CELLS = 24;
+const GLITCH_EVERY_MS = 240; // tempo glitch disamakan dengan halaman utama (lebih tenang)
+const GLITCH_CELLS = 14;
 
 // --- parameter spiral (sesuai catatan rancangan di vault) ---
 const SPIRAL_MAX_TURNS = Math.PI * 4.6; // ±2,3 putaran penuh

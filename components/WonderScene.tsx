@@ -16,11 +16,11 @@ const TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8; // baseline teks, terpusa
 const INK = "206,206,214"; // warna grid (R,G,B) — abu-abu terang di atas hitam
 const BASE_ALPHA = 0.3; // opasitas dasar minimum per sel
 const BASE_ALPHA_RANGE = 0.15; // rentang acak opasitas dasar
-const GLITCH_EVERY_MS = 120; // interval efek glitch
-const GLITCH_CELLS = 24; // jumlah sel yang disentuh tiap interval
+const GLITCH_EVERY_MS = 240; // interval efek glitch (diturunkan dari 120: tempo perubahan teks lebih tenang, tidak bikin pusing)
+const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
 const ALT_BOOST = 0.32; // tambahan opasitas kata sisipan
-const ALT_TICKS = 18; // durasi dasar kata sisipan (ditambah acak 0–30 tick → total ±2,2–5,8 detik)
+const ALT_TICKS = 9; // durasi dasar kata sisipan (ditambah acak 0–14 tick @240 ms → total ±2,2–5,5 detik)
 const MOUSE_RADIUS = 170; // radius highlight di sekitar kursor (px)
 const HI_PEAK = 0.95; // opasitas puncak highlight tepat di pusat kursor (nyaris putih)
 const HI_FADE_STEP = 0.35; // kecepatan sel mengejar target highlight tiap tick fade (50 ms)
@@ -31,7 +31,7 @@ const HOLE_MAX_H = 210; // tinggi maksimum lubang tengah (px)
 const HOLE_W_RATIO = 0.86; // lebar lubang relatif ke layar (bila layar sempit)
 const HOLE_H_RATIO = 0.36; // tinggi lubang relatif ke layar
 const HOLE_RADIUS = 28; // radius sudut lubang (px)
-const WAVE_TICK_MS = 80; // interval langkah gelombang sapuan
+const WAVE_TICK_MS = 110; // interval langkah gelombang sapuan (dari 80: sapuan lebih santai)
 const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
 const MATRIX_H_RATIO = 0.72; // tinggi matriks titik: 72% dari ukuran font (± setinggi huruf kapital)
 // --- spiral galaksi per huruf (dari halaman uji /spiral) ---
@@ -334,7 +334,7 @@ export default function WonderScene() {
     let scrambleTimer: ReturnType<typeof setInterval> | null = null;
     function startScramble(idx: number) {
       if (scrambling.has(idx)) return;
-      scrambling.set(idx, 4 + ((Math.random() * 3) | 0));
+      scrambling.set(idx, 3 + ((Math.random() * 2) | 0));
       if (scrambleTimer) return;
       scrambleTimer = setInterval(() => {
         if (document.hidden) return;
@@ -356,7 +356,7 @@ export default function WonderScene() {
           clearInterval(scrambleTimer);
           scrambleTimer = null;
         }
-      }, 60);
+      }, 100);
     }
 
     // Kata sisipan: satu sel menampilkan kata lain lebih terang beberapa detik.
@@ -665,7 +665,7 @@ export default function WonderScene() {
             if (!c || c.hole || hiRef.current.has(idx) || occupied(idx)) {
               continue;
             }
-            altActive.set(idx, ALT_TICKS + ((Math.random() * 30) | 0));
+            altActive.set(idx, ALT_TICKS + ((Math.random() * 14) | 0));
             draw(
               c,
               Math.min(0.65, c.a + ALT_BOOST),
@@ -710,7 +710,7 @@ export default function WonderScene() {
               const c = cells[idx];
               const sp = pickSpan(3);
               clusterActive.set(idx, {
-                t: 20 + ((Math.random() * 16) | 0),
+                t: 10 + ((Math.random() * 8) | 0), // tick @240 ms -> ±2,4–4,3 detik, sama seperti sebelumnya
                 kind: "dot",
                 ...sp,
               });
@@ -816,7 +816,7 @@ export default function WonderScene() {
         if (Math.random() < 0.5) {
           // AKTIVASI FRONT: sel berubah bentuk selama ±1,7–3,6 detik —
           // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan
-          const t = 14 + ((Math.random() * 16) | 0);
+          const t = 7 + ((Math.random() * 8) | 0); // tick @240 ms -> ±1,7–3,6 detik, sama seperti sebelumnya
           const roll = Math.random();
           if (roll < 0.62) {
             frontActive.set(idx, { t, kind: "alt", start: 0, count: 0 });
