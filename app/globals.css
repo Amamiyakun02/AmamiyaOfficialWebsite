@@ -156,85 +156,22 @@ body {
   color: #fff;
 }
 
-/* Isyarat gulir di dasar hero */
-.scroll-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  color: #8e8e96;
-  text-decoration: none;
-  font-size: 20px;
-  animation: hint-bob 2.2s ease-in-out infinite;
-}
-
-@keyframes hint-bob {
-  0%,
-  100% {
-    transform: translate(-50%, 0);
-  }
-  50% {
-    transform: translate(-50%, 6px);
-  }
-}
-
-.hero {
-  position: relative;
-}
-
-/* Badan artikel TERANG ala blog Muse Wonder: kolom sempit di atas putih */
-.article {
-  position: relative;
-  z-index: 1;
-  background: #ffffff;
-  color: #131316;
-  padding: 72px 24px 88px;
-}
-
 .section {
-  max-width: 760px;
+  max-width: 1024px;
   margin: 0 auto;
-  padding: 30px 0;
+  padding: 72px 24px 8px;
 }
 
 .section h2 {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: #0a0a0b;
-}
-
-.section p {
-  margin: 0 0 16px;
-  line-height: 1.75;
-  font-size: 17px;
-  color: #333338;
-}
-
-.lede {
-  font-size: 21px !important;
-  line-height: 1.65 !important;
-  color: #131316 !important;
-}
-
-.spec-list {
-  margin: 4px 0 16px;
-  padding-left: 20px;
-  line-height: 1.7;
-  font-size: 16px;
-  color: #333338;
-}
-
-.spec-list li {
-  margin-bottom: 8px;
+  color: #ffffff;
 }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-top: 20px;
 }
 
 @media (max-width: 760px) {
@@ -244,8 +181,8 @@ body {
 }
 
 .card {
-  background: #fafafa;
-  border: 1px solid #e4e4e7;
+  background: rgba(18, 18, 20, 0.86);
+  border: 1px solid #232327;
   border-radius: 14px;
   padding: 20px;
 }
@@ -253,82 +190,37 @@ body {
 .card h3 {
   margin: 0 0 8px;
   font-size: 17px;
-  color: #0a0a0b;
+  color: #ffffff;
 }
 
 .card p {
   margin: 0;
   line-height: 1.6;
-  color: #4b4b52;
+  color: #a6a6ad;
   font-size: 15px;
+}
+
+.body-text {
+  max-width: 720px;
+  line-height: 1.7;
+  color: #a6a6ad;
+  font-size: 16px;
 }
 
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.92em;
-  background: rgba(10, 10, 11, 0.07);
-  color: #131316;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ececf1;
   padding: 1px 5px;
   border-radius: 5px;
 }
 
-/* Footer gelap */
-.site-footer {
-  position: relative;
-  z-index: 1;
-  background: #0a0a0b;
-  color: #a6a6ad;
-  padding: 56px 24px 34px;
-}
-
-.footer-inner {
-  max-width: 1024px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 28px;
-}
-
-@media (max-width: 760px) {
-  .footer-inner {
-    grid-template-columns: 1fr;
-  }
-}
-
-.footer-brand p {
-  margin: 10px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-col h4 {
-  margin: 0 0 12px;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #e6e6e9;
-}
-
-.footer-col a {
-  display: block;
-  margin-bottom: 8px;
-  color: #a6a6ad;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.footer-col a:hover {
-  color: #ffffff;
-  text-decoration: underline;
-}
-
-.footer-copy {
-  max-width: 1024px;
-  margin: 36px auto 0;
-  padding-top: 20px;
-  border-top: 1px solid #232327;
-  font-size: 13px;
+.footer {
+  text-align: center;
+  padding: 64px 24px 40px;
   color: #83838b;
+  font-size: 14px;
 }
 
 /* Panel kontrol demo (kiri bawah) */
