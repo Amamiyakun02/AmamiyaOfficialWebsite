@@ -440,12 +440,14 @@ export default function WonderScene() {
       g.rotate(rot);
       const steps = 48;
       const CHUNK = 4;
-      for (let a = 0; a < 8; a++) {
+      // 4 lengan saja (permintaan user): 8 lengan terlalu padat —
+      // galaksi terlihat seperti lingkaran penuh, bukan spiral berlengan.
+      for (let a = 0; a < 4; a++) {
         g.save();
-        g.rotate((a * Math.PI) / 4);
+        g.rotate((a * Math.PI) / 2);
         for (let s0 = 0; s0 < steps; s0 += CHUNK) {
           const thMid = (upto * (s0 + CHUNK / 2)) / steps;
-          const screenAng = thMid + rot + (a * Math.PI) / 4;
+          const screenAng = thMid + rot + (a * Math.PI) / 2;
           const fade = 1 - 0.85 * Math.pow(Math.abs(Math.cos(screenAng)), 1.3);
           g.strokeStyle = `rgba(245,245,255,${(alpha * Math.max(0.08, fade)).toFixed(3)})`;
           g.beginPath();
