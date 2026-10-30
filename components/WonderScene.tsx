@@ -109,6 +109,11 @@ export default function WonderScene() {
     hry: HEAT_RY,
   };
   const gridRef = useRef({ ...gridBase, scale: 1 });
+  // Cache lebar teks terukur per (font|teks): measureText dipanggil di
+  // jalur gambar terpanas (drawCell) — lebar kata yang sama tidak perlu
+  // diukur ulang ribuan kali. Kunci memuat font agar skala baru otomatis
+  // memakai entri baru; cache dibersihkan bila terlalu besar.
+  const widthCacheRef = useRef(new Map<string, number>());
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const redrawsRef = useRef(0);
   const mouseOnRef = useRef(true);
@@ -535,7 +540,7 @@ export default function WonderScene() {
       const upto = ARM_TURNS * p;
       g.lineWidth = 1.35 * gScale;
       g.lineCap = "round";
-      g.shadowBlur = 2.2; // cahaya bintang lebih menyala
+      g.shadowBlur = 4; // glow disamakan dengan sparkle & atom (4) agar kecerahan konsisten (permintaan user)
       g.save();
       g.translate(cx, cy);
       g.scale(0.8, capHeight() / 2 / R);
@@ -901,6 +906,16 @@ export default function WonderScene() {
       if (spiralRaf !== null) return;
       spiralLastFrame = performance.now();
       const loop = (now: number) => {
+        // OPTIMASI (30 Okt): loop efek dibatasi ±30fps. Menggambar
+        // ~20-30 sel berefek dengan shadowBlur pada 60fps terus-menerus
+        // membuat tab terasa makin berat seiring waktu dibuka (CPU/GPU
+        // jenuh berkelanjutan). Semua animasi efek berbasis waktu
+        // absolut/dt, jadi 30fps tetap mulus dan tepat waktu sementara
+        // beban gambar turun separuh.
+        if (now - spiralLastFrame < 33) {
+          spiralRaf = requestAnimationFrame(loop);
+          return;
+        }
         const dt = Math.min(0.05, (now - spiralLastFrame) / 1000);
         spiralLastFrame = now;
         const touched = new Set<number>();
@@ -1422,6 +1437,7 @@ export default function WonderScene() {
     // diproses tiap frame rAF — tetap ringan.
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
+    let lastHeatFrame = 0; // cap waktu frame heat terakhir (untuk throttle 30fps + decay berbasis dt)
     // Sel yang sudah menyala pada lintasan kursor kali ini: TIDAK dipanaskan
     // lagi sampai kursor benar-benar keluar dari jangkauannya — efeknya
     // sekali saja per geseran kursor, bukan menyala terus selama kursor dekat.
@@ -1467,10 +1483,21 @@ export default function WonderScene() {
       redrawsRef.current++;
     }
     function stepHeat() {
+      // OPTIMASI (30 Okt): loop heat juga dibatasi ±30fps; pendinginan
+      // diskalakan dengan dt (pangkat) agar kecepatan memudarnya sama
+      // seperti 60fps sebelumnya.
+      const frameNow = performance.now();
+      if (lastHeatFrame !== 0 && frameNow - lastHeatFrame < 33) {
+        heatRaf = requestAnimationFrame(stepHeat);
+        return;
+      }
+      const heatDt = lastHeatFrame === 0 ? 16.7 : frameNow - lastHeatFrame;
+      lastHeatFrame = frameNow;
+      const heatDecay = Math.pow(HEAT_DECAY, heatDt / 16.7);
       const cells = cellsRef.current;
       const cols = colsRef.current;
       const m = mouseRef.current;
-      const now = performance.now();
+      const now = frameNow;
       // 0) bebaskan slot "habis pakai" yang kursornya sudah jauh / pergi
       for (const key of Array.from(spentSet)) {
         const idx = Math.floor(key / WORD.length);
@@ -1555,7 +1582,7 @@ export default function WonderScene() {
         for (let i = 0; i < WORD.length; i++) {
           const s = hc.slots[i];
           if (!s) continue;
-          s.heat *= HEAT_DECAY;
+          s.heat *= heatDecay;
           if (s.heat < HEAT_MIN || now - s.born > HEAT_MAX_MS) {
             hc.slots[i] = null;
             spentSet.add(idx * WORD.length + i); // jangan menyala lagi pada lintasan yang sama
@@ -1719,8 +1746,15 @@ export default function WonderScene() {
     ctx.shadowBlur = 0;
     ctx.shadowColor = "rgba(0,0,0,0)";
     ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
-    // kata selalu terpusat horizontal di tengah selnya
-    const w = ctx.measureText(text).width;
+    // kata selalu terpusat horizontal di tengah selnya (lebar dari cache)
+    const cache = widthCacheRef.current;
+    const key = `${G.font}|${text}`;
+    let w = cache.get(key);
+    if (w === undefined) {
+      w = ctx.measureText(text).width;
+      if (cache.size > 400) cache.clear();
+      cache.set(key, w);
+    }
     ctx.fillText(text, c.x + (G.cw - w) / 2, c.y + G.ty);
     redrawsRef.current++;
   }
