@@ -6,6 +6,12 @@ import { useEffect, useRef, useState } from "react";
    KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
    ===================================================================== */
 const WORD = "AMAMIYA"; // kata yang diulang menjadi pola grid
+// MODE DIAM (permintaan user 30 Okt malam): kata AMAMIYA tidak berubah
+// sama sekali — glitch substitusi/hapus, scramble, kata sisipan, front,
+// gelombang, dan heat kursor SEMUA dimatikan. Satu-satunya yang tetap
+// hidup adalah SPIRAL pada glitch huruf. Ubah ke false untuk
+// menghidupkan kembali efek teks ambient.
+const STATIC_TEXT = true;
 const GLYPHS = "AMAMIYA"; // karakter pengganti glitch — hanya huruf penyusun kata (simbol & angka dihapus atas permintaan user)
 const FONT_SIZE = 20; // ukuran font grid (px)
 const CW = 170; // lebar satu sel (px) — kira-kira selebar kata + letter-spacing
@@ -209,6 +215,7 @@ export default function WonderScene() {
     }
 
     function afterReveal() {
+      if (STATIC_TEXT) return; // mode diam: tidak ada efek teks ambient
       startGlitch();
       scheduleWave();
     }
@@ -988,6 +995,7 @@ export default function WonderScene() {
           : null;
     }
     function ensureHeat() {
+      if (STATIC_TEXT) return; // mode diam: heat kursor ikut mati
       if (heatRaf === null && !reduced) {
         lastMoveAt = performance.now();
         heatRaf = requestAnimationFrame(stepHeat);
@@ -1010,8 +1018,10 @@ export default function WonderScene() {
       // debounce: jangan rebuild tiap piksel; rebuild saat resize tanpa animasi masuk
       resizeTimer = setTimeout(() => {
         build(true);
-        startGlitch();
-        scheduleWave();
+        if (!STATIC_TEXT) {
+          startGlitch();
+          scheduleWave();
+        }
       }, 150);
     }
 
@@ -1020,7 +1030,7 @@ export default function WonderScene() {
       if (document.hidden) {
         stopGlitch();
         stopWaveAll();
-      } else {
+      } else if (!STATIC_TEXT) {
         startGlitch();
         scheduleWave();
         ensureHeat(); // hidupkan lagi loop panas bila sempat terhenti
