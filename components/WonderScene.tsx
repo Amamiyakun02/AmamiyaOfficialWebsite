@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
    KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
    ===================================================================== */
 const WORD = "AMAMIYA"; // kata yang diulang menjadi pola grid
-const GLYPHS = "AMAMIYA01"; // karakter pengganti glitch (huruf + angka saja — simbol dihapus atas permintaan user)
+const GLYPHS = "AMAMIYA"; // karakter pengganti glitch — hanya huruf penyusun kata (simbol & angka dihapus atas permintaan user)
 const FONT_SIZE = 20; // ukuran font grid (px)
 const CW = 170; // lebar satu sel (px) — kira-kira selebar kata + letter-spacing
 const CH = 38; // tinggi satu sel / spasi antarbaris (px)
@@ -208,7 +208,7 @@ export default function WonderScene() {
       return arr.join("");
     }
     function scrambleText() {
-      const pool = WORD + "01"; // selaras GLYPHS: tanpa simbol (permintaan user)
+      const pool = WORD; // selaras GLYPHS: tanpa simbol (permintaan user)
       return WORD.replace(/./g, () => pool[(Math.random() * pool.length) | 0]);
     }
 
@@ -673,51 +673,8 @@ export default function WonderScene() {
             );
           }
         }
-        // cluster piksel: sekelompok sel tetangga (5–9 sel, tumbuh acak dari
-        // satu benih) berubah jadi matriks titik per huruf bersama-sama
-        if (clusterActive.size === 0 && Math.random() < 0.006) {
-          const cols = colsRef.current;
-          const seed = (Math.random() * cells.length) | 0;
-          if (cells[seed] && !cells[seed].hole && cols > 0) {
-            const blob = new Set<number>([seed]);
-            const target = 5 + ((Math.random() * 5) | 0);
-            let frontier = [seed];
-            let attempts = 0;
-            while (blob.size < target && frontier.length && attempts < 60) {
-              attempts++;
-              const cur = frontier[(Math.random() * frontier.length) | 0];
-              const cx = cur % cols;
-              const cy = Math.floor(cur / cols);
-              const dirs: Array<[number, number]> = [
-                [1, 0],
-                [-1, 0],
-                [0, 1],
-                [0, -1],
-              ];
-              const [dx, dy] = dirs[(Math.random() * 4) | 0];
-              const nx = cx + dx;
-              const ny = cy + dy;
-              if (nx < 0 || nx >= cols || ny < 0) continue;
-              const nIdx = ny * cols + nx;
-              const nc = cells[nIdx];
-              if (!nc || nc.hole || blob.has(nIdx)) continue;
-              blob.add(nIdx);
-              frontier.push(nIdx);
-              if (frontier.length > 12) frontier = frontier.slice(-12);
-            }
-            for (const idx of blob) {
-              if (hiRef.current.has(idx) || occupied(idx)) continue;
-              const c = cells[idx];
-              const sp = pickSpan(3);
-              clusterActive.set(idx, {
-                t: 10 + ((Math.random() * 8) | 0), // tick @240 ms -> ±2,4–4,3 detik, sama seperti sebelumnya
-                kind: "dot",
-                ...sp,
-              });
-              drawDotLetters(c, Math.min(0.85, c.a + 0.4), sp);
-            }
-          }
-        }
+        // (Cluster matriks titik DIHAPUS atas permintaan user — satu-satunya
+        // efek khusus yang tersisa adalah spiral huruf.)
         for (let i = 0; i < GLITCH_CELLS; i++) {
           const idx = (Math.random() * cells.length) | 0;
           const c = cells[idx];
@@ -726,11 +683,9 @@ export default function WonderScene() {
           }
           const roll = Math.random();
           if (roll < 0.42) draw(c, c.a); // pulihkan ke kata normal
-          else if (roll < 0.64) draw(c, c.a, glitchText()); // substitusi glyph
-          else if (roll < 0.72) draw(c, c.a, deleteText()); // huruf hilang
-          else if (roll < 0.82)
-            drawDotLetters(c, Math.min(0.85, c.a + 0.4)); // matriks titik — jatah diturunkan dari 22% ke 10% (permintaan user: jangan terlalu banyak)
-          else startScramble(idx); // scramble
+          else if (roll < 0.66) draw(c, c.a, glitchText()); // substitusi glyph
+          else if (roll < 0.76) draw(c, c.a, deleteText()); // huruf hilang
+          else startScramble(idx); // scramble (matriks titik DIHAPUS atas permintaan user — efek khusus yang tersisa hanya spiral)
         }
       }, GLITCH_EVERY_MS);
     }
@@ -814,22 +769,16 @@ export default function WonderScene() {
         if (bandSet.has(idx) || hiRef.current.has(idx)) continue;
         const c = cells[idx];
         if (Math.random() < 0.5) {
-          // AKTIVASI FRONT: sel berubah bentuk selama ±1,7–3,6 detik —
-          // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan
+          // AKTIVASI FRONT: sel jadi kata sisipan selama ±1,7–3,6 detik —
+          // inilah "gerakan" khas Wonder: aktivitas merambat bersama sapuan.
+          // (Varian matriks titik DIHAPUS atas permintaan user.)
           const t = 7 + ((Math.random() * 8) | 0); // tick @240 ms -> ±1,7–3,6 detik, sama seperti sebelumnya
-          const roll = Math.random();
-          if (roll < 0.62) {
-            frontActive.set(idx, { t, kind: "alt", start: 0, count: 0 });
-            draw(
-              c,
-              Math.min(0.65, c.a + ALT_BOOST),
-              ALT_WORDS[(Math.random() * ALT_WORDS.length) | 0],
-            );
-          } else {
-            const sp = pickSpan(3);
-            frontActive.set(idx, { t, kind: "dot", ...sp });
-            drawDotLetters(c, Math.min(0.85, c.a + 0.4), sp);
-          }
+          frontActive.set(idx, { t, kind: "alt", start: 0, count: 0 });
+          draw(
+            c,
+            Math.min(0.65, c.a + ALT_BOOST),
+            ALT_WORDS[(Math.random() * ALT_WORDS.length) | 0],
+          );
         } else {
           draw(c, Math.min(0.45, c.a + WAVE_BOOST));
         }
@@ -1035,6 +984,14 @@ export default function WonderScene() {
     text: string = WORD,
   ) {
     ctx.clearRect(c.x, c.y, CW, CH);
+    // Set SEMUA state teks secara eksplisit di sini: posisi kata dihitung dari
+    // measureText, jadi font/letterSpacing ambient yang tertinggal dari jalur
+    // gambar lain (atau reset state canvas) bisa menggeser kata keluar selnya.
+    ctx.font = FONT;
+    (ctx as unknown as { letterSpacing: string }).letterSpacing =
+      `${LETTER_SPACING}px`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
     ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
     // kata selalu terpusat horizontal di tengah selnya
     const w = ctx.measureText(text).width;

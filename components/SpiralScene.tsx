@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
    ===================================================================== */
 
 const WORD = "AMAMIYA";
-const GLYPHS = "AMAMIYA01";
+const GLYPHS = "AMAMIYA"; // hanya huruf (angka dihapus, selaras halaman utama)
 const CW = 170;
 const CH = 38;
 const FONT_SIZE = 20;
@@ -91,6 +91,8 @@ export default function SpiralScene() {
         (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
           `${LETTER_SPACING}px`;
       } catch { /* abaikan */ }
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
       ctx.fillStyle = `rgba(${INK},${alpha.toFixed(3)})`;
       ctx.fillText(text, c.x + (CW - ctx.measureText(text).width) / 2, c.y + TEXT_Y);
       c.shown = true;
@@ -399,12 +401,7 @@ export default function SpiralScene() {
             if (roll < 0.4) draw(c, c.a);
             else if (roll < 0.65) draw(c, c.a, glitchText());
             else if (roll < 0.75) draw(c, c.a, deleteText());
-            else if (roll < 0.9) {
-              // substitusi matriks sederhana (konsisten dgn halaman utama)
-              draw(c, c.a, WORD.replace(/./g, (ch) =>
-                Math.random() < 0.3 ? ":" : ch,
-              ));
-            } else draw(c, c.a, glitchText());
+            else draw(c, c.a, glitchText()); // (pengganti matriks ":" dihapus, selaras halaman utama)
           }
         }, GLITCH_EVERY_MS);
 
