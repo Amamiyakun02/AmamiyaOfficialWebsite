@@ -27,7 +27,7 @@ const SPACING = 46;
 const LETTER_SPACING = 110;
 const LETTER_CHARS = "AMAMIYA";
 const INSERTS = ["DEV", "BUILD", "CODE"];
-const GLOW_R = 170;
+const GLOW_R = 210;
 
 function hash2(ix: number, iy: number, salt: number) {
   const s = Math.sin(ix * 127.1 + iy * 311.7 + salt * 74.7) * 43758.5453;
@@ -236,7 +236,7 @@ export default function AmbientBackground() {
           // radius. Titik di luar ambang digambar sebagai titik biasa.
           if (animated && glowAlpha > 0.02 && infl > 0.3) {
             const k = (infl - 0.3) / 0.7;
-            const R = 2.5 + k * 7.5;
+            const R = 3 + k * 9.5;
             const ga = glowAlpha * (0.3 + 0.7 * k);
             const gt = hash2(ix, iy, 12);
             const tt = now + hash2(ix, iy, 13) * 4000;
