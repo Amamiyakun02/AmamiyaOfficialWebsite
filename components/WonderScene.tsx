@@ -235,7 +235,15 @@ function drawTitleGlyph(
   }
 }
 
-function TitleLetter({ ch, enabled }: { ch: string; enabled: boolean }) {
+function TitleLetter({
+  ch,
+  enabled,
+  index,
+}: {
+  ch: string;
+  enabled: boolean;
+  index: number;
+}) {
   const [mode, setMode] = useState<"idle" | "in" | "fx" | "out">("idle");
   const [kind, setKind] = useState<TitleFxKind>("spiral");
   const [gch, setGch] = useState(ch);
@@ -344,9 +352,15 @@ function TitleLetter({ ch, enabled }: { ch: string; enabled: boolean }) {
   return (
     <span
       className={`t-letter${mode === "fx" ? " is-fx" : ""}`}
+      style={{ "--i": index } as React.CSSProperties}
       onPointerEnter={enter}
       onPointerLeave={leave}
     >
+      {/* Lapisan intro pre-build (CSS, kelas t-play di h1): matriks
+          titik -> balok dua nada -> karakter muncul mengisinya,
+          meniru reveal "Safety at the Frontier" di halaman Wonder. */}
+      <span className="t-dots" aria-hidden="true" />
+      <span className="t-block" aria-hidden="true" />
       <span
         className="t-char"
         style={
@@ -371,7 +385,7 @@ function TitleWord({ enabled }: { enabled: boolean }) {
   return (
     <>
       {"AMAMIYA".split("").map((ch, i) => (
-        <TitleLetter key={i} ch={ch} enabled={enabled} />
+        <TitleLetter key={i} ch={ch} enabled={enabled} index={i} />
       ))}
     </>
   );
@@ -417,12 +431,40 @@ export default function WonderScene() {
   const [debugOn, setDebugOn] = useState(false);
   const [debugText, setDebugText] = useState("—");
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Intro judul: kata besar AMAMIYA baru muncul SETELAH animasi masuk
+  // grid selesai (afterReveal) — dipicu sekali dari dalam effect utama.
+  const [titlePlay, setTitlePlay] = useState(false);
+  const [titleReady, setTitleReady] = useState(false);
+  const titlePlayedRef = useRef(false);
 
   useEffect(() => {
     setReducedMotion(
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     );
   }, []);
+
+  // Cadangan pengaman: bila sinyal afterReveal entah bagaimana tidak
+  // tiba, judul tetap muncul (tidak boleh kosong selamanya).
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      if (!titlePlayedRef.current) {
+        titlePlayedRef.current = true;
+        setTitlePlay(true);
+      }
+    }, 2600);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  // Hover huruf aktif hanya setelah seluruh intro selesai dimainkan.
+  useEffect(() => {
+    if (!titlePlay) return;
+    if (reducedMotion) {
+      setTitleReady(true);
+      return;
+    }
+    const t = window.setTimeout(() => setTitleReady(true), 1250);
+    return () => window.clearTimeout(t);
+  }, [titlePlay, reducedMotion]);
 
   useEffect(() => {
     mouseOnRef.current = mouseOn;
@@ -643,6 +685,12 @@ export default function WonderScene() {
     }
 
     function afterReveal() {
+      // Animasi masuk grid SELESAI -> giliran kata besar di tengah
+      // muncul dengan intro pre-build-nya (sekali saja per muat).
+      if (!titlePlayedRef.current) {
+        titlePlayedRef.current = true;
+        setTitlePlay(true);
+      }
       if (STATIC_TEXT) return; // mode diam: tidak ada efek teks ambient
       startGlitch();
       scheduleWave();
@@ -2200,9 +2248,21 @@ export default function WonderScene() {
       {/* Di dalam lubang grid HANYA kata besar AMAMIYA berfont balok —
           pill status, teks peran, dan tombol CTA sudah dihapus (31 Okt);
           kata ini diperbesar mengisi lubang dengan margin tersisa. */}
-      <div className={`stage-title ${blockFont.variable}`}>
-        <h1>
-          <TitleWord enabled={mouseOn && !reducedMotion} />
+      <div
+        className={`stage-title ${blockFont.variable}${titlePlay ? " title-on" : ""}`}
+      >
+        <h1
+          className={
+            !titlePlay
+              ? "t-pre"
+              : reducedMotion
+                ? "t-instant"
+                : titleReady
+                  ? "t-done"
+                  : "t-play"
+          }
+        >
+          <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
         </h1>
         {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
         <FxCards />
