@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { toolsData } from "@/lib/tools";
+import QuickPrompt from "@/components/QuickPrompt";
 
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
 // lib/tools.ts. Yang sudah dipindah berstatus "live" dan bisa dibuka;
@@ -14,6 +15,7 @@ export default function ToolsSection() {
         video, pengolah PDF dan gambar, sampai playground MCP server-ku.
         Semuanya sedang dipindah ke rumah baru ini secara bertahap.
       </p>
+      <QuickPrompt />
       <div className="proj-grid">
         {toolsData.map((t) => {
           const Icon = t.icon;
@@ -30,7 +32,7 @@ export default function ToolsSection() {
               </div>
               <h3>
                 {live ? (
-                  <Link href={`#tools`}>{t.name}</Link>
+                  <Link href={`/tools/${t.slug}`}>{t.name}</Link>
                 ) : (
                   t.name
                 )}
@@ -38,7 +40,7 @@ export default function ToolsSection() {
               <p className="proj-desc">{t.desc}</p>
               {live && (
                 <div className="proj-links">
-                  <Link href={`#tools`}>Buka tool →</Link>
+                  <Link href={`/tools/${t.slug}`}>Buka tool →</Link>
                 </div>
               )}
             </article>
