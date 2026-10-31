@@ -69,7 +69,8 @@ const SPARK_GROW_MS = 450; // sparkle tumbuh masuk
 const SPARK_SHRINK_MS = 400; // sparkle menguncup
 const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
-const GRID_COLS = 9; // kolom grid DESKTOP = 9 (pilihan user 30 Okt dari screenshot zoom-nya: huruf besar & lega); lebar sel = lebar stage / kolom dan semua ukuran diskalakan proporsional, jadi zoom sebesar apa pun jumlah sel tidak meledak. Kolom adaptif per lebar stage (build): ponsel 4, tablet 6 (31 Okt).
+const GRID_COLS = 8; // kolom KATA desktop = 8 (perombakan 31 Okt: total 10 lajur termasuk 2 lajur margin kosong kiri-kanan); lebar sel = lebar stage / (kolom + 2) dan semua ukuran diskalakan proporsional. Kolom adaptif per lebar stage (build): ponsel 4 kata, tablet 6 kata.
+const FONT_SHRINK = 0.94; // font sedikit diperkecil dari skala murni lajur (permintaan user 31 Okt)
 
 // --- atom Rutherford per huruf (dari halaman uji /atom) ---
 // Konfigurasi hasil setelan user di bancuh uji (30 Okt): ukuran 1,3x,
@@ -206,21 +207,23 @@ export default function WonderScene() {
       // isi <main> di bawah navbar, bukan lagi lapisan seukuran jendela).
       cvs!.width = cvs!.clientWidth || window.innerWidth;
       cvs!.height = cvs!.clientHeight || window.innerHeight;
-      // KOLOM ADAPTIF per lebar stage (desktop tetap 9 — pilihan user
-      // 30 Okt; mobile & tablet disesuaikan 31 Okt atas permintaan user):
-      // ponsel <640px = 4 kolom, tablet <1080px = 6 kolom, desktop = 9.
-      // Lebar sel = lebar stage / kolom; font, tinggi sel, letter-spacing,
-      // jangkauan heat, dan cache geometri diskalakan proporsional dari
-      // lebar sel, jadi kata tetap terbaca di layar kecil dan jumlah sel
-      // tidak meledak di layar besar.
+      // STRUKTUR LAJUR (perombakan user 31 Okt): selebar stage dibagi
+      // menjadi lajur-lajur sama lebar; lajur PALING KIRI dan PALING
+      // KANAN selalu KOSONG sebagai margin, lajur di tengahnya berisi
+      // kata. Desktop: 10 lajur = 2 margin + 8 kata; tablet 8 lajur
+      // (6 kata); ponsel 6 lajur (4 kata). Lebar sel = lebar stage /
+      // jumlah lajur; semua metrik diskalakan proporsional dari lebar
+      // sel, dan FONT sedikit diperkecil (faktor FONT_SHRINK) dari
+      // skala murninya atas permintaan user.
       const cols =
         cvs!.width < 640 ? 4 : cvs!.width < 1080 ? 6 : GRID_COLS;
-      gScale = cvs!.width / (cols * gridBase.cw);
-      CW = cvs!.width / cols;
+      const tracks = cols + 2; // + lajur margin kiri & kanan
+      gScale = cvs!.width / (tracks * gridBase.cw);
+      CW = cvs!.width / tracks;
       CH = gridBase.ch * gScale;
-      FONT_SIZE = gridBase.fs * gScale;
+      FONT_SIZE = gridBase.fs * gScale * FONT_SHRINK;
       FONT = `${FONT_SIZE}px monospace`;
-      LETTER_SPACING = gridBase.ls * gScale;
+      LETTER_SPACING = gridBase.ls * gScale * FONT_SHRINK;
       TEXT_Y = (CH - FONT_SIZE) / 2 + FONT_SIZE * 0.8;
       HEAT_RX = gridBase.hrx * gScale;
       HEAT_RY = gridBase.hry * gScale;
@@ -246,9 +249,13 @@ export default function WonderScene() {
       // LUBANG TENGAH: area di balik konten hero dikosongkan — sel yang
       // titik tengahnya masuk lubang (persegi bersudut membulat di tengah
       // layar) tidak pernah digambar, jadi grid tampak berlubang.
-      const holeW = Math.min(HOLE_MAX_W, cvs!.width * HOLE_W_RATIO);
+      // Lebar lubang kini = 4 LAJUR MENYATU di tengah (permintaan user:
+      // "bagian tengah panjangnya 4 cell yg di-merge"), tepiannya sejajar
+      // garis lajur; di ponsel lubang melebar ke seluruh lajur kata.
+      const holeCols = Math.min(4, cols);
+      const holeW = holeCols * CW;
       const holeH = Math.min(HOLE_MAX_H, cvs!.height * HOLE_H_RATIO);
-      const holeX = (cvs!.width - holeW) / 2;
+      const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = (cvs!.height - holeH) / 2;
       const inHole = (px: number, py: number) => {
         if (px < holeX || px > holeX + holeW || py < holeY || py > holeY + holeH)
@@ -270,11 +277,11 @@ export default function WonderScene() {
       for (let y = 0; y * CH < cvs!.height; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
-            x: x * CW,
+            x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
             y: y * CH,
             a: BASE_ALPHA + Math.random() * BASE_ALPHA_RANGE,
             shown: false,
-            hole: inHole(x * CW + CW / 2, y * CH + CH / 2),
+            hole: inHole((x + 1) * CW + CW / 2, y * CH + CH / 2),
           });
         }
       }
@@ -283,7 +290,9 @@ export default function WonderScene() {
       // Beban proses mengikuti ukuran layar (permintaan user 31 Okt):
       // grid kecil (ponsel/tablet) = efek serentak lebih sedikit DAN
       // pemicu spawn lebih jarang (pembagi tick lebih besar).
-      fxCapRef.current = visibleCells < 170 ? 4 : visibleCells < 300 ? 6 : 10;
+      // (berbasis lebar stage, bukan jumlah sel — struktur lajur baru
+      // mengubah jumlah sel tanpa mengubah kelas perangkatnya)
+      fxCapRef.current = cvs!.width < 640 ? 4 : cvs!.width < 1080 ? 6 : 10;
       spawnDivRef.current = cvs!.width < 640 ? 2 : cvs!.width < 1080 ? 1 : 1;
       hiRef.current.clear();
       if (heatRaf !== null) {
@@ -1639,7 +1648,8 @@ export default function WonderScene() {
       // lagi sampai kursor keluar dari jangkauannya.
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
         const c0 = Math.max(0, Math.floor((m.x - HEAT_RX - CW) / CW));
-        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW));
+        // c1 dikurangi 1 lajur: kolom kata mulai setelah margin kiri
+        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW) - 1);
         const r0 = Math.max(0, Math.floor((m.y - HEAT_RY) / CH));
         const r1 = Math.floor((m.y + HEAT_RY) / CH);
         for (let r = r0; r <= r1; r++) {
