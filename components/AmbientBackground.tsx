@@ -200,14 +200,14 @@ export default function AmbientBackground() {
       if (animated) {
         const mouseDocX = mouseX;
         const mouseDocY = mouseY + scrollTop;
-        if (now - lastMove < 1600 && lastMove > 0) {
+        if (now - lastMove < 2400 && lastMove > 0) {
           if (formCX < -1000) {
             formCX = mouseDocX;
             formCY = mouseDocY;
           }
           formCX += (mouseDocX - formCX) * 0.14;
           formCY += (mouseDocY - formCY) * 0.14;
-          formActiveUntil = now + 300;
+          formActiveUntil = now + 500;
           centerX = formCX;
           centerY = formCY;
         } else if (autoAnchor && now < autoAnchor.until) {
