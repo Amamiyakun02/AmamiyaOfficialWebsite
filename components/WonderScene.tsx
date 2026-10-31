@@ -76,7 +76,7 @@ const SPARK_GROW_MS = 450; // sparkle tumbuh masuk
 const SPARK_SHRINK_MS = 400; // sparkle menguncup
 const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
-const GRID_COLS = 8; // kolom KATA desktop = 8 (perombakan 31 Okt: total 10 lajur termasuk 2 lajur margin kosong kiri-kanan); lebar sel = lebar stage / (kolom + 2) dan semua ukuran diskalakan proporsional. Kolom adaptif per lebar stage (build): ponsel 4 kata, tablet 6 kata.
+const GRID_COLS = 8; // kolom KATA desktop = 8 (perombakan 31 Okt: total 10 lajur termasuk 2 lajur margin kosong kiri-kanan); lebar sel = lebar stage / (kolom + 2) dan semua ukuran diskalakan proporsional. Kolom adaptif per lebar stage (build): ponsel 6 kata, tablet 6 kata.
 const FONT_SHRINK = 0.94; // font sedikit diperkecil dari skala murni lajur (permintaan user 31 Okt)
 const ROW_STRETCH = 1.15; // tinggi baris sedikit diperbesar dari rapat murni (1,0) agar jumlah baris berkurang, tapi gap-nya tidak sebesar 1,3 — titik tengah pilihan user 31 Okt ("gap rows-nya diperkecil" setelah mencoba 1,3)
 
@@ -545,12 +545,14 @@ export default function WonderScene() {
       // menjadi lajur-lajur sama lebar; lajur PALING KIRI dan PALING
       // KANAN selalu KOSONG sebagai margin, lajur di tengahnya berisi
       // kata. Desktop: 10 lajur = 2 margin + 8 kata; tablet 8 lajur
-      // (6 kata); ponsel 6 lajur (4 kata). Lebar sel = lebar stage /
+      // (6 kata); ponsel 8 lajur (6 kata — diperbanyak dari 4 atas
+      // koreksi user dari screenshot HP-nya: font terlalu besar).
+      // Lebar sel = lebar stage /
       // jumlah lajur; semua metrik diskalakan proporsional dari lebar
       // sel, dan FONT sedikit diperkecil (faktor FONT_SHRINK) dari
       // skala murninya atas permintaan user.
       const cols =
-        cvs!.width < 640 ? 4 : cvs!.width < 1080 ? 6 : GRID_COLS;
+        cvs!.width < 640 ? 6 : cvs!.width < 1080 ? 6 : GRID_COLS;
       const tracks = cols + 2; // + lajur margin kiri & kanan
       gScale = cvs!.width / (tracks * gridBase.cw);
       CW = cvs!.width / tracks;
@@ -585,10 +587,16 @@ export default function WonderScene() {
       // layar) tidak pernah digambar, jadi grid tampak berlubang.
       // Lebar lubang kini = 4 LAJUR MENYATU di tengah (permintaan user:
       // "bagian tengah panjangnya 4 cell yg di-merge"), tepiannya sejajar
-      // garis lajur; di ponsel lubang melebar ke seluruh lajur kata.
+      // garis lajur. Di ponsel lubang = 4 dari 6 lajur kata (lebih
+      // ramping dari sebelumnya yang selebar seluruh kata) dan lebih
+      // RENDAH, karena margin kosong di sekeliling kata tengah terasa
+      // terlalu besar di layar portrait (koreksi user 31 Okt).
       const holeCols = Math.min(4, cols);
       const holeW = holeCols * CW;
-      const holeH = Math.min(HOLE_MAX_H, cvs!.height * HOLE_H_RATIO);
+      const holeH =
+        cvs!.width < 640
+          ? Math.min(150, cvs!.height * 0.2)
+          : Math.min(HOLE_MAX_H, cvs!.height * HOLE_H_RATIO);
       const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = (cvs!.height - holeH) / 2;
       const inHole = (px: number, py: number) => {
