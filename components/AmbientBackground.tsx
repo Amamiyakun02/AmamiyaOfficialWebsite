@@ -4,22 +4,29 @@ import { useEffect, useRef } from "react";
 
 /* =====================================================================
    LATAR AMBIEN SECTION BAWAH (permintaan user 31 Okt): ladang titik
-   lembut di BELAKANG semua section di bawah hero — tema lebih ramah
-   dan ringan dari grid tipografi di atas. Konten section mengambang
-   di depannya; titik menyala mengikuti mouse (glow tembus terlihat
-   di sela-sela kartu), berdenyut pelan, dan sesekali mekar (bloom).
+   lembut + huruf-huruf acak (A/M/I/Y + sisipan DEV/BUILD/CODE) di
+   BELAKANG semua section di bawah hero — tema lebih ramah dan ringan
+   dari grid tipografi di atas. Konten section mengambang di depannya;
+   titik dan huruf menyala mengikuti mouse (glow tembus terlihat di
+   sela-sela kartu), berdenyut pelan, dan sesekali mekar (bloom).
+   Huruf-hurufnya SENGAJA tetap tersebar acak — mekanik menyusun
+   kata saat mouse menyorot pernah dicoba dan dicabut user (lag);
+   huruf di sini murni lapisan hash statis seperti titik: tanpa
+   state, tanpa pelacakan, dihitung sebaris per frame.
 
    Ringan, mengikuti kaidah performa situs ini:
    - satu kanvas fixed sebesar viewport (bukan sebesar halaman)
-   - titik didefinisikan di koordinat dokumen — ikut bergulir bersama
-     halaman seperti latar sungguhan — dan HANYA digambar di bawah
-     hero (docY > tinggi hero), jadi hero Wonder tidak berubah sama
-     sekali
+   - partikel di koordinat dokumen — ikut bergulir bersama halaman
+     seperti latar sungguhan — dan HANYA digambar di bawah hero
+     (docY > tinggi hero), jadi hero Wonder tidak berubah sama sekali
    - gambar ulang maks ±20fps, berhenti saat tab tersembunyi (rAF)
    - prefers-reduced-motion: bidang statis tanpa denyut/glow/bloom
    ===================================================================== */
 
 const SPACING = 46;
+const LETTER_SPACING = 110;
+const LETTER_CHARS = "AMAMIYA";
+const INSERTS = ["DEV", "BUILD", "CODE"];
 const GLOW_R = 170;
 
 function hash2(ix: number, iy: number, salt: number) {
@@ -147,6 +154,47 @@ export default function AmbientBackground() {
       // bersihkan bloom yang selesai
       for (let i = blooms.length - 1; i >= 0; i--) {
         if (now - blooms[i].start > 2300) blooms.splice(i, 1);
+      }
+
+      /* Lapisan huruf acak — murni hash per sel seperti titik (tanpa
+         state/formasi): melayang pelan dari fungsi waktu, dan di dekat
+         mouse hanya mencerah seperti titik, tidak berkumpul. */
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const ly0 = Math.floor(docTop / LETTER_SPACING);
+      const ly1 = Math.ceil(docBottom / LETTER_SPACING);
+      const lx1 = Math.ceil(viewW / LETTER_SPACING);
+      for (let iy = ly0; iy <= ly1; iy++) {
+        for (let ix = 0; ix <= lx1; ix++) {
+          const hx = ix * LETTER_SPACING + LETTER_SPACING / 2 + (hash2(ix, iy, 5) - 0.5) * 56;
+          const hy = iy * LETTER_SPACING + LETTER_SPACING / 2 + (hash2(ix, iy, 6) - 0.5) * 56;
+          if (hy < hb + 8) continue;
+          const phase = hash2(ix, iy, 8) * Math.PI * 2;
+          const x = hx + (animated ? Math.sin(now * 0.00021 + phase) * 6 : 0);
+          const y = hy - scrollTop + (animated ? Math.cos(now * 0.00017 + phase * 1.3) * 6 : 0);
+          if (y < -20 || y > viewH + 20) continue;
+          let a = animated
+            ? 0.085 + 0.05 * (0.5 + 0.5 * Math.sin(now * 0.0004 + phase))
+            : 0.11;
+          if (animated && glowAlpha > 0.01) {
+            const ddx = x - glowX;
+            const ddy = y - glowY;
+            const d = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (d < GLOW_R) {
+              const infl = 1 - d / GLOW_R;
+              a += infl * infl * 0.38 * glowAlpha;
+            }
+          }
+          if (hash2(ix, iy, 9) > 0.94) {
+            ctx.font = "600 10px monospace";
+            ctx.fillStyle = `rgba(160, 175, 205, ${Math.min(0.4, a).toFixed(3)})`;
+            ctx.fillText(INSERTS[Math.floor(hash2(ix, iy, 10) * INSERTS.length)], x, y);
+          } else {
+            ctx.font = "600 12px monospace";
+            ctx.fillStyle = `rgba(190, 198, 218, ${Math.min(0.55, a).toFixed(3)})`;
+            ctx.fillText(LETTER_CHARS[Math.floor(hash2(ix, iy, 7) * LETTER_CHARS.length)], x, y);
+          }
+        }
       }
     };
 
