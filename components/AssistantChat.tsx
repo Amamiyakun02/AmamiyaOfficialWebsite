@@ -148,6 +148,9 @@ export default function AssistantChat() {
     deepseek: true,
   });
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesRef = useRef<Message[]>([]);
+  messagesRef.current = messages;
+  const [hydrated, setHydrated] = useState(false);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
@@ -173,6 +176,7 @@ export default function AssistantChat() {
     } catch {
       setMessages([welcomeMessage(engine)]);
     }
+    setHydrated(true);
   }, [engine]);
 
   // Kesiapan engine dari backend.
@@ -231,7 +235,10 @@ export default function AssistantChat() {
       const text = rawText.trim();
       if (!text || busy) return;
       const userMsg: Message = { sender: "user", text, timestamp: nowTime() };
-      const history = [...messages, userMsg];
+      // Baca dari ref, bukan state tertutup: pengiriman otomatis quick
+      // prompt terjadi tepat setelah mount saat state belum tentu
+      // terisi di closure — ref selalu mencerminkan riwayat terbaru.
+      const history = [...messagesRef.current, userMsg];
       setMessages(history);
       persist(engine, history);
       setInput("");
@@ -380,19 +387,22 @@ export default function AssistantChat() {
         setWaiting(false);
       }
     },
-    [busy, engine, messages, persist, userId],
+    [busy, engine, persist, userId],
   );
 
-  // Quick prompt dari halaman utama: kirim sekali saat tiba.
+  // Quick prompt dari halaman utama: kirim sekali saat tiba, SETELAH
+  // riwayat termuat (hydrated). JANGAN pakai setTimeout + replaceState
+  // di depan: replaceState mengubah searchParams, efek berjalan ulang,
+  // cleanup membatalkan timer, dan penjaga ref menghalangi penjadwalan
+  // ulang — prompt hilang diam-diam (bug terverifikasi 31 Okt).
   useEffect(() => {
+    if (!hydrated || quickSentRef.current) return;
     const q = searchParams.get("q");
-    if (!q || quickSentRef.current) return;
+    if (!q) return;
     quickSentRef.current = true;
     window.history.replaceState(null, "", "/tools/assistant");
-    const t = window.setTimeout(() => void send(q), 350);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+    void send(q);
+  }, [hydrated, searchParams, send]);
 
   const clearChat = async () => {
     try {
