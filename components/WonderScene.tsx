@@ -794,7 +794,15 @@ export default function WonderScene() {
         const m = g.measureText("A");
         const h =
           (m.actualBoundingBoxAscent ?? 14) + (m.actualBoundingBoxDescent ?? 0);
-        capHCache = h > 4 ? h : 14;
+        // PERBAIKAN BUG MOBILE (31 Okt, dari screenshot HP user): dulu
+        // tinta <= 4px diganti konstanta MUTLAK 14 — di ponsel font grid
+        // memang hanya ±5px (tintanya ±3,6px), jadi capHeight selalu 14
+        // dan SEMUA efek (spiral/sparkle/atom, semuanya berpatokan
+        // capHeight) membengkak ±4x lipat dari huruf di sekitarnya.
+        // Sekarang: pakai hasil ukur apa adanya; bila metrik tak
+        // tersedia, turunkan dari skala grid (13,5 x gScale ≈ tinta
+        // huruf pada basis desain) — proporsional di semua ukuran.
+        capHCache = h > 0.5 ? h : 13.5 * gScale;
       }
       return capHCache;
     }
@@ -914,6 +922,11 @@ export default function WonderScene() {
       const g = ctx!;
       const cx = spiralCenterX(c, s.letter);
       const cy = c.y + CH / 2 + 1;
+      // Faktor skala komponen MUTLAK (glow & lantai tebal garis):
+      // 1 di desktop, mengecil proporsional di layar kecil agar efek
+      // tidak jadi gumpalan cahaya di mobile.
+      const sMin = Math.min(1, gScale);
+      const glowS = 4 * sMin;
       g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.shadowColor = "rgba(245,245,255,0.8)";
       // Tinggi galaksi = tinggi huruf di sekitarnya (permintaan user):
@@ -928,7 +941,7 @@ export default function WonderScene() {
       const upto = ARM_TURNS * p;
       g.lineWidth = 1.35 * gScale;
       g.lineCap = "round";
-      g.shadowBlur = 4; // glow disamakan dengan sparkle & atom (4) agar kecerahan konsisten (permintaan user)
+      g.shadowBlur = glowS; // glow disamakan dengan sparkle & atom agar kecerahan konsisten (permintaan user); kini diskalakan sMin
       g.save();
       g.translate(cx, cy);
       g.scale(0.8, capHeight() / 2 / R);
@@ -965,15 +978,15 @@ export default function WonderScene() {
           // lapis 1: badan cahaya lebar & lembut (tanpa bayangan — lebar
           // + alpha rendahnya sendiri yang memberi kesan lembut)
           g.shadowBlur = 0;
-          g.lineWidth = Math.max(0.8, 0.38 * rMid);
+          g.lineWidth = Math.max(0.8 * sMin, 0.38 * rMid);
           g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.16).toFixed(3)})`;
           g.stroke(path);
           // lapis 2: badan tengah
-          g.lineWidth = Math.max(0.7, 0.2 * rMid);
+          g.lineWidth = Math.max(0.7 * sMin, 0.2 * rMid);
           g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.34).toFixed(3)})`;
           g.stroke(path);
           // lapis 3: garis inti terang (satu-satunya yang bercahaya)
-          g.shadowBlur = 4;
+          g.shadowBlur = glowS;
           g.lineWidth = Math.max(0.9 * gScale, 0.07 * rMid);
           g.strokeStyle = `rgba(245,245,255,${fAlpha.toFixed(3)})`;
           g.stroke(path);
@@ -1000,7 +1013,7 @@ export default function WonderScene() {
       g.save();
       g.beginPath();
       g.ellipse(0, 0, 2.7 * gScale, 1.5 * gScale, 0, 0, Math.PI * 2);
-      g.shadowBlur = 4;
+      g.shadowBlur = glowS;
       g.fillStyle = `rgba(245,245,255,${(alpha * 0.75).toFixed(3)})`;
       g.fill();
       g.restore();
@@ -1039,7 +1052,7 @@ export default function WonderScene() {
       g.quadraticCurveTo(-rx * p, -ry * p, 0, -ry);
       g.closePath();
       g.shadowColor = "rgba(245,245,255,0.85)";
-      g.shadowBlur = SPARK_GLOW;
+      g.shadowBlur = SPARK_GLOW * Math.min(1, gScale);
       g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.fill();
       g.restore();
@@ -1065,7 +1078,7 @@ export default function WonderScene() {
       const rot = s.baseRot + (now / 1000) * 0.45 * ATOM_SPIN;
       g.save();
       g.shadowColor = "rgba(245,245,255,0.85)";
-      g.shadowBlur = ATOM_GLOW;
+      g.shadowBlur = ATOM_GLOW * Math.min(1, gScale);
       g.strokeStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
       g.lineWidth = 1.2 * gScale;
@@ -1077,7 +1090,7 @@ export default function WonderScene() {
       }
       // nukleus
       g.beginPath();
-      g.arc(cx, cy, Math.max(0.8, R * 0.15), 0, Math.PI * 2);
+      g.arc(cx, cy, Math.max(0.8 * Math.min(1, gScale), R * 0.15), 0, Math.PI * 2);
       g.fill();
       // elektron: satu per orbit, sudutnya bergerak mengelilingi
       for (let k = 0; k < ATOM_ORBITS; k++) {
@@ -1090,7 +1103,7 @@ export default function WonderScene() {
         const sx = cx + ex * Math.cos(ang) - ey * Math.sin(ang);
         const sy = cy + ex * Math.sin(ang) + ey * Math.cos(ang);
         g.beginPath();
-        g.arc(sx, sy, Math.max(0.7, R * 0.085), 0, Math.PI * 2);
+        g.arc(sx, sy, Math.max(0.7 * Math.min(1, gScale), R * 0.085), 0, Math.PI * 2);
         g.fill();
       }
       g.restore();
