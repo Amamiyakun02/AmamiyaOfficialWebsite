@@ -29,9 +29,17 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // DPR cip ikon sampai 3x (beda dari stage yang maks 2x): cip ini
+    // mungil sehingga murah, dan di HP ber-DPR 3 batas 2x membuat
+    // glyph di-upscale paksa dan terlihat buram (observasi user).
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
     const W = cvs.clientWidth || 232;
     const H = cvs.clientHeight || 104;
+    // Faktor ketajaman glyph kecil: glow & tebal garis minimum
+    // diskalakan mengikuti tinggi glyph — tanpa ini, di cip ponsel
+    // (±15px) glow 4-8px mendominasi dan detail melebur (burem).
+    // Di glyph besar (>= 30px, tab/desktop) faktornya 1 = tak berubah.
+    const K = Math.min(1, H / 30);
     cvs.width = W * dpr;
     cvs.height = H * dpr;
     ctx.scale(dpr, dpr);
@@ -69,14 +77,14 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
             else path.lineTo(x, y);
           }
           ctx!.shadowBlur = 0;
-          ctx!.lineWidth = Math.max(1.2, 0.38 * rMid);
+          ctx!.lineWidth = Math.max(1.2 * K, 0.38 * rMid);
           ctx!.strokeStyle = "rgba(245,245,255,0.15)";
           ctx!.stroke(path);
-          ctx!.lineWidth = Math.max(1, 0.2 * rMid);
+          ctx!.lineWidth = Math.max(1 * K, 0.2 * rMid);
           ctx!.strokeStyle = "rgba(245,245,255,0.32)";
           ctx!.stroke(path);
-          ctx!.shadowBlur = 5;
-          ctx!.lineWidth = Math.max(1.1, 0.07 * rMid);
+          ctx!.shadowBlur = 5 * K;
+          ctx!.lineWidth = Math.max(1.1 * K, 0.07 * rMid);
           ctx!.strokeStyle = "rgba(245,245,255,0.95)";
           ctx!.stroke(path);
           ctx!.shadowBlur = 0;
@@ -102,7 +110,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.rotate(rot);
       ctx!.beginPath();
       ctx!.ellipse(0, 0, R * 0.24, R * 0.13, 0, 0, Math.PI * 2);
-      ctx!.shadowBlur = 8;
+      ctx!.shadowBlur = 8 * K;
       ctx!.fillStyle = "rgba(245,245,255,0.8)";
       ctx!.fill();
       ctx!.restore();
@@ -129,7 +137,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.quadraticCurveTo(-rx * p, -ry * p, 0, -ry);
       ctx!.closePath();
       ctx!.shadowColor = "rgba(245,245,255,0.85)";
-      ctx!.shadowBlur = 4;
+      ctx!.shadowBlur = 4 * K;
       ctx!.fillStyle = `rgba(245,245,255,${0.92 + 0.08 * Math.sin(now / 260)})`;
       ctx!.fill();
       ctx!.restore();
@@ -141,10 +149,10 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       const f = 0.25;
       const rot = now / 1400;
       ctx!.shadowColor = "rgba(245,245,255,0.85)";
-      ctx!.shadowBlur = 4;
+      ctx!.shadowBlur = 4 * K;
       ctx!.strokeStyle = "rgba(245,245,255,0.95)";
       ctx!.fillStyle = "rgba(245,245,255,0.95)";
-      ctx!.lineWidth = 1.6;
+      ctx!.lineWidth = Math.max(0.7, 1.6 * K);
       for (let k = 0; k < 3; k++) {
         const ang = rot + (k * Math.PI) / 3;
         ctx!.beginPath();
@@ -152,7 +160,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
         ctx!.stroke();
       }
       ctx!.beginPath();
-      ctx!.arc(cx, cy, Math.max(1.6, R * 0.15), 0, Math.PI * 2);
+      ctx!.arc(cx, cy, Math.max(1.6 * K, R * 0.15), 0, Math.PI * 2);
       ctx!.fill();
       for (let k = 0; k < 3; k++) {
         const ang = rot + (k * Math.PI) / 3;
@@ -162,7 +170,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
         const sx = cx + ex * Math.cos(ang) - ey * Math.sin(ang);
         const sy = cy + ex * Math.sin(ang) + ey * Math.cos(ang);
         ctx!.beginPath();
-        ctx!.arc(sx, sy, Math.max(1.3, R * 0.085), 0, Math.PI * 2);
+        ctx!.arc(sx, sy, Math.max(1.3 * K, R * 0.085), 0, Math.PI * 2);
         ctx!.fill();
       }
       ctx!.shadowBlur = 0;
