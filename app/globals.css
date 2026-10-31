@@ -1134,6 +1134,12 @@ code {
   border-top: 1px solid #141417;
   position: relative;
 }
+/* Pembatas Beranda → Proyek DIHAPUS (permintaan user 31 Okt): hero
+   mengalir langsung ke section Proyek tanpa garis. Pembatas antar
+   section SETELAHNYA (dan footer) tetap seperti biasa. */
+.lz-section#proyek {
+  border-top: none;
+}
 .lz-placeholder {
   position: absolute;
   inset: 0;

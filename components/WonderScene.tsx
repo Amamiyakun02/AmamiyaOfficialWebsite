@@ -798,7 +798,18 @@ export default function WonderScene() {
       // pas kelipatan tinggi baris, dan baris terakhir yang mulai
       // sebelum tepi bawah tapi menjorok keluar akan terpotong tepi
       // kanvas di tengah huruf (terlihat di screenshot desktop user).
-      for (let y = trimTopRows; (y + 1) * CH <= gridLimitY + 0.5; y++) {
+      // PENGECUALIAN (permintaan user 31 Okt): pada tata letak TANPA
+      // potongan bawah (desktop), tambahkan TEPAT SATU baris ekstra di
+      // bawah batas muat — baris ini terpotong tepi bawah stage, dan
+      // justru itu yang diminta: grid terasa mengalir berlanjut ke
+      // section berikutnya (pembatas Beranda→Proyek juga dihapus).
+      // Tata letak terpotong (tablet/ponsel) tidak berubah.
+      const extraBottomRow = trimBottomRows === 0 ? CH : 0;
+      for (
+        let y = trimTopRows;
+        (y + 1) * CH <= gridLimitY + extraBottomRow + 0.5;
+        y++
+      ) {
         for (let x = 0; x < cols; x++) {
           cells.push({
             x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
