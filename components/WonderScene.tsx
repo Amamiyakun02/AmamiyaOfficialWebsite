@@ -608,7 +608,15 @@ export default function WonderScene() {
       const tracks = cols + 2; // + lajur margin kiri & kanan
       gScale = viewW / (tracks * gridBase.cw);
       CW = viewW / tracks;
-      CH = gridBase.ch * gScale * ROW_STRETCH;
+      // JUMLAH BARIS di tablet & ponsel (permintaan user 31 Okt):
+      // layar portrait itu tinggi, jadi dengan tinggi baris rapat
+      // jumlah baris meledak (±60 baris di ponsel) dan terasa berat.
+      // Di layar <1080 tinggi baris DIPERENGGANG — font tidak ikut
+      // membesar, hanya jarak antar baris — agar total baris turun
+      // jauh. Desktop tidak berubah (tetap ROW_STRETCH 1,15).
+      const rowStretch =
+        viewW < 640 ? 2.0 : viewW < 1080 ? 1.6 : ROW_STRETCH;
+      CH = gridBase.ch * gScale * rowStretch;
       FONT_SIZE = gridBase.fs * gScale * FONT_SHRINK;
       FONT = `${FONT_SIZE}px monospace`;
       LETTER_SPACING = gridBase.ls * gScale * FONT_SHRINK;
