@@ -55,8 +55,6 @@ export default function AmbientBackground() {
     let lastFrame = 0;
     let mouseX = -9999;
     let mouseY = -9999;
-    let glowX = -9999;
-    let glowY = -9999;
     let glowAlpha = 0;
     let lastMove = 0;
     let lastSpawn = 0;
@@ -74,10 +72,11 @@ export default function AmbientBackground() {
 
     const heroBottom = () => (hero ? hero.offsetTop + hero.offsetHeight : 0);
 
-    /* --- Tiga glyph mini (spiral/sparkle/atom) sebagai highlight di
-       sekitar kursor — permintaan user: skala kecil (±20px) agar
-       ringan, hanya di latar ambien bawah (hero tidak disentuh).
-       Digambar ulang ringkas di sini, tanpa shadowBlur. --- */
+    /* --- Tiga glyph mini (spiral/sparkle/atom): titik-titik latar di
+       dalam radius kursor BERUBAH BENTUK menjadi salah satunya
+       (permintaan user — bukan glyph yang muncul melayang sendiri).
+       Skala kecil (maks ±20px) agar ringan, hanya di latar ambien
+       bawah (hero tidak disentuh). Digambar ringkas, tanpa shadow. --- */
     const drawSpiral = (x: number, y: number, R: number, a: number, t: number) => {
       ctx.save();
       ctx.translate(x, y);
@@ -170,15 +169,12 @@ export default function AmbientBackground() {
       const iy1 = Math.ceil(docBottom / SPACING);
 
       if (animated) {
-        // glow mengikuti mouse dengan lerp halus; memudar saat diam
+        // Intensitas glow memudar saat mouse diam. POSISI highlight
+        // memakai posisi mouse MENTAH (tanpa lerp/ekor) agar glyph
+        // selalu tepat di titiknya — keluhan user 31 Okt: kemunculan
+        // glyph jauh dari lokasi kursor (misslocation).
         const target = now - lastMove < 2600 && lastMove > 0 ? 1 : 0;
         glowAlpha += (target - glowAlpha) * 0.08;
-        if (glowX < -1000 && target === 1) {
-          glowX = mouseX;
-          glowY = mouseY;
-        }
-        glowX += (mouseX - glowX) * 0.16;
-        glowY += (mouseY - glowY) * 0.16;
         // mekar sesekali di area yang terlihat
         if (now - lastSpawn > 2400 && blooms.length < 3) {
           lastSpawn = now;
@@ -202,12 +198,13 @@ export default function AmbientBackground() {
           let a = animated
             ? 0.05 + 0.05 * (0.5 + 0.5 * Math.sin(now * 0.00045 + phase))
             : 0.085;
+          let infl = 0;
           if (animated && glowAlpha > 0.01) {
-            const ddx = x - glowX;
-            const ddy = y - glowY;
+            const ddx = x - mouseX;
+            const ddy = y - mouseY;
             const d = Math.sqrt(ddx * ddx + ddy * ddy);
             if (d < GLOW_R) {
-              const infl = 1 - d / GLOW_R;
+              infl = 1 - d / GLOW_R;
               a += infl * infl * 0.5 * glowAlpha;
               r += infl * 1.6 * glowAlpha;
             }
@@ -227,10 +224,26 @@ export default function AmbientBackground() {
               }
             }
           }
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(196, 205, 224, ${Math.min(0.85, a).toFixed(3)})`;
-          ctx.fill();
+          // Titik di dalam radius kursor BERUBAH BENTUK menjadi glyph
+          // (jenis per titik dari hash: spiral/sparkle/atom) — bukan
+          // muncul dari ketiadaan: makin dekat ke pusat radius makin
+          // besar glyph-nya; jumlah glyph = jumlah titik yang masuk
+          // radius. Titik di luar ambang digambar sebagai titik biasa.
+          if (animated && glowAlpha > 0.02 && infl > 0.3) {
+            const k = (infl - 0.3) / 0.7;
+            const R = 2.5 + k * 7.5;
+            const ga = glowAlpha * (0.3 + 0.7 * k);
+            const gt = hash2(ix, iy, 12);
+            const tt = now + hash2(ix, iy, 13) * 4000;
+            if (gt < 0.34) drawSpiral(x, y, R, ga, tt);
+            else if (gt < 0.67) drawSparkle(x, y, R * 0.95, ga, tt);
+            else drawAtom(x, y, R, ga, tt);
+          } else {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(196, 205, 224, ${Math.min(0.85, a).toFixed(3)})`;
+            ctx.fill();
+          }
         }
       }
       // bersihkan bloom yang selesai
@@ -259,8 +272,8 @@ export default function AmbientBackground() {
             ? 0.085 + 0.05 * (0.5 + 0.5 * Math.sin(now * 0.0004 + phase))
             : 0.11;
           if (animated && glowAlpha > 0.01) {
-            const ddx = x - glowX;
-            const ddy = y - glowY;
+            const ddx = x - mouseX;
+            const ddy = y - mouseY;
             const d = Math.sqrt(ddx * ddx + ddy * ddy);
             if (d < GLOW_R) {
               const infl = 1 - d / GLOW_R;
@@ -279,16 +292,6 @@ export default function AmbientBackground() {
         }
       }
 
-      /* Tiga glyph mengelilingi kursor (mengikuti posisi glow yang
-         dihaluskan): spiral kiri, sparkle kanan-atas, atom kanan-bawah,
-         masing-masing melayang pelan. Memudar bersama glow saat mouse
-         diam; di perangkat sentuh tidak pernah muncul. */
-      if (animated && glowAlpha > 0.02) {
-        const bob = (ph: number) => Math.sin(now * 0.0016 + ph) * 2;
-        drawSpiral(glowX - 33, glowY - 4 + bob(0), 10, glowAlpha * 0.95, now);
-        drawSparkle(glowX + 28, glowY - 22 + bob(2.1), 9.5, glowAlpha * 0.95, now);
-        drawAtom(glowX + 16, glowY + 26 + bob(4.2), 10, glowAlpha * 0.95, now);
-      }
     };
 
     const drawStatic = () => drawField(0, false);
