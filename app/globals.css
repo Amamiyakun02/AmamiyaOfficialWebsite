@@ -1091,6 +1091,25 @@ code {
     height: 40%;
   }
 }
+/* Layar PENDEK (HP landscape & tablet pendek): blok tengah diperkecil
+   agar muat di dalam lubang dengan margin lega — sebelumnya judul
+   45px + cip 56px tumpah keluar lubang (±79px) dan menimpa grid. */
+@media (max-width: 1080px) and (max-height: 540px) {
+  .stage-title h1 {
+    font-size: 30px;
+  }
+  .fx-cards {
+    margin-top: 8px;
+    gap: 12px;
+  }
+  .fx-card {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+}
 .hero-wrap .stage {
   flex: 1;
   min-height: 0;

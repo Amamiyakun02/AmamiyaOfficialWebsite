@@ -648,7 +648,12 @@ export default function WonderScene() {
       const holeH =
         viewW < 640
           ? Math.min(104, viewH * 0.14)
-          : Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO);
+          : Math.max(120, Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO));
+      // (Lantai 120px di cabang lebar: di layar PENDEK seperti HP
+      // landscape, rumus 36% tinggi stage bisa menyusut sampai ±79px
+      // padahal blok judul + ikon butuh lebih — judul/ikon tumpah
+      // keluar lubang dan menimpa baris grid. Lantai ini memastikan
+      // lubang tidak pernah lebih kecil dari isinya.)
       const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = (viewH - holeH) / 2;
       const inHole = (px: number, py: number) => {
