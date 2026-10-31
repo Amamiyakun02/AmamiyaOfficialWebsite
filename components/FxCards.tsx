@@ -3,32 +3,19 @@
 import { useEffect, useRef } from "react";
 
 /* =====================================================================
-   3 CARD EFEK (layer paling depan stage) — 30 Okt 2026.
-   Satu card per efek huruf di halaman utama: Spiral, Sparkle, Atom.
-   Tiap card memuat pratinjau glyph-nya yang DIGAMBAR HIDUP di canvas
-   mini (gerakan sama seperti efek aslinya di grid), judul, dan
-   penjelasan singkat. Ringan: satu rAF per card, dibatasi ±30fps,
-   berhenti sendiri saat tab disembunyikan (rAF) / komponen dilepas.
+   3 IKON EFEK — 30 Okt 2026 sebagai card berpenjelasan di bawah stage;
+   31 Okt atas permintaan user: teks judul & penjelasan DIHAPUS, kini
+   hanya cip ikon glyph HIDUP (spiral/sparkle/atom) berjejer di bawah
+   kata besar AMAMIYA di tengah lubang. Nama efek tetap ada sebagai
+   tooltip (atribut title). Ringan: satu rAF per cip, ±30fps.
    ===================================================================== */
 
 type Kind = "spiral" | "spark" | "atom";
 
-const CARDS: { kind: Kind; title: string; desc: string }[] = [
-  {
-    kind: "spiral",
-    title: "Spiral",
-    desc: "Galaksi empat lengan yang sesekali mengambil alih satu huruf: tumbuh memutar, berdiam sejenak, lalu menguncup dan mengembalikan hurufnya.",
-  },
-  {
-    kind: "spark",
-    title: "Sparkle",
-    desc: "Kilau bintang empat titik ala Gemini yang menggantikan huruf lewat kedip glitch, lalu berkedip lembut selama tampil penuh.",
-  },
-  {
-    kind: "atom",
-    title: "Atom",
-    desc: "Atom Rutherford ala logo React: nukleus di tengah, tiga orbit elips bersilangan, dan elektron yang terus mengelilingi orbitnya.",
-  },
+const CARDS: { kind: Kind; label: string }[] = [
+  { kind: "spiral", label: "Spiral" },
+  { kind: "spark", label: "Sparkle" },
+  { kind: "atom", label: "Atom" },
 ];
 
 function GlyphCanvas({ kind }: { kind: Kind }) {
@@ -208,10 +195,8 @@ export default function FxCards() {
   return (
     <div className="fx-cards">
       {CARDS.map((c) => (
-        <article key={c.kind} className="fx-card">
+        <article key={c.kind} className="fx-card" title={c.label} aria-label={c.label}>
           <GlyphCanvas kind={c.kind} />
-          <h3>{c.title}</h3>
-          <p>{c.desc}</p>
         </article>
       ))}
     </div>

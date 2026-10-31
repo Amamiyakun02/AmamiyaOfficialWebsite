@@ -1918,6 +1918,8 @@ export default function WonderScene() {
           kata ini diperbesar mengisi lubang dengan margin tersisa. */}
       <div className={`stage-title ${blockFont.variable}`}>
         <h1>AMAMIYA</h1>
+        {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
+        <FxCards />
       </div>
 
       <div className="panel">
@@ -1930,8 +1932,6 @@ export default function WonderScene() {
         <output>{debugText}</output>
       </div>
 
-      {/* Layer paling depan: 3 card penjelasan efek (Spiral/Sparkle/Atom) */}
-      <FxCards />
     </main>
   );
 }
