@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import FxCards from "./FxCards";
 
 /* =====================================================================
@@ -1906,28 +1905,11 @@ export default function WonderScene() {
     <main className="stage">
       <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
 
-      {/* Hero portofolio di dalam lubang grid: status, nama, peran, CTA.
-          Teks dari WebPortofolio lama (translations home*). */}
+      {/* Di dalam lubang grid kini HANYA kata besar "Amamiya" — pill
+          status, teks peran, dan tombol CTA dihapus atas permintaan user
+          (31 Okt) agar tengahnya bersih seperti design Wonder asli. */}
       <div className="stage-title">
-        <p className="hero-status">
-          <span className="hero-dot" /> Terbuka untuk freelance &amp; kolaborasi
-        </p>
         <h1>Amamiya</h1>
-        <p className="hero-role">
-          Saya membangun aplikasi AI, aplikasi web dan mobile, serta alat
-          untuk mengotomatiskan pekerjaan berulang.
-        </p>
-        <div className="hero-cta">
-          <Link className="hero-btn hero-btn-primary" href="/projects">
-            Lihat Proyek
-          </Link>
-          <Link className="hero-btn" href="/tools">
-            Jelajahi Tools
-          </Link>
-          <a className="hero-btn hero-btn-ghost" href="/profesional-cv.pdf" download>
-            Unduh CV
-          </a>
-        </div>
       </div>
 
       <div className="panel">
