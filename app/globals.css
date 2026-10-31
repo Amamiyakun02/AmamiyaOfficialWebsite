@@ -157,6 +157,8 @@ body {
   width: 0.95em;
   text-align: center;
   pointer-events: auto;
+  /* sentuhan: tanpa jeda zoom ketuk-ganda di huruf; gulir tetap wajar */
+  touch-action: manipulation;
 }
 .t-char {
   display: inline-block;

@@ -335,7 +335,7 @@ function TitleLetter({
     });
   };
 
-  const leave = () => {
+  const doLeave = () => {
     if (modeRef.current !== "fx" && modeRef.current !== "in") return;
     modeRef.current = "out";
     setMode("out");
@@ -348,13 +348,50 @@ function TitleLetter({
     });
   };
 
+  // SENTUHAN (mobile): hover tidak ada di layar sentuh — ketukan
+  // memicu pointerenter lalu pointerleave nyaris seketika, jadi glyph
+  // tak pernah sempat terlihat (keluhan user 31 Okt). Kini pointerdown
+  // dari sentuhan mengaktifkan efek dan MENAHANNYA ±1,1 detik sejak
+  // ketukan terakhir; leave yang datang lebih awal ditunda sampai
+  // masa tahan habis, lalu glitch keluar seperti biasa.
+  const touchHoldUntilRef = useRef(0);
+  const holdTimerRef = useRef<number | null>(null);
+  const leave = () => {
+    const wait = touchHoldUntilRef.current - performance.now();
+    if (wait > 30) {
+      if (holdTimerRef.current) window.clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = window.setTimeout(() => {
+        holdTimerRef.current = null;
+        leave();
+      }, wait);
+      return;
+    }
+    touchHoldUntilRef.current = 0;
+    doLeave();
+  };
+  const down = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") return;
+    touchHoldUntilRef.current = performance.now() + 1100;
+    if (holdTimerRef.current) {
+      window.clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    enter();
+  };
+  const enterHover = () => {
+    touchHoldUntilRef.current = 0;
+    enter();
+  };
+
   const glitching = mode === "in" || mode === "out";
   return (
     <span
       className={`t-letter${mode === "fx" ? " is-fx" : ""}`}
       style={{ "--i": index } as React.CSSProperties}
-      onPointerEnter={enter}
+      onPointerEnter={enterHover}
       onPointerLeave={leave}
+      onPointerDown={down}
+      onPointerCancel={leave}
     >
       {/* Lapisan intro pre-build (CSS, kelas t-play di h1): matriks
           titik -> balok dua nada -> karakter muncul mengisinya,
@@ -610,7 +647,7 @@ export default function WonderScene() {
       const holeW = holeCols * CW;
       const holeH =
         viewW < 640
-          ? Math.min(150, viewH * 0.2)
+          ? Math.min(118, viewH * 0.15)
           : Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO);
       const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = (viewH - holeH) / 2;
