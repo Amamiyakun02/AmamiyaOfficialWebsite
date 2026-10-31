@@ -35,7 +35,6 @@ export default function AboutSection() {
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
     <div className="section-inner section-narrow">
-      <p className="page-eyebrow">Profil</p>
       <h2 className="page-title">Tentang Saya</h2>
       <p className="page-desc">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.

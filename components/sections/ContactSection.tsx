@@ -44,7 +44,6 @@ export default function ContactSection() {
 
   return (
     <div className="section-inner section-narrow">
-      <p className="page-eyebrow">Kontak</p>
       <h2 className="page-title">Hubungi Saya</h2>
       <p className="page-desc">
         Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,

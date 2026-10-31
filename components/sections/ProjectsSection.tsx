@@ -26,7 +26,6 @@ export default function ProjectsSection({
       : projectsData.filter((p) => p.category === filter);
   return (
     <div className="section-inner">
-      <p className="page-eyebrow">Portofolio</p>
       <h2 className="page-title">Proyek</h2>
       <p className="page-desc">
         Studi kasus lengkap — masalah, arsitektur, tumpukan teknologi, dan

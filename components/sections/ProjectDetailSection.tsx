@@ -21,7 +21,6 @@ export default function ProjectDetailSection({
           <Icon size={26} />
         </span>
         <div>
-          <p className="page-eyebrow">Studi Kasus</p>
           <h2 className="page-title">{p.title}</h2>
           <p className="page-desc">{p.tagline.id}</p>
         </div>

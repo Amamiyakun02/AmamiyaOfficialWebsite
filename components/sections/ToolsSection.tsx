@@ -8,7 +8,6 @@ import QuickPrompt from "@/components/QuickPrompt";
 export default function ToolsSection() {
   return (
     <div className="section-inner">
-      <p className="page-eyebrow">Peralatan</p>
       <h2 className="page-title">Tools</h2>
       <p className="page-desc">
         Tool-tool yang kubangun dan kupakai sendiri — asisten AI, pengunduh
