@@ -74,6 +74,88 @@ export default function AmbientBackground() {
 
     const heroBottom = () => (hero ? hero.offsetTop + hero.offsetHeight : 0);
 
+    /* --- Tiga glyph mini (spiral/sparkle/atom) sebagai highlight di
+       sekitar kursor — permintaan user: skala kecil (±20px) agar
+       ringan, hanya di latar ambien bawah (hero tidak disentuh).
+       Digambar ulang ringkas di sini, tanpa shadowBlur. --- */
+    const drawSpiral = (x: number, y: number, R: number, a: number, t: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(t * 0.00025);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.55);
+      g.addColorStop(0, `rgba(210, 225, 255, ${0.5 * a})`);
+      g.addColorStop(1, "rgba(210, 225, 255, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, R * 0.55, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = "rgba(200, 214, 245, 1)";
+      for (let arm = 0; arm < 4; arm++) {
+        for (let i = 1; i <= 9; i++) {
+          const f = i / 9;
+          const ang = (arm * Math.PI) / 2 + f * 2.2;
+          ctx.globalAlpha = a * (0.3 + 0.7 * hash2(arm * 10 + i, 3, 11));
+          ctx.beginPath();
+          ctx.arc(Math.cos(ang) * R * f, Math.sin(ang) * R * f * 0.82, Math.max(0.5, (1 - f * 0.55) * 0.75), 0, 7);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    };
+    const drawSparkle = (x: number, y: number, R: number, a: number, t: number) => {
+      const p = 1 + 0.06 * Math.sin(t * 0.002);
+      const ry = R * 1.12 * p;
+      const rx = R * 0.8 * p;
+      const c = 0.3;
+      ctx.save();
+      ctx.translate(x, y);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 1.3);
+      g.addColorStop(0, `rgba(160, 195, 255, ${0.35 * a})`);
+      g.addColorStop(1, "rgba(160, 195, 255, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, R * 1.3, 0, 7);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -ry);
+      ctx.quadraticCurveTo(rx * c, -ry * c, rx, 0);
+      ctx.quadraticCurveTo(rx * c, ry * c, 0, ry);
+      ctx.quadraticCurveTo(-rx * c, ry * c, -rx, 0);
+      ctx.quadraticCurveTo(-rx * c, -ry * c, 0, -ry);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(205, 222, 255, ${0.92 * a})`;
+      ctx.fill();
+      ctx.restore();
+    };
+    const drawAtom = (x: number, y: number, R: number, a: number, t: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.lineWidth = 1;
+      const rot = t * 0.0006;
+      for (let k = 0; k < 3; k++) {
+        const th = rot + (k * Math.PI) / 3;
+        ctx.strokeStyle = `rgba(190, 205, 240, ${0.7 * a})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, R, R * 0.38, th, 0, 7);
+        ctx.stroke();
+        const ea = t * 0.0016 + k * 2.1;
+        const ex = Math.cos(ea) * R;
+        const ey = Math.sin(ea) * R * 0.38;
+        const cs = Math.cos(th);
+        const sn = Math.sin(th);
+        ctx.beginPath();
+        ctx.arc(ex * cs - ey * sn, ex * sn + ey * cs, 1.4, 0, 7);
+        ctx.fillStyle = `rgba(210, 226, 255, ${a})`;
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, 2, 0, 7);
+      ctx.fillStyle = `rgba(220, 232, 255, ${a})`;
+      ctx.fill();
+      ctx.restore();
+    };
+
     const drawField = (now: number, animated: boolean) => {
       const scrollTop = scroller.scrollTop;
       const hb = heroBottom();
@@ -195,6 +277,17 @@ export default function AmbientBackground() {
             ctx.fillText(LETTER_CHARS[Math.floor(hash2(ix, iy, 7) * LETTER_CHARS.length)], x, y);
           }
         }
+      }
+
+      /* Tiga glyph mengelilingi kursor (mengikuti posisi glow yang
+         dihaluskan): spiral kiri, sparkle kanan-atas, atom kanan-bawah,
+         masing-masing melayang pelan. Memudar bersama glow saat mouse
+         diam; di perangkat sentuh tidak pernah muncul. */
+      if (animated && glowAlpha > 0.02) {
+        const bob = (ph: number) => Math.sin(now * 0.0016 + ph) * 2;
+        drawSpiral(glowX - 33, glowY - 4 + bob(0), 10, glowAlpha * 0.95, now);
+        drawSparkle(glowX + 28, glowY - 22 + bob(2.1), 9.5, glowAlpha * 0.95, now);
+        drawAtom(glowX + 16, glowY + 26 + bob(4.2), 10, glowAlpha * 0.95, now);
       }
     };
 
