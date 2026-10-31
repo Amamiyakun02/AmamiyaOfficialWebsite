@@ -68,7 +68,7 @@ const SPARK_GROW_MS = 450; // sparkle tumbuh masuk
 const SPARK_SHRINK_MS = 400; // sparkle menguncup
 const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
-const GRID_COLS = 9; // kolom grid DITETAPKAN 9 untuk desktop (pilihan user 30 Okt dari screenshot zoom-nya: huruf besar & lega); lebar sel = lebar stage / 9 dan semua ukuran diskalakan proporsional, jadi zoom sebesar apa pun jumlah sel tidak meledak. Tampilan mobile disesuaikan menyusul.
+const GRID_COLS = 9; // kolom grid DESKTOP = 9 (pilihan user 30 Okt dari screenshot zoom-nya: huruf besar & lega); lebar sel = lebar stage / kolom dan semua ukuran diskalakan proporsional, jadi zoom sebesar apa pun jumlah sel tidak meledak. Kolom adaptif per lebar stage (build): ponsel 4, tablet 6 (31 Okt).
 
 // --- atom Rutherford per huruf (dari halaman uji /atom) ---
 // Konfigurasi hasil setelan user di bancuh uji (30 Okt): ukuran 1,3x,
@@ -94,6 +94,10 @@ export default function WonderScene() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cellsRef = useRef<Cell[]>([]);
   const colsRef = useRef(0);
+  // Batas efek aktif PER JENIS mengikuti ukuran grid: desktop 10/10/10
+  // (keputusan user), grid kecil (ponsel/tablet) diturunkan agar proporsi
+  // & performa tetap sehat — diatur ulang di build().
+  const fxCapRef = useRef(10);
   const hiRef = useRef<Map<number, HeatState>>(new Map()); // idx sel -> keadaan panas kursor
   // Metrik grid dasar (skala 1) + metrik aktif hasil skala 9 kolom:
   // drawCell (di luar effect utama) membaca gridRef; effect utama
@@ -185,12 +189,17 @@ export default function WonderScene() {
       // isi <main> di bawah navbar, bukan lagi lapisan seukuran jendela).
       cvs!.width = cvs!.clientWidth || window.innerWidth;
       cvs!.height = cvs!.clientHeight || window.innerHeight;
-      // ATURAN 9 KOLOM: lebar sel = lebar stage / 9; font, tinggi sel,
-      // letter-spacing, jangkauan heat, dan cache geometri diskalakan
-      // proporsional. Zoom/jendela sebesar apa pun, kolom tetap 9 dan
-      // jumlah sel tidak meledak (permintaan user 30 Okt).
-      gScale = cvs!.width / (GRID_COLS * gridBase.cw);
-      CW = cvs!.width / GRID_COLS;
+      // KOLOM ADAPTIF per lebar stage (desktop tetap 9 — pilihan user
+      // 30 Okt; mobile & tablet disesuaikan 31 Okt atas permintaan user):
+      // ponsel <640px = 4 kolom, tablet <1080px = 6 kolom, desktop = 9.
+      // Lebar sel = lebar stage / kolom; font, tinggi sel, letter-spacing,
+      // jangkauan heat, dan cache geometri diskalakan proporsional dari
+      // lebar sel, jadi kata tetap terbaca di layar kecil dan jumlah sel
+      // tidak meledak di layar besar.
+      const cols =
+        cvs!.width < 640 ? 4 : cvs!.width < 1080 ? 6 : GRID_COLS;
+      gScale = cvs!.width / (cols * gridBase.cw);
+      CW = cvs!.width / cols;
       CH = gridBase.ch * gScale;
       FONT_SIZE = gridBase.fs * gScale;
       FONT = `${FONT_SIZE}px monospace`;
@@ -240,9 +249,9 @@ export default function WonderScene() {
         return dx * dx + dy * dy <= HOLE_RADIUS * HOLE_RADIUS;
       };
       const cells: Cell[] = [];
-      colsRef.current = GRID_COLS;
+      colsRef.current = cols;
       for (let y = 0; y * CH < cvs!.height; y++) {
-        for (let x = 0; x < GRID_COLS; x++) {
+        for (let x = 0; x < cols; x++) {
           cells.push({
             x: x * CW,
             y: y * CH,
@@ -254,6 +263,8 @@ export default function WonderScene() {
       }
       cellsRef.current = cells;
       visibleCells = cells.filter((c) => !c.hole).length;
+      // grid kecil (ponsel/tablet): efek serentak lebih sedikit
+      fxCapRef.current = visibleCells < 170 ? 5 : visibleCells < 300 ? 7 : 10;
       hiRef.current.clear();
       if (heatRaf !== null) {
         cancelAnimationFrame(heatRaf);
@@ -1012,7 +1023,7 @@ export default function WonderScene() {
       return letter;
     }
     function spawnSpiral() {
-      if (reduced || spiralActive.size >= SPIRAL_MAX) return;
+      if (reduced || spiralActive.size >= Math.min(SPIRAL_MAX, fxCapRef.current)) return;
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
@@ -1077,7 +1088,7 @@ export default function WonderScene() {
       }
     }
     function spawnSpark() {
-      if (reduced || sparkActive.size >= SPARK_MAX) return;
+      if (reduced || sparkActive.size >= Math.min(SPARK_MAX, fxCapRef.current)) return;
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
@@ -1135,7 +1146,7 @@ export default function WonderScene() {
       }
     }
     function spawnAtom() {
-      if (reduced || atomActive.size >= ATOM_MAX) return;
+      if (reduced || atomActive.size >= Math.min(ATOM_MAX, fxCapRef.current)) return;
       const cells = cellsRef.current;
       const cols = colsRef.current;
       if (!cells.length || !cols) return;
