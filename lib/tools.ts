@@ -30,7 +30,7 @@ export const toolsData: ToolDef[] = [
   { slug: "image-to-pdf", name: "Image to PDF", desc: "Ubah kumpulan gambar menjadi satu berkas PDF rapi.", icon: FileImage, status: "migrasi" },
   { slug: "remove-bg", name: "Remove Background", desc: "Hapus latar belakang foto secara otomatis dengan model AI.", icon: Eraser, status: "migrasi" },
   { slug: "anime-downloader", name: "Anime Downloader", desc: "Cari dan unduh anime dari katalog, lengkap dengan pilihan resolusi.", icon: Clapperboard, status: "migrasi" },
-  { slug: "mcp-playground", name: "MCP Playground", desc: "Coba langsung 31 tool MCP server-ku (AgentMCP): sistem, database, produk, booking, dan pencarian web.", icon: Plug, status: "migrasi" },
+  { slug: "mcp-playground", name: "MCP Playground", desc: "Coba langsung 31 tool MCP server-ku (AgentMCP): sistem, database, produk, booking, dan pencarian web.", icon: Plug, status: "live" },
   { slug: "automations", name: "Automations", desc: "Kumpulan workflow otomatisasi yang kubangun untuk pekerjaan berulang.", icon: Workflow, status: "migrasi" },
   { slug: "status", name: "Status Layanan", desc: "Pantau kesehatan backend dan layanan-layanan yang menopang situs ini.", icon: Activity, status: "migrasi" },
   { slug: "feedback", name: "Feedback", desc: "Kirim ulasan dan masukan tentang situs dan tool-tool di sini.", icon: MessageSquare, status: "migrasi" },
