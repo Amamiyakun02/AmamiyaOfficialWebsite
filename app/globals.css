@@ -142,6 +142,29 @@ body {
   letter-spacing: 0.01em;
   color: #f4f4fa;
 }
+/* Huruf judul interaktif (31 Okt): tiap huruf adalah sasaran hover
+   sendiri; saat berefek huruf aslinya disembunyikan dan canvas glyph
+   (spiral/sparkle/atom) tampil menetap di tempatnya. */
+.t-letter {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+.t-char {
+  display: inline-block;
+}
+.t-letter.is-fx .t-char {
+  opacity: 0;
+}
+.t-fx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.18em;
+  height: 1.18em;
+  transform: translate(-50%, -54%);
+  pointer-events: none;
+}
 
 /* 3 card efek — layer paling depan stage (di atas canvas & judul):
    pratinjau glyph hidup + judul + penjelasan tiap efek huruf. */
