@@ -519,10 +519,15 @@ code {
     gap: 14px;
   }
   .fx-card {
-    /* ponsel: lebih kecil lagi */
-    flex-basis: 56px;
-    width: 56px;
-    height: 56px;
+    /* ponsel: diperkecil lagi (permintaan user 31 Okt — cip 56px
+       terlihat lebih besar dari huruf judul mobile-nya sendiri);
+       42px dengan padding 10px membuat glyph ±22px, sebanding
+       tinggi huruf kapital judul di layar kecil */
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+    padding: 10px;
+    border-radius: 14px;
     padding: 9px;
     border-radius: 14px;
   }
