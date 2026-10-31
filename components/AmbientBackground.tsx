@@ -86,24 +86,48 @@ export default function AmbientBackground() {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(t * 0.00025);
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.55);
-      g.addColorStop(0, `rgba(210, 225, 255, ${0.5 * a})`);
-      g.addColorStop(1, "rgba(210, 225, 255, 0)");
+      // inti lebih terang & padat (versi lama terlalu tipis — keluhan user)
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.6);
+      g.addColorStop(0, `rgba(215, 230, 255, ${0.8 * a})`);
+      g.addColorStop(1, "rgba(215, 230, 255, 0)");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(0, 0, R * 0.55, 0, 7);
+      ctx.arc(0, 0, R * 0.6, 0, 7);
       ctx.fill();
-      ctx.fillStyle = "rgba(200, 214, 245, 1)";
+      // lengan digambar juga sebagai garis halus agar bentuk spiral
+      // terbaca jelas di ukuran kecil, bukan hanya titik-titik lepas
+      ctx.strokeStyle = `rgba(190, 208, 245, ${0.5 * a})`;
+      ctx.lineWidth = Math.max(1, R * 0.1);
       for (let arm = 0; arm < 4; arm++) {
-        for (let i = 1; i <= 9; i++) {
-          const f = i / 9;
+        ctx.beginPath();
+        for (let i = 1; i <= 11; i++) {
+          const f = i / 11;
           const ang = (arm * Math.PI) / 2 + f * 2.2;
-          ctx.globalAlpha = a * (0.3 + 0.7 * hash2(arm * 10 + i, 3, 11));
+          const px = Math.cos(ang) * R * f;
+          const py = Math.sin(ang) * R * f * 0.82;
+          if (i === 1) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      // bintang lengan lebih besar & terang dari versi lama
+      ctx.fillStyle = "rgba(205, 220, 250, 1)";
+      for (let arm = 0; arm < 4; arm++) {
+        for (let i = 1; i <= 11; i++) {
+          const f = i / 11;
+          const ang = (arm * Math.PI) / 2 + f * 2.2;
+          ctx.globalAlpha = a * (0.5 + 0.5 * hash2(arm * 12 + i, 3, 11));
           ctx.beginPath();
-          ctx.arc(Math.cos(ang) * R * f, Math.sin(ang) * R * f * 0.82, Math.max(0.5, (1 - f * 0.55) * 0.75), 0, 7);
+          ctx.arc(Math.cos(ang) * R * f, Math.sin(ang) * R * f * 0.82, Math.max(0.7, R * 0.085 * (1 - f * 0.35)), 0, 7);
           ctx.fill();
         }
       }
+      // nukleus padat
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "rgba(225, 238, 255, 1)";
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(1, R * 0.14), 0, 7);
+      ctx.fill();
       ctx.restore();
       ctx.globalAlpha = 1;
     };
