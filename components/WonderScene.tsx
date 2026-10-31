@@ -655,12 +655,14 @@ export default function WonderScene() {
       const holeW = holeCols * CW;
       const holeH =
         viewW < 640
-          ? Math.min(118, Math.max(92, viewH * 0.26))
+          ? Math.min(96, Math.max(84, viewH * 0.2))
           : Math.max(120, Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO));
-      // (Ponsel: lantai 92px WAJIB — rumus persen murni sebelumnya
-      // menghasilkan lubang ±49px padahal blok judul + ikon ±60px,
-      // sehingga ikon tumpah keluar lubang dan menimpa baris grid
-      // di bawahnya; keluhan berulang user 31 Okt.)
+      // (Ponsel: lubang WAJIB lebih tinggi dari blok judul + ikon
+      // (±50px) tapi tidak kelewat tinggi — rumus persen murni pernah
+      // menghasilkan ±49px sehingga ikon tumpah menimpa grid, lalu
+      // versi lantai 92px + 26% membuat margin atas-bawah lubang
+      // terlalu besar. Kini setara memotong ±2 baris dari tengah:
+      // lantai 84px, rasio 20%, cap 96px — margin tersisa ±18px.)
       // (Lantai 120px di cabang lebar: di layar PENDEK seperti HP
       // landscape, rumus 36% tinggi stage bisa menyusut sampai ±79px
       // padahal blok judul + ikon butuh lebih — judul/ikon tumpah

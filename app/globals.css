@@ -519,17 +519,17 @@ code {
   }
   .fx-cards {
     margin-top: 4px;
-    gap: 12px;
+    gap: 8px;
   }
   .fx-card {
     /* ponsel: diperkecil bertahap mengikuti panggung (31 Okt) —
-       cip 30px dengan glyph yang kini disamakan skalanya antar
+       cip 27px dengan glyph yang kini disamakan skalanya antar
        jenis, meniru tampilan tab view yang disetujui user */
-    flex-basis: 30px;
-    width: 30px;
-    height: 30px;
-    padding: 7px;
-    border-radius: 11px;
+    flex-basis: 27px;
+    width: 27px;
+    height: 27px;
+    padding: 6px;
+    border-radius: 10px;
   }
 }
 
