@@ -29,16 +29,32 @@ export function scrollToSection(id: string) {
   scroller.scrollTo({ top: desired(), behavior: "smooth" });
 
   let lastTop = scroller.scrollTop;
+  let lastHeight = scroller.scrollHeight;
   let stable = 0;
   const started = performance.now();
   const timer = window.setInterval(() => {
     const moving = Math.abs(scroller.scrollTop - lastTop) > 1;
     lastTop = scroller.scrollTop;
-    if (!moving) {
+    // Halaman masih berubah (section ter-mount) = belum stabil,
+    // walau posisi sesaat sudah tepat: pertumbuhan sesudahnya akan
+    // menggeser titik akhir (kasus tiba lewat hash dari halaman tool).
+    const grew = scroller.scrollHeight !== lastHeight;
+    lastHeight = scroller.scrollHeight;
+    if (!moving && !grew) {
       const d = desired();
+      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
       if (Math.abs(d - scroller.scrollTop) <= 3) {
         stable += 1;
         if (stable >= 6) cancel();
+      } else if (
+        d > maxScroll + 3 &&
+        Math.abs(scroller.scrollTop - maxScroll) <= 1
+      ) {
+        // Tujuan di luar jangkauan fisik (section terakhir): halaman
+        // memang habis, section sudah semaksimal mungkin di atas —
+        // anggap menetap, jangan koreksi sia-sia.
+        stable += 1;
+        if (stable >= 3) cancel();
       } else {
         stable = 0;
         scroller.scrollTo({ top: d, behavior: "auto" });
