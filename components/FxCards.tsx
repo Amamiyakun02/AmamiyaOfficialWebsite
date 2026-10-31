@@ -13,11 +13,15 @@ import { useEffect, useRef } from "react";
 
 type Kind = "spiral" | "spark" | "atom" | "blackhole";
 
+// Nama resmi keempat elemen (keputusan user 31 Okt) DIURUTKAN sesuai
+// perjalanan skala alam semesta: Macro Cosmos (galaksi, terbesar) →
+// Gravity (black hole) → Foton (cahaya/sparkle) → Micro Cosmos (atom,
+// terkecil). Urutan ini juga urutan muncul cipnya (1,0/1,2/1,4/1,6 dtk).
 const CARDS: { kind: Kind; label: string }[] = [
-  { kind: "spiral", label: "Spiral" },
-  { kind: "spark", label: "Sparkle" },
-  { kind: "atom", label: "Atom" },
-  { kind: "blackhole", label: "Black Hole" },
+  { kind: "spiral", label: "Macro Cosmos" },
+  { kind: "blackhole", label: "Gravity" },
+  { kind: "spark", label: "Foton" },
+  { kind: "atom", label: "Micro Cosmos" },
 ];
 
 function GlyphCanvas({ kind }: { kind: Kind }) {
