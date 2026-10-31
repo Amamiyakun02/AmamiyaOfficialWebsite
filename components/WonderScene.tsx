@@ -236,13 +236,13 @@ function drawTitleGlyph(
 }
 
 function TitleLetter({ ch, enabled }: { ch: string; enabled: boolean }) {
-  const [mode, setMode] = useState<"idle" | "fx" | "glitch">("idle");
+  const [mode, setMode] = useState<"idle" | "in" | "fx" | "out">("idle");
   const [kind, setKind] = useState<TitleFxKind>("spiral");
   const [gch, setGch] = useState(ch);
-  const [gj, setGj] = useState({ x: 0, y: 0 });
+  const [gj, setGj] = useState({ x: 0, y: 0, o: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const timersRef = useRef<number[]>([]);
-  const modeRef = useRef<"idle" | "fx" | "glitch">("idle");
+  const modeRef = useRef<"idle" | "in" | "fx" | "out">("idle");
 
   const clearTimers = () => {
     timersRef.current.forEach((t) => window.clearInterval(t));
@@ -287,40 +287,60 @@ function TitleLetter({ ch, enabled }: { ch: string; enabled: boolean }) {
 
   useEffect(() => clearTimers, []);
 
-  const enter = () => {
-    if (!enabled) return;
+  // Glitch berjenjang: huruf pengganti acak + goyangan yang MEREDA
+  // (amplitudo menyusut tiap kedip) + opacity pulih — transisi terasa
+  // mulus, tidak memotong. Dipakai dua arah: masuk (cepat) & keluar
+  // (lebih lama, atas koreksi user "glitchnya terlalu cepat").
+  const startGlitch = (ticks: number, stepMs: number, done: () => void) => {
     clearTimers();
-    const kinds: TitleFxKind[] = ["spiral", "spark", "atom"];
-    setKind(kinds[Math.floor(Math.random() * 3)]);
-    modeRef.current = "fx";
-    setMode("fx");
-  };
-
-  const leave = () => {
-    if (modeRef.current !== "fx") return;
-    modeRef.current = "glitch";
-    setMode("glitch");
-    // glitch kembali: ±5 kedip 40ms — huruf acak + goyangan, lalu asli
-    let ticks = 0;
+    let t = 0;
     const iv = window.setInterval(() => {
-      ticks++;
-      if (ticks >= 5) {
+      t++;
+      if (t >= ticks) {
         window.clearInterval(iv);
-        modeRef.current = "idle";
-        setMode("idle");
-        setGch(ch);
+        done();
         return;
       }
+      const decay = 1 - t / ticks;
       const pool = "AMAMIYA";
       setGch(pool[Math.floor(Math.random() * pool.length)]);
       setGj({
-        x: Math.random() * 0.12 - 0.06,
-        y: Math.random() * 0.08 - 0.04,
+        x: (Math.random() * 0.14 - 0.07) * decay,
+        y: (Math.random() * 0.1 - 0.05) * decay,
+        o: 0.55 + 0.45 * (t / ticks),
       });
-    }, 40);
+    }, stepMs);
     timersRef.current.push(iv);
   };
 
+  const enter = () => {
+    if (!enabled) return;
+    if (modeRef.current === "fx" || modeRef.current === "in") return;
+    const kinds: TitleFxKind[] = ["spiral", "spark", "atom"];
+    setKind(kinds[Math.floor(Math.random() * 3)]);
+    modeRef.current = "in";
+    setMode("in");
+    // glitch masuk singkat (±120ms) lalu glyph tampil menetap
+    startGlitch(3, 40, () => {
+      modeRef.current = "fx";
+      setMode("fx");
+    });
+  };
+
+  const leave = () => {
+    if (modeRef.current !== "fx" && modeRef.current !== "in") return;
+    modeRef.current = "out";
+    setMode("out");
+    // glitch keluar lebih lama & mereda (±400ms) menuju huruf asli
+    startGlitch(9, 45, () => {
+      modeRef.current = "idle";
+      setMode("idle");
+      setGch(ch);
+      setGj({ x: 0, y: 0, o: 1 });
+    });
+  };
+
+  const glitching = mode === "in" || mode === "out";
   return (
     <span
       className={`t-letter${mode === "fx" ? " is-fx" : ""}`}
@@ -330,12 +350,15 @@ function TitleLetter({ ch, enabled }: { ch: string; enabled: boolean }) {
       <span
         className="t-char"
         style={
-          mode === "glitch"
-            ? { transform: `translate(${gj.x}em, ${gj.y}em)` }
+          glitching
+            ? {
+                transform: `translate(${gj.x}em, ${gj.y}em)`,
+                opacity: gj.o,
+              }
             : undefined
         }
       >
-        {mode === "glitch" ? gch : ch}
+        {glitching ? gch : ch}
       </span>
       {mode === "fx" && (
         <canvas ref={canvasRef} className="t-fx" aria-hidden="true" />
