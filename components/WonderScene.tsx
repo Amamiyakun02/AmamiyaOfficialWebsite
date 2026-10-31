@@ -423,7 +423,7 @@ function TitleLetter({
     if (!enabled) return;
     if (modeRef.current === "fx" || modeRef.current === "in") return;
     const kinds: TitleFxKind[] = ["spiral", "spark", "atom", "blackhole"];
-    setKind(kinds[Math.floor(Math.random() * 3)]);
+    setKind(kinds[Math.floor(Math.random() * kinds.length)]);
     modeRef.current = "in";
     setMode("in");
     // glitch masuk singkat (±120ms) lalu glyph tampil menetap
