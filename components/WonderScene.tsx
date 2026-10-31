@@ -70,7 +70,7 @@ const SPARK_P_MIN = 0.25; // skala awal/akhir sparkle
 const SPARK_ASPECT = 0.86; // lebar = 0,86 x tinggi (proporsi logo Gemini)
 const GRID_COLS = 8; // kolom KATA desktop = 8 (perombakan 31 Okt: total 10 lajur termasuk 2 lajur margin kosong kiri-kanan); lebar sel = lebar stage / (kolom + 2) dan semua ukuran diskalakan proporsional. Kolom adaptif per lebar stage (build): ponsel 4 kata, tablet 6 kata.
 const FONT_SHRINK = 0.94; // font sedikit diperkecil dari skala murni lajur (permintaan user 31 Okt)
-const ROW_STRETCH = 1.3; // tinggi baris diperbesar agar jumlah baris yang tampil berkurang & grid lebih lega — font TIDAK ikut membesar (permintaan user 31 Okt: "cell atasnya dikurang sedikit agar tidak terlalu banyak")
+const ROW_STRETCH = 1.15; // tinggi baris sedikit diperbesar dari rapat murni (1,0) agar jumlah baris berkurang, tapi gap-nya tidak sebesar 1,3 — titik tengah pilihan user 31 Okt ("gap rows-nya diperkecil" setelah mencoba 1,3)
 
 // --- atom Rutherford per huruf (dari halaman uji /atom) ---
 // Konfigurasi hasil setelan user di bancuh uji (30 Okt): ukuran 1,3x,
