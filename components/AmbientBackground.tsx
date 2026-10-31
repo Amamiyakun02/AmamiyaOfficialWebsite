@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 /* =====================================================================
    LATAR AMBIEN SECTION BAWAH (permintaan user 31 Okt): ladang titik
-   lembut + huruf-huruf acak (A/M/I/Y + sisipan DEV/BUILD/CODE) di
+   lembut + huruf-huruf acak (A/M/I/Y + sisipan DEV/BUILD/CODE/UNIVERSE) di
    BELAKANG semua section di bawah hero — tema lebih ramah dan ringan
    dari grid tipografi di atas. Konten section mengambang di depannya;
    titik dan huruf menyala mengikuti mouse (glow tembus terlihat di
@@ -26,7 +26,7 @@ import { useEffect, useRef } from "react";
 const SPACING = 46;
 const LETTER_SPACING = 110;
 const LETTER_CHARS = "AMAMIYA";
-const INSERTS = ["DEV", "BUILD", "CODE"];
+const INSERTS = ["DEV", "BUILD", "CODE", "UNIVERSE"];
 const GLOW_R = 210;
 
 function hash2(ix: number, iy: number, salt: number) {

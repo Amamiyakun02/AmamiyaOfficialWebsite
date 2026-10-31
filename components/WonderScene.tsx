@@ -34,7 +34,7 @@ const BASE_ALPHA = 0.44; // opasitas dasar minimum per sel (dinaikkan: grid lebi
 const BASE_ALPHA_RANGE = 0.16; // rentang acak opasitas dasar
 const GLITCH_EVERY_MS = 240; // interval efek glitch (diturunkan dari 120: tempo perubahan teks lebih tenang, tidak bikin pusing)
 const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
-const ALT_WORDS = ["DEV", "BUILD", "CODE"]; // kata sisipan yang muncul lebih terang
+const ALT_WORDS = ["DEV", "BUILD", "CODE", "UNIVERSE"]; // kata sisipan yang muncul lebih terang (UNIVERSE ditambahkan user 31 Okt — 8 huruf, lebih panjang dari AMAMIYA: drawCell mengecilkan font-nya agar muat selebar sel)
 const ALT_BOOST = 0.38; // tambahan opasitas kata sisipan
 const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
 const HEAT_RX = 78; // jangkauan panas per HURUF: ±3 huruf lebih dari kursor -> tambalan ±6 huruf ke samping (pengamatan user dari video Wonder asli)
@@ -2698,6 +2698,22 @@ export default function WonderScene() {
       w = ctx.measureText(text).width;
       if (cache.size > 400) cache.clear();
       cache.set(key, w);
+    }
+    // Kata yang lebih lebar dari selnya (sisipan UNIVERSE, 8 huruf >
+    // AMAMIYA 7 huruf) dikecilkan font-nya secara proporsional agar
+    // muat selebar sel dan tidak menabrak kata tetangga.
+    if (w > G.cw - 2) {
+      const f = (G.cw - 2) / w;
+      const m = /(\d+(?:\.\d+)?)px/.exec(G.font);
+      if (m) {
+        ctx.font = G.font.replace(
+          m[0],
+          `${(parseFloat(m[1]) * f).toFixed(2)}px`,
+        );
+        (ctx as unknown as { letterSpacing: string }).letterSpacing =
+          `${G.ls * f}px`;
+        w = ctx.measureText(text).width;
+      }
     }
     ctx.fillText(text, c.x + (G.cw - w) / 2, c.y + G.ty);
     redrawsRef.current++;
