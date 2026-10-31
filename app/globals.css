@@ -1481,6 +1481,13 @@ code {
 .ambient-bg {
   position: fixed;
   inset: 0;
+  /* WAJIB eksplisit: tanpa ini elemen canvas (replaced element)
+     memakai ukuran intrinsik = ukuran backing store (x DPR), sehingga
+     di layar berskala pecahan (DPR 1.25/1.5) kanvas tertampil lebih
+     besar dari viewport dan semua gambar bergeser sejauh kursor x DPR
+     (bug misslocation highlight, 31 Okt). */
+  width: 100%;
+  height: 100%;
   z-index: 0;
   pointer-events: none;
 }

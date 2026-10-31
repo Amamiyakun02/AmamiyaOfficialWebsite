@@ -66,6 +66,11 @@ export default function AmbientBackground() {
       viewH = window.innerHeight;
       cvs.width = Math.round(viewW * dpr);
       cvs.height = Math.round(viewH * dpr);
+      // Ukuran CSS elemen harus = viewport (lihat .ambient-bg di
+      // globals.css) — kalau tidak, di DPR pecahan kanvas tertampil
+      // sebesar backing store dan highlight bergeser dari kursor.
+      cvs.style.width = `${viewW}px`;
+      cvs.style.height = `${viewH}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (reduced) drawStatic();
     };
