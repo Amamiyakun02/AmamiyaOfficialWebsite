@@ -9,10 +9,10 @@ import { useEffect, useRef, useState } from "react";
    spiral/sparkle/atom:
      idle → glitch (±150 ms) → tumbuh (±550 ms) → hold (debu disk
           mengorbit) → menguncup (±400 ms) → glitch → idle
-   Horizon peristiwa = lingkaran hitam pekat berbingkai cincin foton
-   bercahaya di pusat huruf; disk akresi elips miring digambar dua
-   tahap (belakang lalu depan horizon) dengan partikel debu yang
-   mengorbit — bagian dalam mengorbit lebih cepat. Panel bawah untuk
+   TAMPAK DEPAN (referensi user): bola hitam di pusat huruf dikelilingi
+   cincin cahaya melingkar (distorsi cahaya disk), dan disk akresi
+   tampak dari tepinya sebagai pita terang yang memotong tepat di
+   tengah bola. Gerakan hanya rotasi pada porosnya. Panel bawah untuk
    menyetel: ukuran, lebar disk, glow, lama hold, maks aktif.
    Klik huruf mana pun untuk memicu black hole tepat di huruf itu.
    ===================================================================== */
@@ -35,8 +35,8 @@ const GROW_MS = 550;
 const SHRINK_MS = 400;
 const P_MIN = 0.25;
 const AUTO_EVERY_MS = 700;
-/* kemiringan dasar disk akresi (radian) */
-const DISK_TILT = -0.32;
+/* black hole tampak depan: tidak ada kemiringan — gerak hanya
+   rotasi pada poros (revisi user) */
 
 type Cell = { x: number; y: number; a: number; shown: boolean };
 type Phase = "glitchIn" | "grow" | "hold" | "shrink" | "glitchOut";
@@ -166,11 +166,13 @@ export default function BlackholeScene() {
       return capHCache;
     }
 
-    /* --- bentuk black hole: horizon hitam + cincin foton + disk ---
-       Disk akresi digambar dua tahap (belakang lalu depan horizon)
-       seperti cincin planet, dengan lapisan-lapisan garis yang makin
-       ke dalam makin terang; partikel debu mengorbit di bidang disk,
-       lapisan dalam bergerak lebih cepat. */
+    /* --- bentuk black hole TAMPAK DEPAN (revisi user dari referensi
+       Gargantua): distorsi cahaya membentuk cincin bercahaya melingkar
+       mengelilingi bola hitam, dan disk akresi terlihat dari tepinya
+       sebagai pita terang tipis yang MEMOTONG TEPAT DI TENGAH bola.
+       Gerakan hanya ROTASI PADA POROS: debu mengorbit melingkar pada
+       cincin cahaya dan mengalir menyamping di sepanjang pita —
+       tanpa kemiringan/goyangan. */
     function drawBlackhole(
       c: Cell,
       s: Blackhole,
@@ -183,52 +185,73 @@ export default function BlackholeScene() {
       const cy = c.y + CH / 2 + 1;
       const capH = capHeight();
       const R = Math.max(1.5, capH * 0.55 * sizeRef.current * scale);
-      const diskRx = R * 2.05 * diskRef.current;
-      const diskRy = diskRx * 0.3;
-      const tilt = DISK_TILT + 0.02 * Math.sin(now / 620 + s.seed);
+      const ringR = R * 1.38;
+      const bandRx = R * 2.7 * diskRef.current;
+      const bandRy = Math.max(1, R * 0.16);
       const hN = (n: number) => {
         const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
         return v - Math.floor(v);
       };
-      const passes = [
-        { m: 1, w: R * 0.55, a: 0.16 },
-        { m: 0.92, w: R * 0.34, a: 0.3 },
-        { m: 0.84, w: R * 0.18, a: 0.55 },
-      ];
+      const bandGrad = (mul: number) => {
+        const gr = g.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
+        gr.addColorStop(0, "rgba(190, 214, 252, 0)");
+        gr.addColorStop(0.16, `rgba(190, 214, 252, ${0.28 * mul * alpha})`);
+        gr.addColorStop(0.5, `rgba(228, 240, 255, ${0.8 * mul * alpha})`);
+        gr.addColorStop(0.84, `rgba(190, 214, 252, ${0.28 * mul * alpha})`);
+        gr.addColorStop(1, "rgba(190, 214, 252, 0)");
+        return gr;
+      };
       g.save();
       /* halo redup di belakang keseluruhan */
-      const halo = g.createRadialGradient(cx, cy, 0, cx, cy, diskRx * 1.05);
-      halo.addColorStop(0, `rgba(170, 200, 255, ${0.12 * alpha})`);
+      const halo = g.createRadialGradient(cx, cy, 0, cx, cy, bandRx * 1.02);
+      halo.addColorStop(0, `rgba(170, 200, 255, ${0.13 * alpha})`);
       halo.addColorStop(1, "rgba(170, 200, 255, 0)");
       g.fillStyle = halo;
       g.beginPath();
-      g.arc(cx, cy, diskRx * 1.05, 0, 7);
+      g.arc(cx, cy, bandRx * 1.02, 0, 7);
       g.fill();
-      /* disk belakang (separuh atas elips) */
-      for (const p of passes) {
+      /* pita disk bagian belakang (di belakang bola & cincin) */
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g.fillStyle = bandGrad(0.55);
+      g.fill();
+      /* cincin cahaya melingkar (cahaya disk yang terdistorsi
+         mengelilingi bola): tiga lapisan konsentris + penekanan
+         busur atas & bawah seperti referensi */
+      for (const p of [
+        { m: 0.94, w: R * 0.1, a: 0.3 },
+        { m: 1, w: R * 0.17, a: 0.5 },
+        { m: 1.07, w: R * 0.08, a: 0.22 },
+      ]) {
         g.beginPath();
-        g.ellipse(cx, cy, diskRx * p.m, diskRy * p.m, tilt, Math.PI, 2 * Math.PI);
-        g.strokeStyle = `rgba(196, 216, 250, ${p.a * 0.8 * alpha})`;
+        g.arc(cx, cy, ringR * p.m, 0, 7);
+        g.strokeStyle = `rgba(205, 226, 252, ${p.a * alpha})`;
         g.lineWidth = Math.max(0.7, p.w);
         g.stroke();
       }
-      /* debu mengorbit di bidang disk (dalam lebih cepat) */
-      const cs = Math.cos(tilt);
-      const sn = Math.sin(tilt);
-      for (let i = 0; i < 18; i++) {
-        const bf = 0.78 + hN(s.seed * 17 + i * 3 + 1) * 0.3;
-        const th = hN(s.seed * 29 + i * 7 + 2) * Math.PI * 2 + now * 0.0011 * (1.35 - bf);
-        const ex0 = Math.cos(th) * diskRx * bf;
-        const ey0 = Math.sin(th) * diskRy * bf;
-        const dx = cx + ex0 * cs - ey0 * sn;
-        const dy = cy + ex0 * sn + ey0 * cs;
+      for (const seg of [
+        { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
+        { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
+      ]) {
+        g.beginPath();
+        g.arc(cx, cy, ringR, seg.a0, seg.a1);
+        g.strokeStyle = `rgba(232, 243, 255, ${0.8 * alpha})`;
+        g.lineWidth = Math.max(0.8, R * 0.2);
+        g.stroke();
+      }
+      /* debu mengorbit pada cincin — rotasi murni pada poros */
+      for (let i = 0; i < 14; i++) {
+        const rf = 0.92 + hN(s.seed * 17 + i * 3 + 1) * 0.16;
+        const th = hN(s.seed * 29 + i * 7 + 2) * Math.PI * 2 - now * 0.0012;
+        const dx = cx + Math.cos(th) * ringR * rf;
+        const dy = cy + Math.sin(th) * ringR * rf;
         const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.005 + hN(s.seed + i * 11) * 22));
         g.beginPath();
-        g.arc(dx, dy, Math.max(0.4, R * 0.09 * (1.15 - bf) + 0.35), 0, 7);
-        g.fillStyle = `rgba(218, 233, 255, ${(alpha * tw * 0.9).toFixed(3)})`;
+        g.arc(dx, dy, Math.max(0.4, R * 0.07 + 0.35), 0, 7);
+        g.fillStyle = `rgba(220, 235, 255, ${(alpha * tw * 0.9).toFixed(3)})`;
         g.fill();
       }
-      /* horizon peristiwa: hitam pekat + cincin foton bercahaya */
+      /* bola hitam (horizon) + tepi foton tipis */
       g.beginPath();
       g.arc(cx, cy, R, 0, 7);
       g.fillStyle = `rgba(1, 1, 3, ${alpha})`;
@@ -236,19 +259,32 @@ export default function BlackholeScene() {
       g.shadowColor = "rgba(170, 205, 255, 0.95)";
       g.shadowBlur = glowRef.current * 2.5;
       g.beginPath();
-      g.arc(cx, cy, R * 1.05, 0, 7);
-      g.strokeStyle = `rgba(238, 246, 255, ${0.95 * alpha})`;
-      g.lineWidth = Math.max(1, R * 0.15);
+      g.arc(cx, cy, R * 1.02, 0, 7);
+      g.strokeStyle = `rgba(238, 246, 255, ${0.9 * alpha})`;
+      g.lineWidth = Math.max(0.8, R * 0.12);
       g.stroke();
       g.shadowBlur = 0;
       g.shadowColor = "rgba(0,0,0,0)";
-      /* disk depan (separuh bawah elips, menimpa horizon) */
-      for (const p of passes) {
+      /* pita disk bagian depan: memotong tepat di tengah bola */
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g.fillStyle = bandGrad(1);
+      g.fill();
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, 7);
+      g.fillStyle = bandGrad(1.15);
+      g.fill();
+      /* materi mengalir menyamping di sepanjang pita (rotasi disk) */
+      for (let i = 0; i < 5; i++) {
+        const sp = 0.000045 * (1 + hN(s.seed * 41 + i) * 0.7);
+        const fx = ((hN(s.seed * 53 + i * 7) + now * sp) % 1) * 2 - 1;
+        const dx = cx + fx * bandRx * 0.94;
+        const dy = cy + (hN(s.seed * 61 + i * 3) - 0.5) * bandRy * 0.8;
+        const env = 1 - Math.abs(fx);
         g.beginPath();
-        g.ellipse(cx, cy, diskRx * p.m, diskRy * p.m, tilt, 0, Math.PI);
-        g.strokeStyle = `rgba(208, 226, 252, ${p.a * alpha})`;
-        g.lineWidth = Math.max(0.7, p.w);
-        g.stroke();
+        g.arc(dx, dy, Math.max(0.4, R * 0.08), 0, 7);
+        g.fillStyle = `rgba(230, 242, 255, ${(alpha * env * 0.85).toFixed(3)})`;
+        g.fill();
       }
       g.restore();
     }
