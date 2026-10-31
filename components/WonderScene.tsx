@@ -554,6 +554,12 @@ export default function WonderScene() {
     // agar koordinat gambar tetap satuan CSS.
     let viewW = 0;
     let viewH = 0;
+    // Tepi bawah area grid (piksel CSS): di tablet & ponsel grid TIDAK
+    // memenuhi tinggi stage — jumlah baris dikurangi dengan membatasi
+    // area gambar sehingga tepi bawah grid TERANGKAT dan bagian bawah
+    // layar kosong (revisi user 31 Okt; bukan baris yang direnggangkan).
+    // Desktop: gridBottom = viewH (penuh, seperti biasa).
+    let gridBottom = 0;
     let CW = gridRef.current.cw;
     let CH = gridRef.current.ch;
     let FONT = gridRef.current.font;
@@ -608,15 +614,7 @@ export default function WonderScene() {
       const tracks = cols + 2; // + lajur margin kiri & kanan
       gScale = viewW / (tracks * gridBase.cw);
       CW = viewW / tracks;
-      // JUMLAH BARIS di tablet & ponsel (permintaan user 31 Okt):
-      // layar portrait itu tinggi, jadi dengan tinggi baris rapat
-      // jumlah baris meledak (±60 baris di ponsel) dan terasa berat.
-      // Di layar <1080 tinggi baris DIPERENGGANG — font tidak ikut
-      // membesar, hanya jarak antar baris — agar total baris turun
-      // jauh. Desktop tidak berubah (tetap ROW_STRETCH 1,15).
-      const rowStretch =
-        viewW < 640 ? 2.0 : viewW < 1080 ? 1.6 : ROW_STRETCH;
-      CH = gridBase.ch * gScale * rowStretch;
+      CH = gridBase.ch * gScale * ROW_STRETCH;
       FONT_SIZE = gridBase.fs * gScale * FONT_SHRINK;
       FONT = `${FONT_SIZE}px monospace`;
       LETTER_SPACING = gridBase.ls * gScale * FONT_SHRINK;
@@ -676,7 +674,9 @@ export default function WonderScene() {
       };
       const cells: Cell[] = [];
       colsRef.current = cols;
-      for (let y = 0; y * CH < viewH; y++) {
+      gridBottom =
+        viewW < 640 ? viewH * 0.7 : viewW < 1080 ? viewH * 0.78 : viewH;
+      for (let y = 0; y * CH < gridBottom; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
             x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
@@ -733,7 +733,7 @@ export default function WonderScene() {
       // vertikal seperti tirai, bukan diagonal sudut-ke-sudut.
       // Tiap sel tetap hanya digambar sekali — bukan loop per-frame.
       const W = viewW;
-      const H = viewH;
+      const H = gridBottom;
       const corner = nextCorner();
       const maxDiag = W + H;
       const step = maxDiag / 25; // ±25 langkah × 40 ms ≈ 1 detik
@@ -1803,7 +1803,7 @@ export default function WonderScene() {
     // 2 = kiri bawah (kuadran 3), 3 = kanan bawah (kuadran 4).
     function distFrom(corner: number, x: number, y: number) {
       const W = viewW;
-      const H = viewH;
+      const H = gridBottom;
       return corner === 0
         ? x + y
         : corner === 1
@@ -1841,7 +1841,7 @@ export default function WonderScene() {
     function stepWave() {
       if (document.hidden || !stageVisible) return;
       const cells = cellsRef.current;
-      const maxDiag = viewW + viewH;
+      const maxDiag = viewW + gridBottom;
       waveFront += maxDiag / 20; // satu sapuan penuh ±1,6 detik
       const next = new Set<number>();
       for (let i = 0; i < cells.length; i++) {
