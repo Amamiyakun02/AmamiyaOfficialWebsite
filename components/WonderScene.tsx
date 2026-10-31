@@ -831,6 +831,8 @@ export default function WonderScene() {
       sparkActive.clear();
       atomActive.clear();
       blackholeActive.clear();
+      spriteCache.clear();
+      spiralCache = null;
       altActive.clear();
       frontActive.clear();
       scrambling.clear();
@@ -1097,6 +1099,17 @@ export default function WonderScene() {
       seed: number; // benih acak posisi debu orbit per kemunculan
     };
     const blackholeActive = new Map<number, BhState>();
+    // OPTIMASI (31 Okt, hasil profil): cache sprite badan glyph yang
+    // kaku (sparkle & black hole fase hold dirender SEKALI ke canvas
+    // offscreen beresolusi perangkat, lalu tiap frame cukup drawImage)
+    // + cache jalur lengan spiral fase hold (geometri p=1 tidak
+    // berubah antar frame/instans — murni memakai ulang Path2D).
+    const spriteCache = new Map<
+      string,
+      { cvs: HTMLCanvasElement; hw: number; hh: number }
+    >();
+    let spiralCache: { gs: number; paths: Path2D[]; rmids: number[] } | null =
+      null;
     let spiralRaf: number | null = null;
     let spiralLastFrame = 0;
     const easeOutCubicS = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -1141,6 +1154,33 @@ export default function WonderScene() {
       g.rotate(rot);
       const steps = 48;
       const CHUNK = 4;
+      // OPTIMASI: pada fase hold (p = 1) geometri potongan lengan
+      // selalu sama untuk semua instans & frame — pakai Path2D +
+      // rMid hasil cache (dibangun sekali per gScale). Fase grow/
+      // shrink (p < 1) tetap membangun jalur seperti biasa.
+      let cachedPaths: Path2D[] | null = null;
+      let cachedRmids: number[] | null = null;
+      if (p >= 1) {
+        if (!spiralCache || spiralCache.gs !== gScale) {
+          const paths: Path2D[] = [];
+          const rmids: number[] = [];
+          for (let s0 = 0; s0 < steps; s0 += CHUNK) {
+            const thM = (ARM_TURNS * (s0 + CHUNK / 2)) / steps;
+            rmids.push(R0 * Math.pow(R / R0, thM / ARM_TURNS));
+            const np = new Path2D();
+            for (let i = s0; i <= Math.min(steps, s0 + CHUNK); i++) {
+              const th = (ARM_TURNS * i) / steps;
+              const r = R0 * Math.pow(R / R0, th / ARM_TURNS);
+              if (i === s0) np.moveTo(r * Math.cos(th), r * Math.sin(th));
+              else np.lineTo(r * Math.cos(th), r * Math.sin(th));
+            }
+            paths.push(np);
+          }
+          spiralCache = { gs: gScale, paths, rmids };
+        }
+        cachedPaths = spiralCache.paths;
+        cachedRmids = spiralCache.rmids;
+      }
       // 4 lengan saja (permintaan user): 8 lengan terlalu padat —
       // galaksi terlihat seperti lingkaran penuh, bukan spiral berlengan.
       // Lengan DIGEMUKKAN ala galaksi (permintaan user 30 Okt, referensi
@@ -1155,18 +1195,25 @@ export default function WonderScene() {
         g.rotate((a * Math.PI) / 2);
         for (let s0 = 0; s0 < steps; s0 += CHUNK) {
           const thMid = (upto * (s0 + CHUNK / 2)) / steps;
-          const rMid = R0 * Math.pow(R / R0, thMid / ARM_TURNS);
+          const rMid = cachedRmids
+            ? cachedRmids[s0 / CHUNK]
+            : R0 * Math.pow(R / R0, thMid / ARM_TURNS);
           const screenAng = thMid + rot + (a * Math.PI) / 2;
           const fade = 1 - 0.85 * Math.pow(Math.abs(Math.cos(screenAng)), 1.3);
           const fAlpha = alpha * Math.max(0.08, fade);
-          const path = new Path2D();
-          for (let i = s0; i <= Math.min(steps, s0 + CHUNK); i++) {
-            const th = (upto * i) / steps;
-            const r = R0 * Math.pow(R / R0, th / ARM_TURNS);
-            const px = r * Math.cos(th);
-            const py = r * Math.sin(th);
-            if (i === s0) path.moveTo(px, py);
-            else path.lineTo(px, py);
+          let path: Path2D;
+          if (cachedPaths) {
+            path = cachedPaths[s0 / CHUNK];
+          } else {
+            path = new Path2D();
+            for (let i = s0; i <= Math.min(steps, s0 + CHUNK); i++) {
+              const th = (upto * i) / steps;
+              const r = R0 * Math.pow(R / R0, th / ARM_TURNS);
+              const px = r * Math.cos(th);
+              const py = r * Math.sin(th);
+              if (i === s0) path.moveTo(px, py);
+              else path.lineTo(px, py);
+            }
           }
           // lapis 1: badan cahaya lebar & lembut (tanpa bayangan — lebar
           // + alpha rendahnya sendiri yang memberi kesan lembut)
@@ -1219,6 +1266,42 @@ export default function WonderScene() {
       g.shadowColor = "rgba(0,0,0,0)";
       redrawsRef.current++;
     }
+    // Sprite sparkle (optimasi): badan sparkle kaku — dirender sekali
+    // ke canvas offscreen pada resolusi perangkat (jalur gambar &
+    // shadowBlur yang sama persis), lalu fase hold cukup drawImage.
+    function sparkleSprite() {
+      const ryB = (capHeight() * SPARK_SIZE) / 2;
+      const rxB = ryB * SPARK_ASPECT;
+      const key = `spark|${(ryB * 2).toFixed(1)}`;
+      let sp = spriteCache.get(key);
+      if (sp) return sp;
+      const pad = SPARK_GLOW + 2;
+      const hw = rxB + pad;
+      const hh = ryB + pad;
+      const sdpr = Math.min(2, window.devicePixelRatio || 1);
+      const cvs = document.createElement("canvas");
+      cvs.width = Math.max(2, Math.ceil(hw * 2 * sdpr));
+      cvs.height = Math.max(2, Math.ceil(hh * 2 * sdpr));
+      const sg = cvs.getContext("2d")!;
+      sg.scale(sdpr, sdpr);
+      sg.translate(hw, hh);
+      const p = SPARK_PINCH;
+      sg.beginPath();
+      sg.moveTo(0, -ryB);
+      sg.quadraticCurveTo(rxB * p, -ryB * p, rxB, 0);
+      sg.quadraticCurveTo(rxB * p, ryB * p, 0, ryB);
+      sg.quadraticCurveTo(-rxB * p, ryB * p, -rxB, 0);
+      sg.quadraticCurveTo(-rxB * p, -ryB * p, 0, -ryB);
+      sg.closePath();
+      sg.shadowColor = "rgba(245,245,255,0.85)";
+      sg.shadowBlur = SPARK_GLOW * Math.min(1, gScale);
+      sg.fillStyle = "rgba(245,245,255,1)";
+      sg.fill();
+      sp = { cvs, hw, hh };
+      if (spriteCache.size > 12) spriteCache.clear();
+      spriteCache.set(key, sp);
+      return sp;
+    }
     // Sparkle 4 titik ala Gemini — digambar di slot hurufnya; sel (kata
     // bertopengnya) sudah dilukis renderFxCell sebelum fungsi ini.
     function drawSparkGlyph(
@@ -1231,6 +1314,27 @@ export default function WonderScene() {
       const g = ctx!;
       const cx = spiralCenterX(c, s.letter);
       const cy = c.y + CH / 2 + 1;
+      // Fase hold (skala ±6% dari 1): pakai sprite — drawImage jauh
+      // lebih murah daripada menggambar ulang path + shadowBlur.
+      if (Math.abs(scale - 1) <= 0.06) {
+        const sp = sparkleSprite();
+        g.save();
+        g.translate(cx, cy);
+        g.rotate(rot);
+        g.globalAlpha = Math.max(0, Math.min(1, alpha));
+        g.shadowBlur = 0;
+        g.shadowColor = "rgba(0,0,0,0)";
+        g.drawImage(
+          sp.cvs,
+          -sp.hw * scale,
+          -sp.hh * scale,
+          sp.hw * 2 * scale,
+          sp.hh * 2 * scale,
+        );
+        g.restore();
+        redrawsRef.current++;
+        return;
+      }
       const ry = (capHeight() * SPARK_SIZE * scale) / 2;
       const rx = ry * SPARK_ASPECT;
       const p = SPARK_PINCH;
@@ -1309,6 +1413,147 @@ export default function WonderScene() {
     // uji /blackhole dengan setelan user: ukuran 0,8, disk 0,90, glow
     // 0,5): cincin cahaya melingkar mengelilingi horizon hitam, pita
     // disk memotong tepat di tengah, debu mengorbit — rotasi poros.
+    // Badan black hole (tanpa debu orbit & aliran materi) — dipakai
+    // jalur vektor langsung dan pelukis sprite.
+    function paintBhBody(
+      g2: CanvasRenderingContext2D,
+      cx: number,
+      cy: number,
+      R: number,
+      alpha: number,
+    ) {
+      const sMin = Math.min(1, gScale);
+      const ringR = R * 1.38;
+      const bandRx = R * 2.7 * BH_DISK;
+      const bandRy = Math.max(0.8 * sMin, R * 0.16);
+      const bandGrad = (mul: number) => {
+        const gr = g2.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
+        gr.addColorStop(0, "rgba(196,218,252,0)");
+        gr.addColorStop(0.16, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(0.5, `rgba(232,242,255,${(0.8 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(0.84, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(1, "rgba(196,218,252,0)");
+        return gr;
+      };
+      const halo = g2.createRadialGradient(cx, cy, 0, cx, cy, bandRx);
+      halo.addColorStop(0, `rgba(170,200,255,${(0.13 * alpha).toFixed(3)})`);
+      halo.addColorStop(1, "rgba(170,200,255,0)");
+      g2.fillStyle = halo;
+      g2.beginPath();
+      g2.arc(cx, cy, bandRx, 0, 7);
+      g2.fill();
+      /* pita disk belakang */
+      g2.beginPath();
+      g2.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g2.fillStyle = bandGrad(0.55);
+      g2.fill();
+      /* cincin cahaya melingkar: 3 lapisan + busur atas/bawah */
+      for (const p of [
+        { m: 0.94, w: R * 0.1, a: 0.3 },
+        { m: 1, w: R * 0.17, a: 0.5 },
+        { m: 1.07, w: R * 0.08, a: 0.22 },
+      ]) {
+        g2.beginPath();
+        g2.arc(cx, cy, ringR * p.m, 0, 7);
+        g2.strokeStyle = `rgba(205,226,252,${(p.a * alpha).toFixed(3)})`;
+        g2.lineWidth = Math.max(0.6 * sMin, p.w);
+        g2.stroke();
+      }
+      for (const seg of [
+        { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
+        { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
+      ]) {
+        g2.beginPath();
+        g2.arc(cx, cy, ringR, seg.a0, seg.a1);
+        g2.strokeStyle = `rgba(232,243,255,${(0.8 * alpha).toFixed(3)})`;
+        g2.lineWidth = Math.max(0.7 * sMin, R * 0.2);
+        g2.stroke();
+      }
+      /* horizon hitam + tepi foton */
+      g2.beginPath();
+      g2.arc(cx, cy, R, 0, 7);
+      g2.fillStyle = `rgba(1,1,3,${alpha.toFixed(3)})`;
+      g2.fill();
+      g2.shadowColor = "rgba(170,205,255,0.95)";
+      g2.shadowBlur = BH_GLOW * 2.5 * sMin;
+      g2.beginPath();
+      g2.arc(cx, cy, R * 1.02, 0, 7);
+      g2.strokeStyle = `rgba(238,246,255,${(0.9 * alpha).toFixed(3)})`;
+      g2.lineWidth = Math.max(0.7 * sMin, R * 0.12);
+      g2.stroke();
+      g2.shadowBlur = 0;
+      g2.shadowColor = "rgba(0,0,0,0)";
+      /* pita disk depan: memotong tepat di tengah + inti terang */
+      g2.beginPath();
+      g2.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g2.fillStyle = bandGrad(1);
+      g2.fill();
+      g2.beginPath();
+      g2.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, 7);
+      g2.fillStyle = bandGrad(1.15);
+      g2.fill();
+    }
+
+    // Debu mengorbit pada cincin + materi mengalir di pita black
+    // hole — bagian yang BERGERAK, tetap digambar vektor tiap frame.
+    function drawBhDust(
+      g: CanvasRenderingContext2D,
+      cx: number,
+      cy: number,
+      R: number,
+      alpha: number,
+      seed: number,
+      now: number,
+    ) {
+      const sMin = Math.min(1, gScale);
+      const ringR = R * 1.38;
+      const bandRx = R * 2.7 * BH_DISK;
+      const bandRy = Math.max(0.8 * sMin, R * 0.16);
+      const hN = (n: number) => {
+        const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        return v - Math.floor(v);
+      };
+      for (let i = 0; i < 10; i++) {
+        const rf = 0.92 + hN(seed * 17 + i * 3 + 1) * 0.16;
+        const th = hN(seed * 29 + i * 7 + 2) * Math.PI * 2 - now * 0.0012;
+        const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.005 + hN(seed + i * 11) * 22));
+        g.beginPath();
+        g.arc(cx + Math.cos(th) * ringR * rf, cy + Math.sin(th) * ringR * rf, Math.max(0.4 * sMin, R * 0.07), 0, 7);
+        g.fillStyle = `rgba(220,235,255,${(alpha * tw * 0.9).toFixed(3)})`;
+        g.fill();
+      }
+      for (let i = 0; i < 4; i++) {
+        const sp = 0.000045 * (1 + hN(seed * 41 + i) * 0.7);
+        const fx = ((hN(seed * 53 + i * 7) + now * sp) % 1) * 2 - 1;
+        g.beginPath();
+        g.arc(cx + fx * bandRx * 0.94, cy + (hN(seed * 61 + i * 3) - 0.5) * bandRy * 0.8, Math.max(0.4 * sMin, R * 0.08), 0, 7);
+        g.fillStyle = `rgba(230,242,255,${(alpha * (1 - Math.abs(fx)) * 0.85).toFixed(3)})`;
+        g.fill();
+      }
+    }
+
+    // Sprite black hole (optimasi): badannya kaku — dirender sekali,
+    // fase hold tinggal drawImage + debu vektor di atasnya.
+    function blackholeSprite(R: number) {
+      const key = `bh|${(R * 2).toFixed(1)}`;
+      let sp = spriteCache.get(key);
+      if (sp) return sp;
+      const pad = BH_GLOW * 2.5 + 3;
+      const hw = R * 2.7 * BH_DISK + pad;
+      const hh = R * 1.38 + pad;
+      const sdpr = Math.min(2, window.devicePixelRatio || 1);
+      const cvs = document.createElement("canvas");
+      cvs.width = Math.max(2, Math.ceil(hw * 2 * sdpr));
+      cvs.height = Math.max(2, Math.ceil(hh * 2 * sdpr));
+      const sg = cvs.getContext("2d")!;
+      sg.scale(sdpr, sdpr);
+      paintBhBody(sg, hw, hh, R, 1);
+      sp = { cvs, hw, hh };
+      if (spriteCache.size > 12) spriteCache.clear();
+      spriteCache.set(key, sp);
+      return sp;
+    }
+
     function drawBlackholeGlyph(
       c: Cell,
       s: BhState,
@@ -1319,101 +1564,24 @@ export default function WonderScene() {
       const g = ctx!;
       const cx = spiralCenterX(c, s.letter);
       const cy = c.y + CH / 2 + 1;
-      const sMin = Math.min(1, gScale);
       const R = Math.max(1.2, capHeight() * 0.55 * BH_SIZE * scale);
-      const ringR = R * 1.38;
-      const bandRx = R * 2.7 * BH_DISK;
-      const bandRy = Math.max(0.8 * sMin, R * 0.16);
-      const hN = (n: number) => {
-        const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-        return v - Math.floor(v);
-      };
-      const bandGrad = (mul: number) => {
-        const gr = g.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
-        gr.addColorStop(0, "rgba(196,218,252,0)");
-        gr.addColorStop(0.16, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
-        gr.addColorStop(0.5, `rgba(232,242,255,${(0.8 * mul * alpha).toFixed(3)})`);
-        gr.addColorStop(0.84, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
-        gr.addColorStop(1, "rgba(196,218,252,0)");
-        return gr;
-      };
+      // Fase hold (skala tepat 1): badan dari sprite, debu tetap
+      // vektor. Fase grow/shrink: seluruhnya vektor seperti biasa.
+      if (scale === 1) {
+        const sp = blackholeSprite(R);
+        g.save();
+        g.globalAlpha = Math.max(0, Math.min(1, alpha));
+        g.shadowBlur = 0;
+        g.shadowColor = "rgba(0,0,0,0)";
+        g.drawImage(sp.cvs, cx - sp.hw, cy - sp.hh, sp.hw * 2, sp.hh * 2);
+        g.restore();
+        drawBhDust(g, cx, cy, R, alpha, s.seed, now);
+        redrawsRef.current++;
+        return;
+      }
       g.save();
-      const halo = g.createRadialGradient(cx, cy, 0, cx, cy, bandRx);
-      halo.addColorStop(0, `rgba(170,200,255,${(0.13 * alpha).toFixed(3)})`);
-      halo.addColorStop(1, "rgba(170,200,255,0)");
-      g.fillStyle = halo;
-      g.beginPath();
-      g.arc(cx, cy, bandRx, 0, 7);
-      g.fill();
-      /* pita disk belakang */
-      g.beginPath();
-      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
-      g.fillStyle = bandGrad(0.55);
-      g.fill();
-      /* cincin cahaya melingkar: 3 lapisan + busur atas/bawah */
-      for (const p of [
-        { m: 0.94, w: R * 0.1, a: 0.3 },
-        { m: 1, w: R * 0.17, a: 0.5 },
-        { m: 1.07, w: R * 0.08, a: 0.22 },
-      ]) {
-        g.beginPath();
-        g.arc(cx, cy, ringR * p.m, 0, 7);
-        g.strokeStyle = `rgba(205,226,252,${(p.a * alpha).toFixed(3)})`;
-        g.lineWidth = Math.max(0.6 * sMin, p.w);
-        g.stroke();
-      }
-      for (const seg of [
-        { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
-        { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
-      ]) {
-        g.beginPath();
-        g.arc(cx, cy, ringR, seg.a0, seg.a1);
-        g.strokeStyle = `rgba(232,243,255,${(0.8 * alpha).toFixed(3)})`;
-        g.lineWidth = Math.max(0.7 * sMin, R * 0.2);
-        g.stroke();
-      }
-      /* debu mengorbit pada cincin — rotasi murni pada poros */
-      for (let i = 0; i < 10; i++) {
-        const rf = 0.92 + hN(s.seed * 17 + i * 3 + 1) * 0.16;
-        const th = hN(s.seed * 29 + i * 7 + 2) * Math.PI * 2 - now * 0.0012;
-        const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.005 + hN(s.seed + i * 11) * 22));
-        g.beginPath();
-        g.arc(cx + Math.cos(th) * ringR * rf, cy + Math.sin(th) * ringR * rf, Math.max(0.4 * sMin, R * 0.07), 0, 7);
-        g.fillStyle = `rgba(220,235,255,${(alpha * tw * 0.9).toFixed(3)})`;
-        g.fill();
-      }
-      /* horizon hitam + tepi foton */
-      g.beginPath();
-      g.arc(cx, cy, R, 0, 7);
-      g.fillStyle = `rgba(1,1,3,${alpha.toFixed(3)})`;
-      g.fill();
-      g.shadowColor = "rgba(170,205,255,0.95)";
-      g.shadowBlur = BH_GLOW * 2.5 * sMin;
-      g.beginPath();
-      g.arc(cx, cy, R * 1.02, 0, 7);
-      g.strokeStyle = `rgba(238,246,255,${(0.9 * alpha).toFixed(3)})`;
-      g.lineWidth = Math.max(0.7 * sMin, R * 0.12);
-      g.stroke();
-      g.shadowBlur = 0;
-      g.shadowColor = "rgba(0,0,0,0)";
-      /* pita disk depan: memotong tepat di tengah + inti terang */
-      g.beginPath();
-      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
-      g.fillStyle = bandGrad(1);
-      g.fill();
-      g.beginPath();
-      g.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, 7);
-      g.fillStyle = bandGrad(1.15);
-      g.fill();
-      /* materi mengalir menyamping di sepanjang pita */
-      for (let i = 0; i < 4; i++) {
-        const sp = 0.000045 * (1 + hN(s.seed * 41 + i) * 0.7);
-        const fx = ((hN(s.seed * 53 + i * 7) + now * sp) % 1) * 2 - 1;
-        g.beginPath();
-        g.arc(cx + fx * bandRx * 0.94, cy + (hN(s.seed * 61 + i * 3) - 0.5) * bandRy * 0.8, Math.max(0.4 * sMin, R * 0.08), 0, 7);
-        g.fillStyle = `rgba(230,242,255,${(alpha * (1 - Math.abs(fx)) * 0.85).toFixed(3)})`;
-        g.fill();
-      }
+      paintBhBody(g, cx, cy, R, alpha);
+      drawBhDust(g, cx, cy, R, alpha, s.seed, now);
       g.restore();
       redrawsRef.current++;
     }

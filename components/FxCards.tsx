@@ -272,17 +272,39 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       frame(600);
       return;
     }
+    // OPTIMASI (31 Okt, hasil profil): loop cip hanya berjalan saat
+    // cip TERLIHAT — sebelumnya 4 loop ini menggambar selamanya walau
+    // user sudah scroll jauh ke bawah (cip di hero tak terlihat).
     let raf = 0;
     let last = 0;
+    let running = false;
     const loop = (now: number) => {
+      if (!running) return;
       if (now - last >= 33) {
         last = now;
         frame(now);
       }
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+    const io = new IntersectionObserver(
+      (es) => (es[0].isIntersecting ? start() : stop()),
+      { rootMargin: "80px" },
+    );
+    io.observe(cvs);
+    start();
+    return () => {
+      stop();
+      io.disconnect();
+    };
   }, [kind]);
 
   return <canvas ref={ref} className="fx-card-canvas" aria-hidden="true" />;

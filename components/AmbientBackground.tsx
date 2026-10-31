@@ -242,12 +242,26 @@ export default function AmbientBackground() {
       ctx.restore();
     };
 
+    // OPTIMASI (31 Okt, hasil profil): clearRect layar penuh SETIAP
+    // frame — walau area ambien belum terlihat — mengotori layer
+    // canvas dan memaksa browser meng-commit ulang teksturnya terus-
+    // menerus (Commit + ProduceCanvasResource = beban main-thread
+    // terbesar halaman ini). Kini: bila area ambien di luar pandangan,
+    // canvas dibersihkan SEKALI lalu frame dilewati total.
+    let fieldDrawn = false;
     const drawField = (now: number, animated: boolean) => {
       const scrollTop = scroller.scrollTop;
       const hb = heroBottom();
-      ctx.clearRect(0, 0, viewW, viewH);
       // Belum sampai section bawah → tidak ada yang digambar (hero utuh).
-      if (scrollTop + viewH <= hb + 8) return;
+      if (scrollTop + viewH <= hb + 8) {
+        if (fieldDrawn) {
+          ctx.clearRect(0, 0, viewW, viewH);
+          fieldDrawn = false;
+        }
+        return;
+      }
+      fieldDrawn = true;
+      ctx.clearRect(0, 0, viewW, viewH);
       const docTop = Math.max(scrollTop, hb);
       const docBottom = scrollTop + viewH;
       const ix0 = 0;
