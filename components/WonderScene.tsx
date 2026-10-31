@@ -159,6 +159,19 @@ export default function WonderScene() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // VISIBILITAS STAGE (portofolio satu halaman, 31 Okt): saat stage
+    // ter-scroll keluar layar, semua tick berkala scene berhenti bekerja
+    // (spawn/glitch/scramble/gelombang membaca flag ini) — halaman
+    // panjang tidak membayar biaya animasi yang tidak terlihat.
+    let stageVisible = true;
+    const stageIO = new IntersectionObserver(
+      (es) => {
+        stageVisible = es[0].isIntersecting;
+      },
+      { threshold: 0.02 },
+    );
+    if (cvs.parentElement) stageIO.observe(cvs.parentElement);
+
     // Metrik grid dinamis — bayangan variabel dari konstanta modul.
     // build() menghitungnya dari aturan 9 kolom; semua geometri di
     // effect ini membaca variabel lokal ini.
@@ -449,7 +462,7 @@ export default function WonderScene() {
       scrambling.set(idx, performance.now() + 300 + Math.random() * 200);
       if (scrambleTimer) return;
       scrambleTimer = setInterval(() => {
-        if (document.hidden) return;
+        if (document.hidden || !stageVisible) return;
         const now = performance.now();
         for (const [i, until] of Array.from(scrambling)) {
           const c = cellsRef.current[i];
@@ -1216,7 +1229,7 @@ export default function WonderScene() {
     const spiralTimer = reduced
       ? null
       : setInterval(() => {
-          if (document.hidden) return;
+          if (document.hidden || !stageVisible) return;
           // WATCHDOG SPIRAL: loop rAF bisa berhenti tanpa kabar (tab
           // tertutup jendela lain / rAF kelaparan) sementara spiral masih
           // tercatat aktif — selnya membeku sebagai "kata tanpa huruf"
@@ -1258,7 +1271,7 @@ export default function WonderScene() {
     function startGlitch() {
       if (reduced || glitchTimer) return;
       glitchTimer = setInterval(() => {
-        if (document.hidden) return;
+        if (document.hidden || !stageVisible) return;
         const cells = cellsRef.current;
         if (!cells.length) return;
         const occupied = (idx: number) =>
@@ -1396,7 +1409,7 @@ export default function WonderScene() {
     }
 
     function stepWave() {
-      if (document.hidden) return;
+      if (document.hidden || !stageVisible) return;
       const cells = cellsRef.current;
       const maxDiag = cvs!.width + cvs!.height;
       waveFront += maxDiag / 20; // satu sapuan penuh ±1,6 detik
@@ -1779,7 +1792,7 @@ export default function WonderScene() {
     const janitorTimer = reduced
       ? null
       : setInterval(() => {
-          if (document.hidden) return;
+          if (document.hidden || !stageVisible) return;
           const cells = cellsRef.current;
           for (let i = 0; i < cells.length; i++) {
             const c = cells[i];
@@ -1821,6 +1834,7 @@ export default function WonderScene() {
 
     return () => {
       stageObserver.disconnect();
+      stageIO.disconnect();
       stopGlitch();
       if (spiralTimer) clearInterval(spiralTimer);
       if (spiralRaf !== null) cancelAnimationFrame(spiralRaf);

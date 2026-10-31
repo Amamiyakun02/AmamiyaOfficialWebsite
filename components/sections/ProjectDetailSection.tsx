@@ -1,36 +1,38 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import { projectsData } from "@/lib/projects";
 
-// Halaman studi kasus per proyek — semua bidang case-study dari data
-// lama ditampilkan: masalah, arsitektur, tumpukan, endpoint, metrik,
-// cuplikan kode, langkah demo, hasil, dan trade-off.
-export function generateStaticParams() {
-  return projectsData.map((p) => ({ id: p.id }));
-}
-
-export default async function ProjectDetailPage({
-  params,
+/* Section studi kasus — merender SATU proyek yang dipilih dari daftar
+   (bukan kesembilan proyek sekaligus). Isinya identik dengan halaman
+   detail lama: masalah, arsitektur, tumpukan, endpoint, metrik, kode,
+   langkah demo, hasil, trade-off. */
+export default function ProjectDetailSection({
+  projectId,
+  onClose,
 }: {
-  params: Promise<{ id: string }>;
+  projectId: string;
+  onClose: () => void;
 }) {
-  const { id } = await params;
-  const p = projectsData.find((x) => x.id === id);
-  if (!p) notFound();
+  const p = projectsData.find((x) => x.id === projectId);
+  if (!p) return null;
   const Icon = p.icon;
   return (
-    <main className="page page-narrow">
-      <Link href="/projects" className="back-link">
-        ← Semua proyek
-      </Link>
+    <div className="section-inner section-narrow">
       <div className="detail-head">
         <span className="proj-icon proj-icon-lg">
           <Icon size={26} />
         </span>
         <div>
-          <h1 className="page-title">{p.title}</h1>
+          <p className="page-eyebrow">Studi Kasus</p>
+          <h2 className="page-title">{p.title}</h2>
           <p className="page-desc">{p.tagline.id}</p>
         </div>
+        <button
+          type="button"
+          className="chip detail-close"
+          onClick={onClose}
+          aria-label="Tutup studi kasus"
+        >
+          ✕ Tutup
+        </button>
       </div>
       <div className="tech-row">
         {p.tech.map((t) => (
@@ -130,6 +132,6 @@ export default async function ProjectDetailPage({
         <h2>Trade-off</h2>
         <p>{p.tradeoffs.id}</p>
       </section>
-    </main>
+    </div>
   );
 }

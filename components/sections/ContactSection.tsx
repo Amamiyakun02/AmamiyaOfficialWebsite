@@ -6,7 +6,7 @@ import { apiUrl } from "@/lib/api";
 // Halaman Kontak — formulir yang sama seperti WebPortofolio lama:
 // pesan dikirim sebagai feedback ke backend Vienna Agent
 // (POST /v1/admin/feedbacks) dengan payload yang identik.
-export default function ContactPage() {
+export default function ContactSection() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -43,9 +43,9 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="page page-narrow">
+    <div className="section-inner section-narrow">
       <p className="page-eyebrow">Kontak</p>
-      <h1 className="page-title">Hubungi Saya</h1>
+      <h2 className="page-title">Hubungi Saya</h2>
       <p className="page-desc">
         Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,
         atau sekadar menyapa.
@@ -106,6 +106,6 @@ export default function ContactPage() {
           </button>
         </form>
       )}
-    </main>
+    </div>
   );
 }

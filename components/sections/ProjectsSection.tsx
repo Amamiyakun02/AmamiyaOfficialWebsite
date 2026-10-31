@@ -14,16 +14,20 @@ const FILTERS: ("Semua" | ProjectCategory)[] = [
   "Mobile",
 ];
 
-export default function ProjectsPage() {
+export default function ProjectsSection({
+  onSelect,
+}: {
+  onSelect: (id: string) => void;
+}) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Semua");
   const shown =
     filter === "Semua"
       ? projectsData
       : projectsData.filter((p) => p.category === filter);
   return (
-    <main className="page">
+    <div className="section-inner">
       <p className="page-eyebrow">Portofolio</p>
-      <h1 className="page-title">Proyek</h1>
+      <h2 className="page-title">Proyek</h2>
       <p className="page-desc">
         Studi kasus lengkap — masalah, arsitektur, tumpukan teknologi, dan
         hasil — dari proyek-proyek yang sudah kubangun dan jalankan.
@@ -55,7 +59,7 @@ export default function ProjectsPage() {
                 <span className="proj-cat">{p.category}</span>
               </div>
               <h3>
-                <Link href={`/projects/${p.id}`}>{p.title}</Link>
+                <button type="button" className="link-btn title-btn" onClick={() => onSelect(p.id)}>{p.title}</button>
               </h3>
               <p className="proj-tagline">{p.tagline.id}</p>
               <p className="proj-desc">{p.description.id}</p>
@@ -70,7 +74,7 @@ export default function ProjectsPage() {
                 )}
               </div>
               <div className="proj-links">
-                <Link href={`/projects/${p.id}`}>Studi kasus →</Link>
+                <button type="button" className="link-btn" onClick={() => onSelect(p.id)}>Studi kasus →</button>
                 {p.githubUrl && (
                   <a href={p.githubUrl} target="_blank" rel="noreferrer">
                     GitHub
@@ -86,6 +90,6 @@ export default function ProjectsPage() {
           );
         })}
       </div>
-    </main>
+    </div>
   );
 }

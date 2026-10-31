@@ -871,6 +871,9 @@ code {
   .page {
     padding: 30px 18px 60px;
   }
+  .section-inner {
+    padding: 44px 18px;
+  }
   .hero-status {
     display: none;
   }
@@ -888,4 +891,101 @@ code {
   .proj-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== Satu halaman per section (31 Okt, permintaan user) ===== */
+/* Wadah gulir utama halaman Home: navbar tetap, isi mengalir di bawahnya */
+.home-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+/* Section 1: panggung Wonder setinggi tepat satu layar di bawah navbar */
+.hero-wrap {
+  height: 100%;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+}
+.hero-wrap .stage {
+  flex: 1;
+  min-height: 0;
+}
+/* Section malas-render: placeholder dulu, isi menyusul saat mendekat */
+.lz-section {
+  scroll-margin-top: 70px;
+  border-top: 1px solid #141417;
+  position: relative;
+}
+.lz-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.lz-pulse {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 129, 251, 0.25);
+  border-top-color: #0081fb;
+  animation: lzspin 0.9s linear infinite;
+}
+@keyframes lzspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.section-inner {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 64px 28px;
+}
+.section-narrow {
+  width: min(860px, 100%);
+}
+/* Tombol bergaya tautan (memilih studi kasus tanpa pindah halaman) */
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #5ea9ff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.title-btn {
+  color: #f2f2f4;
+  font-size: 17px;
+  font-weight: 700;
+}
+.title-btn:hover {
+  color: #5ea9ff;
+  text-decoration: none;
+}
+.detail-close {
+  margin-left: auto;
+  flex: none;
+  align-self: flex-start;
+}
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 26px 28px 36px;
+  border-top: 1px solid #141417;
+  color: #8b8b94;
+  font-size: 12.5px;
+}
+.footer-motto {
+  font-style: italic;
 }

@@ -29,14 +29,14 @@ const TIMELINE = [
   },
 ];
 
-export default function AboutPage() {
+export default function AboutSection() {
   const [cat, setCat] = useState<SkillCategory>("All");
   const shown =
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
-    <main className="page page-narrow">
+    <div className="section-inner section-narrow">
       <p className="page-eyebrow">Profil</p>
-      <h1 className="page-title">Tentang Saya</h1>
+      <h2 className="page-title">Tentang Saya</h2>
       <p className="page-desc">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
         Sekali buat, berguna selamanya.
@@ -84,6 +84,6 @@ export default function AboutPage() {
           </article>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

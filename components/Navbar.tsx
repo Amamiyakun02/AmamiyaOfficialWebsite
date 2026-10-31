@@ -1,45 +1,58 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
-/* Navbar portofolio bersama — dulu menempel di dalam WonderScene (khusus
-   halaman Home), sekarang tinggal di layout root agar semua halaman
-   memakai navigasi yang sama. Menu: Beranda, Proyek, Tools, Tentang,
-   Kontak; CTA menuju asisten AI. */
+/* Navbar portofolio — sejak situs jadi SATU halaman, menu adalah
+   jangkar ke section-section di halaman utama (Beranda, Proyek, Tools,
+   Tentang, Kontak) dengan scrollspy: menu aktif mengikuti section yang
+   sedang terlihat. CTA menuju section Tools. */
 const LINKS = [
-  { href: "/", label: "Beranda" },
-  { href: "/projects", label: "Proyek" },
-  { href: "/tools", label: "Tools" },
-  { href: "/about", label: "Tentang" },
-  { href: "/contact", label: "Kontak" },
+  { id: "beranda", label: "Beranda" },
+  { id: "proyek", label: "Proyek" },
+  { id: "tools", label: "Tools" },
+  { id: "tentang", label: "Tentang" },
+  { id: "kontak", label: "Kontak" },
 ];
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const active = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : pathname === href || pathname.startsWith(href + "/");
+  const [current, setCurrent] = useState("beranda");
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setCurrent(e.target.id);
+        }
+      },
+      { rootMargin: "-38% 0px -55% 0px" },
+    );
+    for (const l of LINKS) {
+      const el = document.getElementById(l.id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, []);
+
   return (
     <header className="navbar">
       <div className="nav-left">
-        <Link href="/" className="brand">
+        <Link href="/#beranda" className="brand">
           <span className="brand-mark">∞</span> Amamiya
         </Link>
         <nav>
           {LINKS.map((l) => (
             <Link
-              key={l.href}
-              href={l.href}
-              className={active(l.href) ? "nav-active" : undefined}
+              key={l.id}
+              href={`/#${l.id}`}
+              className={current === l.id ? "nav-active" : undefined}
             >
               {l.label}
             </Link>
           ))}
         </nav>
       </div>
-      <Link className="nav-cta" href="/tools">
+      <Link className="nav-cta" href="/#tools">
         Coba Tools
       </Link>
     </header>

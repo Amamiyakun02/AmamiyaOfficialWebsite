@@ -4,11 +4,11 @@ import { toolsData } from "@/lib/tools";
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
 // lib/tools.ts. Yang sudah dipindah berstatus "live" dan bisa dibuka;
 // sisanya menyusul bertahap.
-export default function ToolsPage() {
+export default function ToolsSection() {
   return (
-    <main className="page">
+    <div className="section-inner">
       <p className="page-eyebrow">Peralatan</p>
-      <h1 className="page-title">Tools</h1>
+      <h2 className="page-title">Tools</h2>
       <p className="page-desc">
         Tool-tool yang kubangun dan kupakai sendiri — asisten AI, pengunduh
         video, pengolah PDF dan gambar, sampai playground MCP server-ku.
@@ -30,7 +30,7 @@ export default function ToolsPage() {
               </div>
               <h3>
                 {live ? (
-                  <Link href={`/tools/${t.slug}`}>{t.name}</Link>
+                  <Link href={`#tools`}>{t.name}</Link>
                 ) : (
                   t.name
                 )}
@@ -38,13 +38,13 @@ export default function ToolsPage() {
               <p className="proj-desc">{t.desc}</p>
               {live && (
                 <div className="proj-links">
-                  <Link href={`/tools/${t.slug}`}>Buka tool →</Link>
+                  <Link href={`#tools`}>Buka tool →</Link>
                 </div>
               )}
             </article>
           );
         })}
       </div>
-    </main>
+    </div>
   );
 }
