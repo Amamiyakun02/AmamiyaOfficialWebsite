@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 // WAJIB untuk tampilan mobile yang benar: tanpa viewport ini browser HP
 // merender halaman pada lebar virtual ±980px lalu memperkecilnya paksa —
@@ -12,9 +13,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Amamiya — Background Grid Tipografi",
+  title: "Amamiya — Portofolio",
   description:
-    "Website Next.js dengan background grid tipografi ala Muse Wonder: digambar sekali, glitch tipis, highlight mouse — tanpa loop 60fps.",
+    "Portofolio Amamiya: aplikasi AI, web & mobile, dan alat otomatisasi. Dibangun di atas panggung grid tipografi interaktif ala Muse Wonder.",
 };
 
 export default function RootLayout({
@@ -22,7 +23,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <div className="app">
+          <Navbar />
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

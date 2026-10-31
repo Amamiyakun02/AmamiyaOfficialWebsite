@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import FxCards from "./FxCards";
 
 /* =====================================================================
@@ -1875,46 +1876,47 @@ export default function WonderScene() {
   }
 
   return (
-    <div className="app">
-      {/* Navbar: dulu nav melayang di atas background; sekarang bar
-          tersendiri di bagian atas page. */}
-      <header className="navbar">
-        <div className="nav-left">
-          <span className="brand">
-            <span className="brand-mark">∞</span> Amamiya
-          </span>
-          <nav>
-            <a href="#">Cara kerja ▾</a>
-            <a href="#">Performa</a>
-          </nav>
+    /* Stage: satu-satunya isi halaman Home — scene grid memenuhi sisa
+       layar di bawah navbar (navbar kini tinggal di layout root). */
+    <main className="stage">
+      <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
+
+      {/* Hero portofolio di dalam lubang grid: status, nama, peran, CTA.
+          Teks dari WebPortofolio lama (translations home*). */}
+      <div className="stage-title">
+        <p className="hero-status">
+          <span className="hero-dot" /> Terbuka untuk freelance &amp; kolaborasi
+        </p>
+        <h1>Amamiya</h1>
+        <p className="hero-role">
+          Saya membangun aplikasi AI, aplikasi web dan mobile, serta alat
+          untuk mengotomatiskan pekerjaan berulang.
+        </p>
+        <div className="hero-cta">
+          <Link className="hero-btn hero-btn-primary" href="/projects">
+            Lihat Proyek
+          </Link>
+          <Link className="hero-btn" href="/tools">
+            Jelajahi Tools
+          </Link>
+          <a className="hero-btn hero-btn-ghost" href="/profesional-cv.pdf" download>
+            Unduh CV
+          </a>
         </div>
-        <a className="nav-cta" href="#">
-          Coba Demo
-        </a>
-      </header>
+      </div>
 
-      {/* Stage: satu-satunya isi page — scene grid memenuhi sisa layar
-          di bawah navbar sebagai konten page itu sendiri. */}
-      <main className="stage">
-        <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
+      <div className="panel">
+        <button type="button" onClick={() => setMouseOn((v) => !v)}>
+          Highlight mouse: {mouseOn ? "ON" : "OFF"}
+        </button>
+        <button type="button" onClick={() => setDebugOn((v) => !v)}>
+          Debug: {debugOn ? "ON" : "OFF"}
+        </button>
+        <output>{debugText}</output>
+      </div>
 
-        <div className="stage-title">
-          <h1>Amamiya</h1>
-        </div>
-
-        <div className="panel">
-          <button type="button" onClick={() => setMouseOn((v) => !v)}>
-            Highlight mouse: {mouseOn ? "ON" : "OFF"}
-          </button>
-          <button type="button" onClick={() => setDebugOn((v) => !v)}>
-            Debug: {debugOn ? "ON" : "OFF"}
-          </button>
-          <output>{debugText}</output>
-        </div>
-
-        {/* Layer paling depan: 3 card penjelasan efek (Spiral/Sparkle/Atom) */}
-        <FxCards />
-      </main>
-    </div>
+      {/* Layer paling depan: 3 card penjelasan efek (Spiral/Sparkle/Atom) */}
+      <FxCards />
+    </main>
   );
 }
