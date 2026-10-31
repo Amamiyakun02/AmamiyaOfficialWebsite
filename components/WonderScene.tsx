@@ -189,13 +189,13 @@ function drawTitleGlyph(
     ctx.shadowBlur = 0;
   } else if (kind === "spark") {
     const pulse = 1 + 0.06 * Math.sin(now / 300);
-    // Sparkle badannya lebih besar dari diameter bersama (0,42 vs
-    // 0,34) dan lekuknya lebih gemuk: sebagai bintang tipis, diameter
-    // batas yang sama tetap TERLIHAT lebih kecil di mata dibanding
-    // spiral/atom yang penuh (observasi user 31 Okt).
-    const ry = S * 0.42 * pulse;
+    // Sparkle dibuat GEMUK (lekuk 0,30) dan tinggi 0,92 x S: bintang
+    // ramping berlekuk 0,10 massanya hanya sepertiga spiral/atom
+    // sehingga selalu terlihat jauh lebih kecil di mata walau
+    // diameter batasnya sama (observasi user 31 Okt, dua putaran).
+    const ry = S * 0.46 * pulse;
     const rx = ry * 0.88;
-    const p = 0.14;
+    const p = 0.3;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(0.04 * Math.sin(now / 450));
