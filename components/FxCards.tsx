@@ -111,9 +111,13 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
 
     function drawSpark(now: number) {
       const pulse = 1 + 0.06 * Math.sin(now / 300);
-      const ry = H * 0.31 * pulse;
-      const rx = ry * 0.86;
-      const p = 0.1;
+      // DISAMAKAN dengan spiral & atom di cip ini (diukur pikselnya
+      // 31 Okt: spiral 27x27, atom 29x27, sparkle hanya 18x20 karena
+      // ry 0,31 & lekuk ramping 0,10). Kini tinggi 0,86 x H dan
+      // lekuk gemuk 0,30 — massa visualnya setara kedua tetangganya.
+      const ry = H * 0.43 * pulse;
+      const rx = ry * 0.88;
+      const p = 0.3;
       ctx!.save();
       ctx!.translate(cx, cy);
       ctx!.rotate(0.04 * Math.sin(now / 450));
