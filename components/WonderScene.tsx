@@ -647,7 +647,7 @@ export default function WonderScene() {
       const holeW = holeCols * CW;
       const holeH =
         viewW < 640
-          ? Math.min(118, viewH * 0.15)
+          ? Math.min(104, viewH * 0.14)
           : Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO);
       const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = (viewH - holeH) / 2;

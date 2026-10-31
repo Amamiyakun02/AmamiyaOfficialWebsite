@@ -466,9 +466,9 @@ code {
 /* Deret ikon di bawah kata besar ikut mengecil di layar kecil. */
 @media (max-width: 1100px) {
   .fx-card {
-    flex: 0 0 64px;
-    width: 64px;
-    height: 64px;
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
     padding: 10px;
     background: rgba(10, 10, 12, 0.85);
   }
@@ -497,9 +497,10 @@ code {
   }
   /* judul hero mengikuti lebar lubang di layar kecil — diperkecil
      lagi agar muat di lubang ponsel yang kini 4 lajur (bukan selebar
-     seluruh kata seperti sebelumnya) */
+     seluruh kata seperti sebelumnya), dan kini diskalakan turun
+     sekali lagi mengikuti panggung pendek (31 Okt) */
   .stage-title h1 {
-    font-size: clamp(22px, 7vw, 30px);
+    font-size: clamp(20px, 6vw, 26px);
   }
   /* panel kontrol pindah ke ATAS stage: di bawah tertutup deret card */
   .stage .panel {
@@ -518,20 +519,17 @@ code {
   }
   .fx-cards {
     margin-top: 8px;
-    gap: 14px;
+    gap: 12px;
   }
   .fx-card {
-    /* ponsel: diperkecil lagi (permintaan user 31 Okt — cip 56px
-       terlihat lebih besar dari huruf judul mobile-nya sendiri);
-       42px dengan padding 10px membuat glyph ±22px, sebanding
-       tinggi huruf kapital judul di layar kecil */
-    flex-basis: 42px;
-    width: 42px;
-    height: 42px;
-    padding: 10px;
-    border-radius: 14px;
-    padding: 9px;
-    border-radius: 14px;
+    /* ponsel: diperkecil bertahap mengikuti panggung yang makin
+       pendek (31 Okt) — cip 34px, glyph ±18px, sebanding dengan
+       judul mobile yang juga diperkecil */
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+    padding: 8px;
+    border-radius: 12px;
   }
 }
 
