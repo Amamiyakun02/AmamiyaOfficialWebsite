@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { skillsData, type SkillCategory } from "@/lib/skills";
+import SectionTitle from "@/components/SectionTitle";
 
 // Halaman Tentang — konten dari WebPortofolio lama: deskripsi profil,
 // matriks keahlian (dengan filter kategori seperti aslinya), dan
@@ -35,7 +36,7 @@ export default function AboutSection() {
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
     <div className="section-inner section-narrow">
-      <h2 className="page-title">Tentang Saya</h2>
+      <SectionTitle text="Tentang Saya" />
       <p className="page-desc">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
         Sekali buat, berguna selamanya.

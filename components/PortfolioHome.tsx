@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import WonderScene from "./WonderScene";
 import LazySection from "./LazySection";
+import { scrollToSection } from "@/lib/scroll";
 
 /* ================================================================
    PORTOFOLIO SATU HALAMAN (permintaan user 31 Okt): semua isi jadi
@@ -35,6 +36,17 @@ const ProjectDetailSection = dynamic(
 
 export default function PortfolioHome() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Tiba dari halaman lain dengan hash (mis. /#kontak dari halaman
+  // tool): gulir ke section itu setelah mount — lompatan jangkar
+  // bawaan browser meleset karena section masih placeholder.
+  useEffect(() => {
+    const h = window.location.hash.replace("#", "");
+    if (h && document.getElementById(h)) {
+      const t = window.setTimeout(() => scrollToSection(h), 90);
+      return () => window.clearTimeout(t);
+    }
+  }, []);
 
   const openCase = useCallback((id: string) => {
     setSelectedId(id);

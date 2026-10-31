@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { projectsData, type ProjectCategory } from "@/lib/projects";
+import SectionTitle from "@/components/SectionTitle";
 
 // Halaman daftar proyek — data case-study asli dari WebPortofolio lama
 // (lib/projects.ts), gaya visual mengikuti bahasa design Wonder:
@@ -26,7 +27,7 @@ export default function ProjectsSection({
       : projectsData.filter((p) => p.category === filter);
   return (
     <div className="section-inner">
-      <h2 className="page-title">Proyek</h2>
+      <SectionTitle text="Proyek" />
       <p className="page-desc">
         Studi kasus lengkap — masalah, arsitektur, tumpukan teknologi, dan
         hasil — dari proyek-proyek yang sudah kubangun dan jalankan.

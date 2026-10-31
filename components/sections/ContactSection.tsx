@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiUrl } from "@/lib/api";
+import SectionTitle from "@/components/SectionTitle";
 
 // Halaman Kontak — formulir yang sama seperti WebPortofolio lama:
 // pesan dikirim sebagai feedback ke backend Vienna Agent
@@ -44,7 +45,7 @@ export default function ContactSection() {
 
   return (
     <div className="section-inner section-narrow">
-      <h2 className="page-title">Hubungi Saya</h2>
+      <SectionTitle text="Hubungi Saya" />
       <p className="page-desc">
         Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,
         atau sekadar menyapa.

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { toolsData } from "@/lib/tools";
 import QuickPrompt from "@/components/QuickPrompt";
+import SectionTitle from "@/components/SectionTitle";
 
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
 // lib/tools.ts. Yang sudah dipindah berstatus "live" dan bisa dibuka;
@@ -8,7 +9,7 @@ import QuickPrompt from "@/components/QuickPrompt";
 export default function ToolsSection() {
   return (
     <div className="section-inner">
-      <h2 className="page-title">Tools</h2>
+      <SectionTitle text="Tools" />
       <p className="page-desc">
         Tool-tool yang kubangun dan kupakai sendiri — asisten AI, pengunduh
         video, pengolah PDF dan gambar, sampai playground MCP server-ku.

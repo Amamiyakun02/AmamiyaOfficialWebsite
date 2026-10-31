@@ -1,4 +1,5 @@
 import { projectsData } from "@/lib/projects";
+import SectionTitle from "@/components/SectionTitle";
 
 /* Section studi kasus — merender SATU proyek yang dipilih dari daftar
    (bukan kesembilan proyek sekaligus). Isinya identik dengan halaman
@@ -21,7 +22,7 @@ export default function ProjectDetailSection({
           <Icon size={26} />
         </span>
         <div>
-          <h2 className="page-title">{p.title}</h2>
+          <SectionTitle text={p.title} />
           <p className="page-desc">{p.tagline.id}</p>
         </div>
         <button

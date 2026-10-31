@@ -1712,3 +1712,35 @@ code {
   flex-shrink: 0;
   margin-top: 2px;
 }
+
+/* ===== Judul section: materialisasi per huruf (seperti header
+   section di halaman Wonder — titik -> balok -> karakter, dipicu
+   saat judul masuk layar; lapisan & keyframes sama dengan intro
+   hero: .t-dots/.t-block/.t-char + tDots/tBlock/tCharIn) ===== */
+.st-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.st-letter {
+  position: relative;
+  display: inline-block;
+}
+.st-title.st-pre .t-char {
+  opacity: 0;
+}
+.st-title.st-play .t-char {
+  animation: tCharIn 0.6s ease both;
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
+}
+.st-title.st-play .t-dots {
+  animation: tDots 0.6s ease both;
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
+}
+.st-title.st-play .t-block {
+  animation: tBlock 0.6s ease both;
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
+}
+.st-title.st-instant .t-dots,
+.st-title.st-instant .t-block {
+  display: none;
+}
