@@ -668,7 +668,13 @@ export default function WonderScene() {
       };
       const cells: Cell[] = [];
       colsRef.current = cols;
-      for (let y = 0; y * CH < viewH; y++) {
+      // POTONG BARIS TEPI di tablet & ponsel (permintaan user 31 Okt):
+      // 3 baris teratas dan 4 baris terbawah TIDAK digambar, jadi blok
+      // grid mengetat di sekitar komposisi tengah dan sel yang digambar
+      // makin sedikit. Desktop utuh dari tepi ke tepi seperti biasa.
+      const trimTopRows = viewW < 1080 ? 3 : 0;
+      const gridLimitY = viewH - (viewW < 1080 ? 4 : 0) * CH;
+      for (let y = trimTopRows; y * CH < gridLimitY; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
             x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
