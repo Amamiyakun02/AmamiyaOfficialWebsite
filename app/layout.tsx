@@ -1,5 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+// WAJIB untuk tampilan mobile yang benar: tanpa viewport ini browser HP
+// merender halaman pada lebar virtual ±980px lalu memperkecilnya paksa —
+// grid, navbar, dan card jadi tampak seperti desktop yang dikerdilkan
+// (terbukti dari screenshot HP user 31 Okt). Dengan ini lebar layout =
+// lebar asli perangkat dan media query + kolom adaptif bekerja.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Amamiya — Background Grid Tipografi",

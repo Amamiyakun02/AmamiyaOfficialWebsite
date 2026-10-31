@@ -98,6 +98,9 @@ export default function WonderScene() {
   // (keputusan user), grid kecil (ponsel/tablet) diturunkan agar proporsi
   // & performa tetap sehat — diatur ulang di build().
   const fxCapRef = useRef(10);
+  // Pembagi tick pemicu efek: 1 = tiap tick (400ms), 2 = tiap dua tick
+  // (800ms) di layar kecil — diatur di build() mengikuti lebar stage.
+  const spawnDivRef = useRef(1);
   const hiRef = useRef<Map<number, HeatState>>(new Map()); // idx sel -> keadaan panas kursor
   // Metrik grid dasar (skala 1) + metrik aktif hasil skala 9 kolom:
   // drawCell (di luar effect utama) membaca gridRef; effect utama
@@ -263,8 +266,11 @@ export default function WonderScene() {
       }
       cellsRef.current = cells;
       visibleCells = cells.filter((c) => !c.hole).length;
-      // grid kecil (ponsel/tablet): efek serentak lebih sedikit
-      fxCapRef.current = visibleCells < 170 ? 5 : visibleCells < 300 ? 7 : 10;
+      // Beban proses mengikuti ukuran layar (permintaan user 31 Okt):
+      // grid kecil (ponsel/tablet) = efek serentak lebih sedikit DAN
+      // pemicu spawn lebih jarang (pembagi tick lebih besar).
+      fxCapRef.current = visibleCells < 170 ? 4 : visibleCells < 300 ? 6 : 10;
+      spawnDivRef.current = cvs!.width < 640 ? 2 : cvs!.width < 1080 ? 1 : 1;
       hiRef.current.clear();
       if (heatRaf !== null) {
         cancelAnimationFrame(heatRaf);
@@ -1205,6 +1211,7 @@ export default function WonderScene() {
         break;
       }
     }
+    let spawnTickCount = 0;
     const spiralTimer = reduced
       ? null
       : setInterval(() => {
@@ -1235,6 +1242,10 @@ export default function WonderScene() {
               if (c && !c.hole) draw(c, c.a);
             }
           }
+          // Layar kecil: lewati sebagian tick — laju kemunculan efek
+          // (dan beban gambarnya) menyesuaikan ukuran view.
+          spawnTickCount++;
+          if (spawnTickCount % spawnDivRef.current !== 0) return;
           spawnSpiral();
           spawnSpark();
           spawnAtom();
