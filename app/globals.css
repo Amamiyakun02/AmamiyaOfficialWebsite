@@ -125,10 +125,15 @@ body {
 
 .stage-title h1 {
   margin: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: clamp(38px, 5.5vw, 64px);
+  /* Font BALOK tebal (Archivo Black via next/font, variabel --font-block)
+     dan ukuran besar yang hampir MENGISI lubang 4 lajur, menyisakan
+     margin di keempat sisi agar tidak menyatu dengan kata-kata grid —
+     permintaan user 31 Okt. */
+  font-family: var(--font-block), "Arial Black", ui-sans-serif, sans-serif;
+  font-size: clamp(38px, 6.4vw, 126px);
   font-weight: 400;
-  letter-spacing: 0.02em;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
   color: #ffffff;
 }
 
@@ -338,7 +343,7 @@ code {
   }
   /* judul hero mengikuti lebar lubang di layar kecil */
   .stage-title h1 {
-    font-size: clamp(28px, 9vw, 40px);
+    font-size: clamp(28px, 10.5vw, 54px);
   }
   /* panel kontrol pindah ke ATAS stage: di bawah tertutup deret card */
   .stage .panel {

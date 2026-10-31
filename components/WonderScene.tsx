@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Archivo_Black } from "next/font/google";
 import FxCards from "./FxCards";
+
+// Font balok untuk kata besar di tengah lubang (permintaan user 31 Okt)
+const blockFont = Archivo_Black({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-block",
+});
 
 /* =====================================================================
    KONFIGURASI BACKGROUND — ubah bagian ini untuk mengutak-atik pola
@@ -1905,11 +1913,11 @@ export default function WonderScene() {
     <main className="stage">
       <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
 
-      {/* Di dalam lubang grid kini HANYA kata besar "Amamiya" — pill
-          status, teks peran, dan tombol CTA dihapus atas permintaan user
-          (31 Okt) agar tengahnya bersih seperti design Wonder asli. */}
-      <div className="stage-title">
-        <h1>Amamiya</h1>
+      {/* Di dalam lubang grid HANYA kata besar AMAMIYA berfont balok —
+          pill status, teks peran, dan tombol CTA sudah dihapus (31 Okt);
+          kata ini diperbesar mengisi lubang dengan margin tersisa. */}
+      <div className={`stage-title ${blockFont.variable}`}>
+        <h1>AMAMIYA</h1>
       </div>
 
       <div className="panel">
