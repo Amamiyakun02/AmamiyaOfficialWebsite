@@ -1080,15 +1080,17 @@ code {
 /* Tablet & ponsel: panggung DIPENDEKKAN (permintaan user 31 Okt) —
    baris grid tetap rapat, tapi hero tidak lagi setinggi satu layar
    penuh, jadi jumlah baris turun DAN section portofolio di bawahnya
-   ikut TERANGKAT (mengintip di layar pertama). Desktop tetap 100%. */
+   ikut TERANGKAT (mengintip di layar pertama). Desktop tetap 100%.
+   Tinggi final setelah iterasi user: tablet 50%, ponsel 40% —
+   baris tampak tinggal ±separuh dari versi hero penuh. */
 @media (max-width: 1080px) {
   .hero-wrap {
-    height: 82%;
+    height: 50%;
   }
 }
 @media (max-width: 760px) {
   .hero-wrap {
-    height: 72%;
+    height: 40%;
   }
 }
 .hero-wrap .stage {
