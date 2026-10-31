@@ -696,8 +696,13 @@ export default function WonderScene() {
       // memotongnya di sana membuat grid HABIS sama sekali (bug yang
       // terlihat saat verifikasi landscape 31 Okt).
       const totalRows = Math.floor(viewH / CH);
-      const trimTopRows = viewW < 1080 && totalRows >= 16 ? 3 : 0;
-      const trimBottomRows = viewW < 1080 && totalRows >= 16 ? 4 : 0;
+      // Ponsel portrait: potongan lebih tipis (2/2) agar blok grid
+      // lebih mengisi stage dan tidak terasa mengambang seperti di
+      // tab/desktop yang tanpa potongan (penyesuaian 31 Okt).
+      const trimTopRows =
+        totalRows >= 16 ? (viewW < 640 ? 2 : viewW < 1080 ? 3 : 0) : 0;
+      const trimBottomRows =
+        totalRows >= 16 ? (viewW < 640 ? 2 : viewW < 1080 ? 4 : 0) : 0;
       const gridLimitY = viewH - trimBottomRows * CH;
       for (let y = trimTopRows; y * CH < gridLimitY; y++) {
         for (let x = 0; x < cols; x++) {

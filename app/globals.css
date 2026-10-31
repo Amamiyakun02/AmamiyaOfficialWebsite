@@ -502,14 +502,24 @@ code {
   .stage-title h1 {
     font-size: clamp(17px, 4.6vw, 20px);
   }
-  /* panel kontrol pindah ke ATAS stage: di bawah tertutup deret card */
+  /* panel kontrol: sama seperti tab/desktop — kecil di kiri bawah
+     stage (31 Okt; sebelumnya di atas stage dan terlihat besar
+     mendominasi serta menutupi baris grid pertama) */
   .stage .panel {
-    top: 10px;
-    bottom: auto;
+    top: auto;
+    bottom: 10px;
     left: 10px;
-    font-size: 12px;
+    font-size: 11px;
+    padding: 6px 8px;
+    gap: 6px;
+    border-radius: 9px;
     max-width: calc(100vw - 20px);
     flex-wrap: wrap;
+  }
+  .stage .panel button {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 7px;
   }
   .stage .panel output {
     min-width: 0;
