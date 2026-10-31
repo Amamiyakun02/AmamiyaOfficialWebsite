@@ -124,8 +124,9 @@ function drawTitleGlyph(
   ctx.shadowColor = "rgba(245,245,255,0.85)";
   if (kind === "spiral") {
     // Skala glyph DISAMAKAN antar jenis (permintaan user 31 Okt):
-    // spiral, sparkle, dan atom kini berbagi diameter batas yang
-    // sama (0,68 x S) dan lebih kecil dari sebelumnya (0,80/0,72).
+    // spiral dan atom berbagi diameter batas 0,68 x S; sparkle
+    // badannya sengaja lebih besar (lihat cabang spark) karena
+    // bentuknya tipis sehingga terlihat lebih kecil bila sama.
     const R = S * 0.34;
     const R0 = R * 0.1;
     const rot = now / 1600;
@@ -188,9 +189,13 @@ function drawTitleGlyph(
     ctx.shadowBlur = 0;
   } else if (kind === "spark") {
     const pulse = 1 + 0.06 * Math.sin(now / 300);
-    const ry = S * 0.34 * pulse;
-    const rx = ry * 0.86;
-    const p = 0.1;
+    // Sparkle badannya lebih besar dari diameter bersama (0,42 vs
+    // 0,34) dan lekuknya lebih gemuk: sebagai bintang tipis, diameter
+    // batas yang sama tetap TERLIHAT lebih kecil di mata dibanding
+    // spiral/atom yang penuh (observasi user 31 Okt).
+    const ry = S * 0.42 * pulse;
+    const rx = ry * 0.88;
+    const p = 0.14;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(0.04 * Math.sin(now / 450));
@@ -650,8 +655,12 @@ export default function WonderScene() {
       const holeW = holeCols * CW;
       const holeH =
         viewW < 640
-          ? Math.min(104, viewH * 0.14)
+          ? Math.min(118, Math.max(92, viewH * 0.26))
           : Math.max(120, Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO));
+      // (Ponsel: lantai 92px WAJIB — rumus persen murni sebelumnya
+      // menghasilkan lubang ±49px padahal blok judul + ikon ±60px,
+      // sehingga ikon tumpah keluar lubang dan menimpa baris grid
+      // di bawahnya; keluhan berulang user 31 Okt.)
       // (Lantai 120px di cabang lebar: di layar PENDEK seperti HP
       // landscape, rumus 36% tinggi stage bisa menyusut sampai ±79px
       // padahal blok judul + ikon butuh lebih — judul/ikon tumpah
