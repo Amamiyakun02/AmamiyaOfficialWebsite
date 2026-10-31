@@ -8,8 +8,11 @@
 // yang dihitung sekali di awal bisa meleset. Karena itu setelah gulir
 // mulus dimulai, posisi tujuan dihitung ulang berkala: begitu gulir
 // berhenti tetapi posisi masih meleset, dilakukan koreksi instan.
-// Berhenti saat posisi sudah tepat dua kali berturut-turut, dibatalkan
-// oleh guliran manual user (roda/sentuh), atau lewat 3,5 detik.
+// Berhenti hanya setelah posisi tepat DAN stabil ±1 detik (chunk
+// section yang telat termuat bisa menggeser posisi sesudah koreksi
+// pertama — terukur meleset ±35px saat jendela penjagaan terlalu
+// pendek), dibatalkan oleh guliran manual user (roda/sentuh/tombol),
+// atau lewat 8 detik.
 export function scrollToSection(id: string) {
   const scroller = document.querySelector<HTMLElement>(".home-scroll");
   const el = document.getElementById(id);
@@ -35,7 +38,7 @@ export function scrollToSection(id: string) {
       const d = desired();
       if (Math.abs(d - scroller.scrollTop) <= 3) {
         stable += 1;
-        if (stable >= 2) cancel();
+        if (stable >= 6) cancel();
       } else {
         stable = 0;
         scroller.scrollTo({ top: d, behavior: "auto" });
@@ -43,13 +46,24 @@ export function scrollToSection(id: string) {
     } else {
       stable = 0;
     }
-    if (performance.now() - started > 3500) cancel();
+    if (performance.now() - started > 8000) cancel();
   }, 160);
   function cancel() {
     window.clearInterval(timer);
     scroller?.removeEventListener("wheel", cancel);
     scroller?.removeEventListener("touchmove", cancel);
+    window.removeEventListener("keydown", onKey);
+  }
+  function onKey(e: KeyboardEvent) {
+    if (
+      ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(
+        e.key,
+      )
+    ) {
+      cancel();
+    }
   }
   scroller.addEventListener("wheel", cancel, { passive: true });
   scroller.addEventListener("touchmove", cancel, { passive: true });
+  window.addEventListener("keydown", onKey);
 }
