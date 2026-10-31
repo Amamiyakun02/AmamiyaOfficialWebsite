@@ -282,18 +282,37 @@ h1.t-instant .t-block {
     transform: translateY(0) scale(1);
   }
 }
-/* Deret ikon di bawah kata ikut menunggu: pudar masuk setelah kata
-   selesai dibangun; sebelum itu tak bisa di-hover. */
-.stage-title .fx-cards {
-  opacity: 0;
-  transition: opacity 0.55s ease;
-}
-.stage-title.title-on .fx-cards {
-  opacity: 1;
-  transition-delay: 1s;
-}
+/* Deret ikon di bawah kata ikut menunggu kata selesai dibangun,
+   lalu muncul BERGANTIAN satu per satu (sentuhan akhir user:
+   tanpa glitch — cukup pudar + naik lembut, berjenjang 200ms).
+   Animasi fill backwards: selama jeda ikon menahan rupa awalnya,
+   setelah selesai ikon kembali ke gaya alaminya (hover tetap
+   seketika, tidak tertahan sisa animasi). */
 .stage-title:not(.title-on) .fx-card {
+  opacity: 0;
   pointer-events: none;
+}
+.stage-title.title-on .fx-card {
+  animation: chipIn 0.45s ease backwards;
+}
+.stage-title.title-on .fx-card:nth-child(1) {
+  animation-delay: 1s;
+}
+.stage-title.title-on .fx-card:nth-child(2) {
+  animation-delay: 1.2s;
+}
+.stage-title.title-on .fx-card:nth-child(3) {
+  animation-delay: 1.4s;
+}
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .stage-title h1 .t-char {
@@ -304,9 +323,9 @@ h1.t-instant .t-block {
   .stage-title h1 .t-block {
     display: none !important;
   }
-  .stage-title .fx-cards {
+  .stage-title .fx-card {
     opacity: 1 !important;
-    transition: none !important;
+    animation: none !important;
   }
 }
 
