@@ -677,8 +677,14 @@ export default function WonderScene() {
       // 3 baris teratas dan 4 baris terbawah TIDAK digambar, jadi blok
       // grid mengetat di sekitar komposisi tengah dan sel yang digambar
       // makin sedikit. Desktop utuh dari tepi ke tepi seperti biasa.
-      const trimTopRows = viewW < 1080 ? 3 : 0;
-      const gridLimitY = viewH - (viewW < 1080 ? 4 : 0) * CH;
+      // SYARAT: potongan hanya berlaku bila baris cukup banyak (>= 16)
+      // — di layar pendek (HP landscape) total baris memang sedikit;
+      // memotongnya di sana membuat grid HABIS sama sekali (bug yang
+      // terlihat saat verifikasi landscape 31 Okt).
+      const totalRows = Math.floor(viewH / CH);
+      const trimTopRows = viewW < 1080 && totalRows >= 16 ? 3 : 0;
+      const trimBottomRows = viewW < 1080 && totalRows >= 16 ? 4 : 0;
+      const gridLimitY = viewH - trimBottomRows * CH;
       for (let y = trimTopRows; y * CH < gridLimitY; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
