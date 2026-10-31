@@ -121,6 +121,9 @@ body {
   place-content: center;
   text-align: center;
   pointer-events: none;
+  /* margin atas diperbesar sedikit (31 Okt): blok tengah digeser
+     turun agar ruang di atas kata besar lebih lega */
+  transform: translateY(10px);
 }
 
 .stage-title h1 {
@@ -146,9 +149,11 @@ body {
    besar AMAMIYA (31 Okt) — bukan lagi strip card di bawah stage. */
 .fx-cards {
   display: flex;
-  gap: 14px;
+  /* gap antar ikon diperbesar sedikit & gap ke kata besar di atasnya
+     diperkecil (31 Okt) */
+  gap: 22px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 10px;
   pointer-events: none;
 }
 
@@ -318,9 +323,12 @@ code {
   .stage .panel output {
     min-width: 0;
   }
+  .stage-title {
+    transform: translateY(6px);
+  }
   .fx-cards {
-    margin-top: 14px;
-    gap: 10px;
+    margin-top: 8px;
+    gap: 14px;
   }
   .fx-card {
     /* ponsel: lebih kecil lagi */
