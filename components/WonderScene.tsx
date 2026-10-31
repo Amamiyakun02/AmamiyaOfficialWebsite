@@ -123,7 +123,10 @@ function drawTitleGlyph(
   ctx.clearRect(0, 0, W, H);
   ctx.shadowColor = "rgba(245,245,255,0.85)";
   if (kind === "spiral") {
-    const R = S * 0.4;
+    // Skala glyph DISAMAKAN antar jenis (permintaan user 31 Okt):
+    // spiral, sparkle, dan atom kini berbagi diameter batas yang
+    // sama (0,68 x S) dan lebih kecil dari sebelumnya (0,80/0,72).
+    const R = S * 0.34;
     const R0 = R * 0.1;
     const rot = now / 1600;
     const TURNS = Math.PI * 2 * 0.38;
@@ -185,7 +188,7 @@ function drawTitleGlyph(
     ctx.shadowBlur = 0;
   } else if (kind === "spark") {
     const pulse = 1 + 0.06 * Math.sin(now / 300);
-    const ry = S * 0.36 * pulse;
+    const ry = S * 0.34 * pulse;
     const rx = ry * 0.86;
     const p = 0.1;
     ctx.save();
@@ -204,7 +207,7 @@ function drawTitleGlyph(
     ctx.restore();
     ctx.shadowBlur = 0;
   } else {
-    const R = S * 0.4;
+    const R = S * 0.34;
     const f = 0.25;
     const rot = now / 1400;
     ctx.shadowBlur = 4;

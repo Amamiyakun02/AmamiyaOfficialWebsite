@@ -500,7 +500,7 @@ code {
      seluruh kata seperti sebelumnya), dan kini diskalakan turun
      sekali lagi mengikuti panggung pendek (31 Okt) */
   .stage-title h1 {
-    font-size: clamp(20px, 6vw, 26px);
+    font-size: clamp(18px, 5vw, 22px);
   }
   /* panel kontrol pindah ke ATAS stage: di bawah tertutup deret card */
   .stage .panel {
@@ -522,14 +522,14 @@ code {
     gap: 12px;
   }
   .fx-card {
-    /* ponsel: diperkecil bertahap mengikuti panggung yang makin
-       pendek (31 Okt) — cip 34px, glyph ±18px, sebanding dengan
-       judul mobile yang juga diperkecil */
-    flex-basis: 34px;
-    width: 34px;
-    height: 34px;
-    padding: 8px;
-    border-radius: 12px;
+    /* ponsel: diperkecil bertahap mengikuti panggung (31 Okt) —
+       cip 30px dengan glyph yang kini disamakan skalanya antar
+       jenis, meniru tampilan tab view yang disetujui user */
+    flex-basis: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 7px;
+    border-radius: 11px;
   }
 }
 
@@ -1079,8 +1079,9 @@ code {
    baris grid tetap rapat, tapi hero tidak lagi setinggi satu layar
    penuh, jadi jumlah baris turun DAN section portofolio di bawahnya
    ikut TERANGKAT (mengintip di layar pertama). Desktop tetap 100%.
-   Tinggi final setelah iterasi user: tablet 50%, ponsel 40% —
-   baris tampak tinggal ±separuh dari versi hero penuh. */
+   Tinggi final setelah iterasi user: tablet 50%, ponsel 50%
+   (ponsel sempat 40% lalu dinaikkan lagi sedikit atas permintaan
+   user agar baris bertambah dan section bawah menurun sedikit). */
 @media (max-width: 1080px) {
   .hero-wrap {
     height: 50%;
@@ -1088,7 +1089,7 @@ code {
 }
 @media (max-width: 760px) {
   .hero-wrap {
-    height: 40%;
+    height: 50%;
   }
 }
 /* Layar PENDEK (HP landscape & tablet pendek): blok tengah diperkecil
