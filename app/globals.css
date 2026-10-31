@@ -296,6 +296,9 @@ code {
   .fx-card {
     flex: 0 0 248px;
     scroll-snap-align: center;
+    /* latar lebih pekat di layar kecil: teks penjelasan harus tetap
+       terbaca di atas grid huruf yang ramai di belakang card */
+    background: rgba(10, 10, 12, 0.9);
   }
 }
 
