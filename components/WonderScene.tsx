@@ -94,6 +94,22 @@ const ATOM_GROW_MS = 450; // atom tumbuh masuk
 const ATOM_SHRINK_MS = 400; // atom menguncup
 const ATOM_P_MIN = 0.25; // skala awal/akhir atom
 const ATOM_ORBITS = 3; // 3 orbit elips bersilangan 60° (ciri logo React)
+
+// --- black hole tampak depan per huruf (dari halaman uji /blackhole) ---
+// Elemen KEEMPAT tema alam semesta (31 Okt): konfigurasi hasil setelan
+// user di bancuh uji /blackhole — ukuran 0,8x, disk 0,90x, glow 0,5,
+// maks 10; hold DISAMAKAN elemen yang sudah ada (1,5 detik). Tampak
+// depan ala Gargantua: cincin cahaya melingkar + pita disk memotong
+// tengah; gerak hanya rotasi pada poros.
+const BH_MAX = 10; // maks black hole aktif bersamaan (disamaratakan 10)
+const BH_SIZE = 0.8; // ukuran relatif horizon ke tinggi huruf (setelan user)
+const BH_DISK = 0.9; // lebar pita disk relatif (setelan user)
+const BH_GLOW = 0.5; // glow tepi foton (setelan user)
+const BH_HOLD_MS = 1500; // lama tampil penuh — disamakan sparkle/atom
+const BH_GLITCH_MS = 150; // glitch pembuka/penutup (selaras efek lain)
+const BH_GROW_MS = 450; // black hole tumbuh masuk
+const BH_SHRINK_MS = 400; // black hole menguncup
+const BH_P_MIN = 0.25; // skala awal/akhir black hole
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
@@ -108,7 +124,7 @@ type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (p
    lewat kedip GLITCH singkat (huruf pengganti acak + goyangan kecil).
    Mengikuti saklar "Highlight mouse" dan prefers-reduced-motion.
    ===================================================================== */
-type TitleFxKind = "spiral" | "spark" | "atom";
+type TitleFxKind = "spiral" | "spark" | "atom" | "blackhole";
 
 function drawTitleGlyph(
   ctx: CanvasRenderingContext2D,
@@ -211,7 +227,7 @@ function drawTitleGlyph(
     ctx.fill();
     ctx.restore();
     ctx.shadowBlur = 0;
-  } else {
+  } else if (kind === "atom") {
     const R = S * 0.34;
     const f = 0.25;
     const rot = now / 1400;
@@ -239,6 +255,80 @@ function drawTitleGlyph(
       ctx.arc(sx, sy, Math.max(1.3, R * 0.085), 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.shadowBlur = 0;
+  } else {
+    // Black hole TAMPAK DEPAN (elemen keempat): bola hitam dikelilingi
+    // cincin cahaya melingkar (diameter batas 0,68 x S, sama seperti
+    // spiral/atom), pita disk terang memotong tepat di tengah, debu
+    // mengorbit — rotasi murni pada poros.
+    const R = S * 0.246;
+    const ringR = R * 1.38;
+    const bandRx = S * 0.48;
+    const bandRy = Math.max(1.2, R * 0.2);
+    const hT = (n: number) => {
+      const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    const band = (mul: number) => {
+      const gr = ctx.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
+      gr.addColorStop(0, "rgba(245,245,255,0)");
+      gr.addColorStop(0.16, `rgba(245,245,255,${0.28 * mul})`);
+      gr.addColorStop(0.5, `rgba(245,245,255,${0.85 * mul})`);
+      gr.addColorStop(0.84, `rgba(245,245,255,${0.28 * mul})`);
+      gr.addColorStop(1, "rgba(245,245,255,0)");
+      return gr;
+    };
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, bandRx, bandRy, 0, 0, Math.PI * 2);
+    ctx.fillStyle = band(0.55);
+    ctx.fill();
+    ctx.shadowBlur = 4;
+    for (const p of [
+      { m: 0.94, w: 0.1, a: 0.3 },
+      { m: 1, w: 0.17, a: 0.5 },
+      { m: 1.07, w: 0.08, a: 0.22 },
+    ]) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringR * p.m, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(245,245,255,${p.a})`;
+      ctx.lineWidth = Math.max(1, R * p.w);
+      ctx.stroke();
+    }
+    for (const seg of [
+      { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
+      { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
+    ]) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringR, seg.a0, seg.a1);
+      ctx.strokeStyle = "rgba(245,245,255,0.85)";
+      ctx.lineWidth = Math.max(1.1, R * 0.2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(245,245,255,0.9)";
+    for (let i = 0; i < 8; i++) {
+      const rf = 0.92 + hT(i * 3 + 1) * 0.16;
+      const th = hT(i * 7 + 2) * Math.PI * 2 - now * 0.0012;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(th) * ringR * rf, cy + Math.sin(th) * ringR * rf, Math.max(1, R * 0.07), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(4,4,9,0.97)";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.02, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(245,245,255,0.9)";
+    ctx.lineWidth = Math.max(1.1, R * 0.12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, bandRx, bandRy, 0, 0, Math.PI * 2);
+    ctx.fillStyle = band(1);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, Math.PI * 2);
+    ctx.fillStyle = band(1.15);
+    ctx.fill();
     ctx.shadowBlur = 0;
   }
 }
@@ -332,7 +422,7 @@ function TitleLetter({
   const enter = () => {
     if (!enabled) return;
     if (modeRef.current === "fx" || modeRef.current === "in") return;
-    const kinds: TitleFxKind[] = ["spiral", "spark", "atom"];
+    const kinds: TitleFxKind[] = ["spiral", "spark", "atom", "blackhole"];
     setKind(kinds[Math.floor(Math.random() * 3)]);
     modeRef.current = "in";
     setMode("in");
@@ -740,6 +830,7 @@ export default function WonderScene() {
       spiralActive.clear();
       sparkActive.clear();
       atomActive.clear();
+      blackholeActive.clear();
       altActive.clear();
       frontActive.clear();
       scrambling.clear();
@@ -996,6 +1087,16 @@ export default function WonderScene() {
       baseRot: number; // orientasi awal atom (acak per kemunculan)
     };
     const atomActive = new Map<number, AtomState>();
+    type BhState = {
+      letter: number;
+      phase: "glitchIn" | "grow" | "hold" | "shrink" | "glitchOut";
+      phaseStart: number;
+      holdMs: number;
+      lastGlitchDraw: number;
+      jitter: string;
+      seed: number; // benih acak posisi debu orbit per kemunculan
+    };
+    const blackholeActive = new Map<number, BhState>();
     let spiralRaf: number | null = null;
     let spiralLastFrame = 0;
     const easeOutCubicS = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -1204,6 +1305,119 @@ export default function WonderScene() {
       redrawsRef.current++;
     }
 
+    // Black hole TAMPAK DEPAN di slot huruf (versi hero dari bancuh
+    // uji /blackhole dengan setelan user: ukuran 0,8, disk 0,90, glow
+    // 0,5): cincin cahaya melingkar mengelilingi horizon hitam, pita
+    // disk memotong tepat di tengah, debu mengorbit — rotasi poros.
+    function drawBlackholeGlyph(
+      c: Cell,
+      s: BhState,
+      scale: number,
+      alpha: number,
+      now: number,
+    ) {
+      const g = ctx!;
+      const cx = spiralCenterX(c, s.letter);
+      const cy = c.y + CH / 2 + 1;
+      const sMin = Math.min(1, gScale);
+      const R = Math.max(1.2, capHeight() * 0.55 * BH_SIZE * scale);
+      const ringR = R * 1.38;
+      const bandRx = R * 2.7 * BH_DISK;
+      const bandRy = Math.max(0.8 * sMin, R * 0.16);
+      const hN = (n: number) => {
+        const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        return v - Math.floor(v);
+      };
+      const bandGrad = (mul: number) => {
+        const gr = g.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
+        gr.addColorStop(0, "rgba(196,218,252,0)");
+        gr.addColorStop(0.16, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(0.5, `rgba(232,242,255,${(0.8 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(0.84, `rgba(196,218,252,${(0.28 * mul * alpha).toFixed(3)})`);
+        gr.addColorStop(1, "rgba(196,218,252,0)");
+        return gr;
+      };
+      g.save();
+      const halo = g.createRadialGradient(cx, cy, 0, cx, cy, bandRx);
+      halo.addColorStop(0, `rgba(170,200,255,${(0.13 * alpha).toFixed(3)})`);
+      halo.addColorStop(1, "rgba(170,200,255,0)");
+      g.fillStyle = halo;
+      g.beginPath();
+      g.arc(cx, cy, bandRx, 0, 7);
+      g.fill();
+      /* pita disk belakang */
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g.fillStyle = bandGrad(0.55);
+      g.fill();
+      /* cincin cahaya melingkar: 3 lapisan + busur atas/bawah */
+      for (const p of [
+        { m: 0.94, w: R * 0.1, a: 0.3 },
+        { m: 1, w: R * 0.17, a: 0.5 },
+        { m: 1.07, w: R * 0.08, a: 0.22 },
+      ]) {
+        g.beginPath();
+        g.arc(cx, cy, ringR * p.m, 0, 7);
+        g.strokeStyle = `rgba(205,226,252,${(p.a * alpha).toFixed(3)})`;
+        g.lineWidth = Math.max(0.6 * sMin, p.w);
+        g.stroke();
+      }
+      for (const seg of [
+        { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
+        { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
+      ]) {
+        g.beginPath();
+        g.arc(cx, cy, ringR, seg.a0, seg.a1);
+        g.strokeStyle = `rgba(232,243,255,${(0.8 * alpha).toFixed(3)})`;
+        g.lineWidth = Math.max(0.7 * sMin, R * 0.2);
+        g.stroke();
+      }
+      /* debu mengorbit pada cincin — rotasi murni pada poros */
+      for (let i = 0; i < 10; i++) {
+        const rf = 0.92 + hN(s.seed * 17 + i * 3 + 1) * 0.16;
+        const th = hN(s.seed * 29 + i * 7 + 2) * Math.PI * 2 - now * 0.0012;
+        const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.005 + hN(s.seed + i * 11) * 22));
+        g.beginPath();
+        g.arc(cx + Math.cos(th) * ringR * rf, cy + Math.sin(th) * ringR * rf, Math.max(0.4 * sMin, R * 0.07), 0, 7);
+        g.fillStyle = `rgba(220,235,255,${(alpha * tw * 0.9).toFixed(3)})`;
+        g.fill();
+      }
+      /* horizon hitam + tepi foton */
+      g.beginPath();
+      g.arc(cx, cy, R, 0, 7);
+      g.fillStyle = `rgba(1,1,3,${alpha.toFixed(3)})`;
+      g.fill();
+      g.shadowColor = "rgba(170,205,255,0.95)";
+      g.shadowBlur = BH_GLOW * 2.5 * sMin;
+      g.beginPath();
+      g.arc(cx, cy, R * 1.02, 0, 7);
+      g.strokeStyle = `rgba(238,246,255,${(0.9 * alpha).toFixed(3)})`;
+      g.lineWidth = Math.max(0.7 * sMin, R * 0.12);
+      g.stroke();
+      g.shadowBlur = 0;
+      g.shadowColor = "rgba(0,0,0,0)";
+      /* pita disk depan: memotong tepat di tengah + inti terang */
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx, bandRy, 0, 0, 7);
+      g.fillStyle = bandGrad(1);
+      g.fill();
+      g.beginPath();
+      g.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, 7);
+      g.fillStyle = bandGrad(1.15);
+      g.fill();
+      /* materi mengalir menyamping di sepanjang pita */
+      for (let i = 0; i < 4; i++) {
+        const sp = 0.000045 * (1 + hN(s.seed * 41 + i) * 0.7);
+        const fx = ((hN(s.seed * 53 + i * 7) + now * sp) % 1) * 2 - 1;
+        g.beginPath();
+        g.arc(cx + fx * bandRx * 0.94, cy + (hN(s.seed * 61 + i * 3) - 0.5) * bandRy * 0.8, Math.max(0.4 * sMin, R * 0.08), 0, 7);
+        g.fillStyle = `rgba(230,242,255,${(alpha * (1 - Math.abs(fx)) * 0.85).toFixed(3)})`;
+        g.fill();
+      }
+      g.restore();
+      redrawsRef.current++;
+    }
+
     // GAMBAR KOMPOSIT SEL EFEK: satu-satunya jalur menggambar sel yang
     // memiliki spiral dan/atau sparkle. Kata bertopeng menyembunyikan
     // huruf milik SEMUA efek aktif di sel itu (karakter kedip untuk yang
@@ -1217,7 +1431,8 @@ export default function WonderScene() {
       const sp = spiralActive.get(idx);
       const sk = sparkActive.get(idx);
       const at = atomActive.get(idx);
-      if (!sp && !sk && !at) {
+      const bh = blackholeActive.get(idx);
+      if (!sp && !sk && !at && !bh) {
         draw(c, c.a);
         return;
       }
@@ -1231,6 +1446,9 @@ export default function WonderScene() {
       if (at)
         arr[at.letter] =
           at.phase === "glitchIn" || at.phase === "glitchOut" ? at.jitter : " ";
+      if (bh)
+        arr[bh.letter] =
+          bh.phase === "glitchIn" || bh.phase === "glitchOut" ? bh.jitter : " ";
       draw(c, c.a, arr.join(""));
       if (sp && sp.phase !== "glitchIn" && sp.phase !== "glitchOut") {
         const elapsed = now - sp.phaseStart;
@@ -1298,6 +1516,24 @@ export default function WonderScene() {
         } else {
           const t = Math.min(1, elapsed / ATOM_SHRINK_MS);
           drawAtomGlyph(c, at, 1 - (1 - ATOM_P_MIN) * easeInOutCubicS(t), 1, now);
+        }
+      }
+      if (bh && bh.phase !== "glitchIn" && bh.phase !== "glitchOut") {
+        const elapsed = now - bh.phaseStart;
+        if (bh.phase === "grow") {
+          const t = Math.min(1, elapsed / BH_GROW_MS);
+          drawBlackholeGlyph(
+            c,
+            bh,
+            BH_P_MIN + (1 - BH_P_MIN) * easeOutCubicS(t),
+            1,
+            now,
+          );
+        } else if (bh.phase === "hold") {
+          drawBlackholeGlyph(c, bh, 1, 0.92 + 0.08 * Math.sin(now / 310), now);
+        } else {
+          const t = Math.min(1, elapsed / BH_SHRINK_MS);
+          drawBlackholeGlyph(c, bh, 1 - (1 - BH_P_MIN) * easeInOutCubicS(t), 1, now);
         }
       }
     }
@@ -1438,7 +1674,50 @@ export default function WonderScene() {
         s.lastGlitchDraw = 0;
       }
     }
-    // Loop gabungan spiral + sparkle + atom: majukan keadaan semua
+    // Langkah keadaan black hole — pola yang sama seperti atom.
+    function stepBhFx(idx: number, s: BhState, now: number) {
+      const c = cellsRef.current[idx];
+      if (!c || c.hole) {
+        blackholeActive.delete(idx);
+        return;
+      }
+      const elapsed = now - s.phaseStart;
+      if (s.phase === "glitchIn" || s.phase === "glitchOut") {
+        if (now - s.lastGlitchDraw > 50) {
+          s.jitter = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+          s.lastGlitchDraw = now;
+        }
+        if (elapsed >= BH_GLITCH_MS) {
+          if (s.phase === "glitchIn") {
+            s.phase = "grow";
+            s.phaseStart = now;
+          } else {
+            blackholeActive.delete(idx);
+          }
+        }
+        return;
+      }
+      if (s.phase === "grow") {
+        if (elapsed >= BH_GROW_MS) {
+          s.phase = "hold";
+          s.phaseStart = now;
+        }
+        return;
+      }
+      if (s.phase === "hold") {
+        if (elapsed >= s.holdMs) {
+          s.phase = "shrink";
+          s.phaseStart = now;
+        }
+        return;
+      }
+      if (elapsed >= BH_SHRINK_MS) {
+        s.phase = "glitchOut";
+        s.phaseStart = now;
+        s.lastGlitchDraw = 0;
+      }
+    }
+    // Loop gabungan spiral + sparkle + atom + black hole: majukan keadaan semua
     // efek, lalu gambar komposit tiap sel yang tersentuh tepat sekali
     // per frame.
     function ensureSpiralLoop() {
@@ -1470,9 +1749,13 @@ export default function WonderScene() {
           stepAtomFx(idx, s, now);
           touched.add(idx);
         }
+        for (const [idx, s] of Array.from(blackholeActive)) {
+          stepBhFx(idx, s, now);
+          touched.add(idx);
+        }
         for (const idx of touched) renderFxCell(idx, now);
         spiralRaf =
-          spiralActive.size > 0 || sparkActive.size > 0 || atomActive.size > 0
+          spiralActive.size > 0 || sparkActive.size > 0 || atomActive.size > 0 || blackholeActive.size > 0
             ? requestAnimationFrame(loop)
             : null;
       };
@@ -1481,7 +1764,7 @@ export default function WonderScene() {
     // true bila ada efek huruf aktif di sel TETANGGA (sel yang sama
     // dikecualikan — spiral & sparkle boleh berbagi satu kata).
     function nearFx(idx: number, cols: number) {
-      for (const map of [spiralActive, sparkActive, atomActive] as const) {
+      for (const map of [spiralActive, sparkActive, atomActive, blackholeActive] as const) {
         for (const other of map.keys()) {
           if (other === idx) continue;
           if (
@@ -1514,14 +1797,14 @@ export default function WonderScene() {
       // satu kata di huruf berbeda (sel berefek dijamin bersih dari
       // sistem lain karena semua sistem melewati sel berefek).
       const hosts: number[] = [];
-      for (const m of [sparkActive, atomActive] as const)
+      for (const m of [sparkActive, atomActive, blackholeActive] as const)
         for (const idx of m.keys()) if (!spiralActive.has(idx)) hosts.push(idx);
       if (hosts.length > 0 && Math.random() < 0.18) {
         const idx = hosts[(Math.random() * hosts.length) | 0];
         const c = cells[idx];
         if (c && !c.hole && c.shown) {
           spiralActive.set(idx, {
-            letter: pickFreeLetter([sparkActive.get(idx), atomActive.get(idx)]),
+            letter: pickFreeLetter([sparkActive.get(idx), atomActive.get(idx), blackholeActive.get(idx)]),
             phase: "glitchIn",
             phaseStart: performance.now(),
             rot: Math.random() * Math.PI * 2,
@@ -1552,7 +1835,8 @@ export default function WonderScene() {
         // sel yang sama (huruf lain di kata yang sama boleh)
         const sk = sparkActive.get(idx);
         const at = atomActive.get(idx);
-        if ((sk && sk.letter === letter) || (at && at.letter === letter))
+        const bh = blackholeActive.get(idx);
+        if ((sk && sk.letter === letter) || (at && at.letter === letter) || (bh && bh.letter === letter))
           continue;
         if (nearFx(idx, cols)) continue; // jangan bersebelahan efek lain
         spiralActive.set(idx, {
@@ -1576,14 +1860,14 @@ export default function WonderScene() {
       if (!cells.length || !cols) return;
       // Pasangan cermin spawnSpiral: sesekali menumpang kata berefek lain.
       const hosts: number[] = [];
-      for (const m of [spiralActive, atomActive] as const)
+      for (const m of [spiralActive, atomActive, blackholeActive] as const)
         for (const idx of m.keys()) if (!sparkActive.has(idx)) hosts.push(idx);
       if (hosts.length > 0 && Math.random() < 0.18) {
         const idx = hosts[(Math.random() * hosts.length) | 0];
         const c = cells[idx];
         if (c && !c.hole && c.shown) {
           sparkActive.set(idx, {
-            letter: pickFreeLetter([spiralActive.get(idx), atomActive.get(idx)]),
+            letter: pickFreeLetter([spiralActive.get(idx), atomActive.get(idx), blackholeActive.get(idx)]),
             phase: "glitchIn",
             phaseStart: performance.now(),
             holdMs: SPARK_HOLD_MS * (0.8 + Math.random() * 0.4),
@@ -1611,7 +1895,8 @@ export default function WonderScene() {
         const letter = (Math.random() * WORD.length) | 0;
         const sp = spiralActive.get(idx);
         const at = atomActive.get(idx);
-        if ((sp && sp.letter === letter) || (at && at.letter === letter))
+        const bh = blackholeActive.get(idx);
+        if ((sp && sp.letter === letter) || (at && at.letter === letter) || (bh && bh.letter === letter))
           continue;
         if (nearFx(idx, cols)) continue;
         sparkActive.set(idx, {
@@ -1634,14 +1919,14 @@ export default function WonderScene() {
       if (!cells.length || !cols) return;
       // Pasangan cermin: sesekali menumpang kata berefek lain.
       const hosts: number[] = [];
-      for (const m of [spiralActive, sparkActive] as const)
+      for (const m of [spiralActive, sparkActive, blackholeActive] as const)
         for (const idx of m.keys()) if (!atomActive.has(idx)) hosts.push(idx);
       if (hosts.length > 0 && Math.random() < 0.18) {
         const idx = hosts[(Math.random() * hosts.length) | 0];
         const c = cells[idx];
         if (c && !c.hole && c.shown) {
           atomActive.set(idx, {
-            letter: pickFreeLetter([spiralActive.get(idx), sparkActive.get(idx)]),
+            letter: pickFreeLetter([spiralActive.get(idx), sparkActive.get(idx), blackholeActive.get(idx)]),
             phase: "glitchIn",
             phaseStart: performance.now(),
             holdMs: ATOM_HOLD_MS * (0.8 + Math.random() * 0.4),
@@ -1670,7 +1955,8 @@ export default function WonderScene() {
         const letter = (Math.random() * WORD.length) | 0;
         const sp = spiralActive.get(idx);
         const sk = sparkActive.get(idx);
-        if ((sp && sp.letter === letter) || (sk && sk.letter === letter))
+        const bh = blackholeActive.get(idx);
+        if ((sp && sp.letter === letter) || (sk && sk.letter === letter) || (bh && bh.letter === letter))
           continue;
         if (nearFx(idx, cols)) continue;
         atomActive.set(idx, {
@@ -1681,6 +1967,67 @@ export default function WonderScene() {
           lastGlitchDraw: 0,
           jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
           baseRot: Math.random() * Math.PI,
+        });
+        renderFxCell(idx, performance.now());
+        ensureSpiralLoop();
+        break;
+      }
+    }
+    function spawnBlackhole() {
+      if (reduced || blackholeActive.size >= Math.min(BH_MAX, fxCapRef.current)) return;
+      const cells = cellsRef.current;
+      const cols = colsRef.current;
+      if (!cells.length || !cols) return;
+      // Pasangan cermin spawnAtom: sesekali menumpang kata berefek lain.
+      const hosts: number[] = [];
+      for (const m of [spiralActive, sparkActive, atomActive] as const)
+        for (const idx of m.keys()) if (!blackholeActive.has(idx)) hosts.push(idx);
+      if (hosts.length > 0 && Math.random() < 0.18) {
+        const idx = hosts[(Math.random() * hosts.length) | 0];
+        const c = cells[idx];
+        if (c && !c.hole && c.shown) {
+          blackholeActive.set(idx, {
+            letter: pickFreeLetter([spiralActive.get(idx), sparkActive.get(idx), atomActive.get(idx)]),
+            phase: "glitchIn",
+            phaseStart: performance.now(),
+            holdMs: BH_HOLD_MS * (0.8 + Math.random() * 0.4),
+            lastGlitchDraw: 0,
+            jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+            seed: Math.random() * 100,
+          });
+          renderFxCell(idx, performance.now());
+          ensureSpiralLoop();
+          return;
+        }
+      }
+      for (let tries = 0; tries < 24; tries++) {
+        const idx = (Math.random() * cells.length) | 0;
+        const c = cells[idx];
+        if (!c || c.hole || !c.shown) continue;
+        if (
+          altActive.has(idx) ||
+          frontActive.has(idx) ||
+          scrambling.has(idx) ||
+          hiRef.current.has(idx) ||
+          blackholeActive.has(idx) ||
+          bandSet.has(idx)
+        )
+          continue;
+        const letter = (Math.random() * WORD.length) | 0;
+        const sp = spiralActive.get(idx);
+        const sk = sparkActive.get(idx);
+        const at = atomActive.get(idx);
+        if ((sp && sp.letter === letter) || (sk && sk.letter === letter) || (at && at.letter === letter))
+          continue;
+        if (nearFx(idx, cols)) continue;
+        blackholeActive.set(idx, {
+          letter,
+          phase: "glitchIn",
+          phaseStart: performance.now(),
+          holdMs: BH_HOLD_MS * (0.8 + Math.random() * 0.4),
+          lastGlitchDraw: 0,
+          jitter: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+          seed: Math.random() * 100,
         });
         renderFxCell(idx, performance.now());
         ensureSpiralLoop();
@@ -1701,17 +2048,20 @@ export default function WonderScene() {
           if (
             (spiralActive.size > 0 ||
               sparkActive.size > 0 ||
-              atomActive.size > 0) &&
+              atomActive.size > 0 ||
+              blackholeActive.size > 0) &&
             performance.now() - spiralLastFrame > 2500
           ) {
             const stuck = new Set([
               ...spiralActive.keys(),
               ...sparkActive.keys(),
               ...atomActive.keys(),
+              ...blackholeActive.keys(),
             ]);
             spiralActive.clear();
             sparkActive.clear();
             atomActive.clear();
+            blackholeActive.clear();
             spiralRaf = null;
             for (const idx of stuck) {
               const c = cellsRef.current[idx];
@@ -1725,6 +2075,7 @@ export default function WonderScene() {
           spawnSpiral();
           spawnSpark();
           spawnAtom();
+          spawnBlackhole();
         }, SPIRAL_EVERY_MS);
 
     // KUNCI RINGAN #2: interval lambat + sedikit sel acak, BUKAN loop 60fps

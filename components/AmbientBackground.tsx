@@ -77,7 +77,7 @@ export default function AmbientBackground() {
 
     const heroBottom = () => (hero ? hero.offsetTop + hero.offsetHeight : 0);
 
-    /* --- Tiga glyph mini (spiral/sparkle/atom): titik-titik latar di
+    /* --- Empat glyph mini (spiral/sparkle/atom/black hole): titik-titik latar di
        dalam radius kursor BERUBAH BENTUK menjadi salah satunya
        (permintaan user — bukan glyph yang muncul melayang sendiri).
        Skala kecil (maks ±20px) agar ringan, hanya di latar ambien
@@ -183,6 +183,64 @@ export default function AmbientBackground() {
       ctx.fill();
       ctx.restore();
     };
+    const drawBlackhole = (x: number, y: number, R: number, a: number, t: number) => {
+      // Black hole mini TAMPAK DEPAN (elemen keempat, 31 Okt): cincin
+      // cahaya melingkar + bola hitam bertepi foton + pita terang
+      // memotong tengah; debu mengorbit — rotasi poros. Ringkas,
+      // tanpa shadow, seperti glyph ambien lainnya.
+      ctx.save();
+      ctx.translate(x, y);
+      const r = R / 1.38;
+      const bandRx = R * 1.75;
+      const bandRy = Math.max(0.8, r * 0.2);
+      const band = (mul: number) => {
+        const gr = ctx.createLinearGradient(-bandRx, 0, bandRx, 0);
+        gr.addColorStop(0, "rgba(196,218,252,0)");
+        gr.addColorStop(0.2, `rgba(196,218,252,${0.3 * mul * a})`);
+        gr.addColorStop(0.5, `rgba(232,242,255,${0.85 * mul * a})`);
+        gr.addColorStop(0.8, `rgba(196,218,252,${0.3 * mul * a})`);
+        gr.addColorStop(1, "rgba(196,218,252,0)");
+        return gr;
+      };
+      ctx.beginPath();
+      ctx.ellipse(0, 0, bandRx, bandRy, 0, 0, 7);
+      ctx.fillStyle = band(0.55);
+      ctx.fill();
+      ctx.lineWidth = Math.max(1, R * 0.09);
+      ctx.strokeStyle = `rgba(205, 226, 252, ${0.55 * a})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, R, 0, 7);
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(232, 243, 255, ${0.85 * a})`;
+      ctx.lineWidth = Math.max(1, R * 0.11);
+      ctx.beginPath();
+      ctx.arc(0, 0, R, -Math.PI * 0.72, -Math.PI * 0.28);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, R, Math.PI * 0.28, Math.PI * 0.72);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(220, 235, 255, ${0.9 * a})`;
+      for (let i = 0; i < 5; i++) {
+        const th = hash2(i * 7 + 2, 5, 9) * Math.PI * 2 - t * 0.0012;
+        ctx.beginPath();
+        ctx.arc(Math.cos(th) * R, Math.sin(th) * R, Math.max(0.7, R * 0.07), 0, 7);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, 7);
+      ctx.fillStyle = `rgba(2, 2, 5, ${a})`;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.04, 0, 7);
+      ctx.strokeStyle = `rgba(238, 246, 255, ${0.9 * a})`;
+      ctx.lineWidth = Math.max(0.8, r * 0.13);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, bandRx, bandRy, 0, 0, 7);
+      ctx.fillStyle = band(1);
+      ctx.fill();
+      ctx.restore();
+    };
 
     const drawField = (now: number, animated: boolean) => {
       const scrollTop = scroller.scrollTop;
@@ -264,9 +322,10 @@ export default function AmbientBackground() {
             const ga = glowAlpha * (0.3 + 0.7 * k);
             const gt = hash2(ix, iy, 12);
             const tt = now + hash2(ix, iy, 13) * 4000;
-            if (gt < 0.34) drawSpiral(x, y, R, ga, tt);
-            else if (gt < 0.67) drawSparkle(x, y, R * 0.95, ga, tt);
-            else drawAtom(x, y, R, ga, tt);
+            if (gt < 0.25) drawSpiral(x, y, R, ga, tt);
+            else if (gt < 0.5) drawSparkle(x, y, R * 0.95, ga, tt);
+            else if (gt < 0.75) drawAtom(x, y, R, ga, tt);
+            else drawBlackhole(x, y, R, ga, tt);
           } else {
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2);

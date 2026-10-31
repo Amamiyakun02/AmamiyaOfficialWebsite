@@ -3,19 +3,21 @@
 import { useEffect, useRef } from "react";
 
 /* =====================================================================
-   3 IKON EFEK — 30 Okt 2026 sebagai card berpenjelasan di bawah stage;
+   IKON EFEK — 30 Okt 2026 sebagai card berpenjelasan di bawah stage;
    31 Okt atas permintaan user: teks judul & penjelasan DIHAPUS, kini
-   hanya cip ikon glyph HIDUP (spiral/sparkle/atom) berjejer di bawah
+   hanya cip ikon glyph HIDUP (spiral/sparkle/atom + black hole sejak
+   elemen keempat diterapkan 31 Okt) berjejer di bawah
    kata besar AMAMIYA di tengah lubang. Nama efek tetap ada sebagai
    tooltip (atribut title). Ringan: satu rAF per cip, ±30fps.
    ===================================================================== */
 
-type Kind = "spiral" | "spark" | "atom";
+type Kind = "spiral" | "spark" | "atom" | "blackhole";
 
 const CARDS: { kind: Kind; label: string }[] = [
   { kind: "spiral", label: "Spiral" },
   { kind: "spark", label: "Sparkle" },
   { kind: "atom", label: "Atom" },
+  { kind: "blackhole", label: "Black Hole" },
 ];
 
 function GlyphCanvas({ kind }: { kind: Kind }) {
@@ -176,11 +178,90 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.shadowBlur = 0;
     }
 
+    function drawBlackhole(now: number) {
+      // Black hole TAMPAK DEPAN (elemen keempat, 31 Okt): cincin
+      // cahaya melingkar berdiameter 0,74 x H (setara spiral/atom) +
+      // bola hitam bertepi foton + pita disk memotong tengah; debu
+      // mengorbit — rotasi murni pada poros. Lebar pita dibatasi
+      // lebar kanvas cip agar ujungnya tidak terpotong.
+      const ringR = H * 0.37;
+      const R = ringR / 1.38;
+      const bandRx = Math.min(R * 2.7 * 0.9, W * 0.48);
+      const bandRy = Math.max(1 * K, R * 0.18);
+      const band = (mul: number) => {
+        const gr = ctx!.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
+        gr.addColorStop(0, "rgba(245,245,255,0)");
+        gr.addColorStop(0.16, `rgba(245,245,255,${0.28 * mul})`);
+        gr.addColorStop(0.5, `rgba(245,245,255,${0.85 * mul})`);
+        gr.addColorStop(0.84, `rgba(245,245,255,${0.28 * mul})`);
+        gr.addColorStop(1, "rgba(245,245,255,0)");
+        return gr;
+      };
+      const hC = (n: number) => {
+        const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        return v - Math.floor(v);
+      };
+      ctx!.shadowColor = "rgba(245,245,255,0.85)";
+      ctx!.beginPath();
+      ctx!.ellipse(cx, cy, bandRx, bandRy, 0, 0, Math.PI * 2);
+      ctx!.fillStyle = band(0.55);
+      ctx!.fill();
+      ctx!.shadowBlur = 4 * K;
+      for (const p of [
+        { m: 0.94, w: 0.1, a: 0.3 },
+        { m: 1, w: 0.17, a: 0.5 },
+        { m: 1.07, w: 0.08, a: 0.22 },
+      ]) {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, ringR * p.m, 0, Math.PI * 2);
+        ctx!.strokeStyle = `rgba(245,245,255,${p.a})`;
+        ctx!.lineWidth = Math.max(0.7 * K, R * p.w);
+        ctx!.stroke();
+      }
+      for (const seg of [
+        { a0: -Math.PI * 0.72, a1: -Math.PI * 0.28 },
+        { a0: Math.PI * 0.28, a1: Math.PI * 0.72 },
+      ]) {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, ringR, seg.a0, seg.a1);
+        ctx!.strokeStyle = "rgba(245,245,255,0.85)";
+        ctx!.lineWidth = Math.max(0.8 * K, R * 0.2);
+        ctx!.stroke();
+      }
+      ctx!.fillStyle = "rgba(245,245,255,0.9)";
+      for (let i = 0; i < 8; i++) {
+        const rf = 0.92 + hC(i * 3 + 1) * 0.16;
+        const th = hC(i * 7 + 2) * Math.PI * 2 - now * 0.0012;
+        ctx!.beginPath();
+        ctx!.arc(cx + Math.cos(th) * ringR * rf, cy + Math.sin(th) * ringR * rf, Math.max(0.9 * K, R * 0.07), 0, Math.PI * 2);
+        ctx!.fill();
+      }
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx!.fillStyle = "rgba(4,4,9,0.97)";
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, R * 1.02, 0, Math.PI * 2);
+      ctx!.strokeStyle = "rgba(245,245,255,0.9)";
+      ctx!.lineWidth = Math.max(0.8 * K, R * 0.12);
+      ctx!.stroke();
+      ctx!.beginPath();
+      ctx!.ellipse(cx, cy, bandRx, bandRy, 0, 0, Math.PI * 2);
+      ctx!.fillStyle = band(1);
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.ellipse(cx, cy, bandRx * 0.92, bandRy * 0.45, 0, 0, Math.PI * 2);
+      ctx!.fillStyle = band(1.15);
+      ctx!.fill();
+      ctx!.shadowBlur = 0;
+    }
+
     function frame(now: number) {
       ctx!.clearRect(0, 0, W, H);
       if (kind === "spiral") drawSpiral(now);
       else if (kind === "spark") drawSpark(now);
-      else drawAtom(now);
+      else if (kind === "atom") drawAtom(now);
+      else drawBlackhole(now);
     }
 
     if (reduced) {
