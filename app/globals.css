@@ -134,7 +134,22 @@ body {
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: 0.01em;
-  color: #ffffff;
+  color: #f4f4fa;
+  /* konteks tumpuk untuk permukaan atas balok (::before di belakang) */
+  position: relative;
+  z-index: 0;
+}
+/* Permukaan ATAS balok 3D (dari gambar referensi user): salinan kata
+   yang sama dalam warna redup, digeser sedikit ke ATAS di belakang
+   wajah utama — lempeng tipis yang menyembul di puncak tiap huruf
+   terbaca sebagai sisi atas baloknya. */
+.stage-title h1::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: -0.068em;
+  z-index: -1;
+  color: #a5a5c2;
 }
 
 /* 3 card efek — layer paling depan stage (di atas canvas & judul):

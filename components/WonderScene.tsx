@@ -1917,7 +1917,7 @@ export default function WonderScene() {
           pill status, teks peran, dan tombol CTA sudah dihapus (31 Okt);
           kata ini diperbesar mengisi lubang dengan margin tersisa. */}
       <div className={`stage-title ${blockFont.variable}`}>
-        <h1>AMAMIYA</h1>
+        <h1 data-text="AMAMIYA">AMAMIYA</h1>
       </div>
 
       <div className="panel">
