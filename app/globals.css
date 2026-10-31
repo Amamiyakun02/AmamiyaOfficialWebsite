@@ -350,17 +350,17 @@ h1.t-instant .t-block {
   padding: 12px;
   display: grid;
   place-items: center;
+  /* TANPA border (pilihan user 31 Okt): ikon dekoratif, bukan tombol —
+     pemisah dari grid cukup latar lembut + blur ini saja. */
   background: rgba(13, 13, 16, 0.72);
-  border: 1px solid #232329;
   border-radius: 18px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: #e7e7ea;
-  transition: border-color 0.25s ease, transform 0.25s ease;
+  transition: transform 0.25s ease;
 }
 
 .fx-card:hover {
-  border-color: #3d3d47;
   transform: translateY(-3px);
 }
 
