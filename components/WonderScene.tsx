@@ -704,7 +704,11 @@ export default function WonderScene() {
       const trimBottomRows =
         totalRows >= 16 ? (viewW < 640 ? 2 : viewW < 1080 ? 4 : 0) : 0;
       const gridLimitY = viewH - trimBottomRows * CH;
-      for (let y = trimTopRows; y * CH < gridLimitY; y++) {
+      // Hanya baris yang MUAT UTUH yang digambar: tinggi stage jarang
+      // pas kelipatan tinggi baris, dan baris terakhir yang mulai
+      // sebelum tepi bawah tapi menjorok keluar akan terpotong tepi
+      // kanvas di tengah huruf (terlihat di screenshot desktop user).
+      for (let y = trimTopRows; (y + 1) * CH <= gridLimitY + 0.5; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
             x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
