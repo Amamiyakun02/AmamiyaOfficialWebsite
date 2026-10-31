@@ -13,6 +13,9 @@ import LazySection from "./LazySection";
    (next/dynamic) dan hanya di-mount saat mendekati viewport
    (LazySection), jadi muatan awal hanya panggung Wonder saja.
    ================================================================ */
+const AmbientBackground = dynamic(() => import("./AmbientBackground"), {
+  ssr: false,
+});
 const ProjectsSection = dynamic(() => import("./sections/ProjectsSection"), {
   ssr: false,
 });
@@ -47,6 +50,9 @@ export default function PortfolioHome() {
 
   return (
     <div className="home-scroll">
+      {/* Latar ambien titik lembut di belakang section-section bawah
+          (digambar hanya di bawah hero — hero tidak berubah) */}
+      <AmbientBackground />
       {/* Section 1: panggung Wonder (hero) — selalu dirender penuh */}
       <div id="beranda" className="hero-wrap">
         <WonderScene />

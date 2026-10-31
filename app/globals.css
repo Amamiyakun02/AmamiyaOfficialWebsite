@@ -1473,3 +1473,18 @@ code {
     margin-right: 0;
   }
 }
+
+/* ===== Latar ambien section bawah (31 Okt) ===== */
+/* Kanvas fixed sebesar viewport di belakang konten .home-scroll;
+   titik-titiknya hidup di koordinat dokumen (lihat AmbientBackground)
+   dan hanya digambar di bawah hero. Konten section di atasnya. */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.home-scroll > *:not(.ambient-bg) {
+  position: relative;
+  z-index: 1;
+}
