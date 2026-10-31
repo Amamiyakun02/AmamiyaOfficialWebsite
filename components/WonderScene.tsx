@@ -511,6 +511,12 @@ export default function WonderScene() {
     // build() menghitungnya dari aturan 9 kolom; semua geometri di
     // effect ini membaca variabel lokal ini.
     let gScale = 1;
+    // Ukuran stage dalam piksel CSS — SEMUA geometri (sel, lubang,
+    // sapuan, gelombang) bekerja dalam satuan ini. Piksel backing
+    // canvas = viewW/viewH x dpr (lihat build), ctx ditransformasikan
+    // agar koordinat gambar tetap satuan CSS.
+    let viewW = 0;
+    let viewH = 0;
     let CW = gridRef.current.cw;
     let CH = gridRef.current.ch;
     let FONT = gridRef.current.font;
@@ -536,11 +542,20 @@ export default function WonderScene() {
     }
 
     function build(instant = false) {
-      // KUNCI RINGAN #1: DPR dikunci 1 — jangan ikut retina (3x = 9x piksel).
-      // Ukuran diambil dari elemen canvas sendiri (sekarang canvas adalah
-      // isi <main> di bawah navbar, bukan lagi lapisan seukuran jendela).
-      cvs!.width = cvs!.clientWidth || window.innerWidth;
-      cvs!.height = cvs!.clientHeight || window.innerHeight;
+      // KETAJAMAN LAYAR (perbaikan "burik di mobile" 31 Okt): dulu DPR
+      // dikunci 1 demi ringan — di desktop tak terasa, tapi di HP
+      // berlayar retina (DPR ±3) canvas 1x di-upscale paksa 3x sehingga
+      // seluruh grid terlihat buram, apalagi font grid ponsel kini
+      // kecil. Sekarang backing canvas mengikuti DPR layar DIBATASI
+      // maks 2x (2x sudah tajam; 3x = 9x piksel terlalu berat untuk
+      // keuntungan visual yang kecil). Ukuran logis tetap piksel CSS
+      // dari elemen canvas (isi <main> di bawah navbar).
+      viewW = cvs!.clientWidth || window.innerWidth;
+      viewH = cvs!.clientHeight || window.innerHeight;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cvs!.width = Math.round(viewW * dpr);
+      cvs!.height = Math.round(viewH * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       // STRUKTUR LAJUR (perombakan user 31 Okt): selebar stage dibagi
       // menjadi lajur-lajur sama lebar; lajur PALING KIRI dan PALING
       // KANAN selalu KOSONG sebagai margin, lajur di tengahnya berisi
@@ -552,10 +567,10 @@ export default function WonderScene() {
       // sel, dan FONT sedikit diperkecil (faktor FONT_SHRINK) dari
       // skala murninya atas permintaan user.
       const cols =
-        cvs!.width < 640 ? 6 : cvs!.width < 1080 ? 6 : GRID_COLS;
+        viewW < 640 ? 6 : viewW < 1080 ? 6 : GRID_COLS;
       const tracks = cols + 2; // + lajur margin kiri & kanan
-      gScale = cvs!.width / (tracks * gridBase.cw);
-      CW = cvs!.width / tracks;
+      gScale = viewW / (tracks * gridBase.cw);
+      CW = viewW / tracks;
       CH = gridBase.ch * gScale * ROW_STRETCH;
       FONT_SIZE = gridBase.fs * gScale * FONT_SHRINK;
       FONT = `${FONT_SIZE}px monospace`;
@@ -594,11 +609,11 @@ export default function WonderScene() {
       const holeCols = Math.min(4, cols);
       const holeW = holeCols * CW;
       const holeH =
-        cvs!.width < 640
-          ? Math.min(150, cvs!.height * 0.2)
-          : Math.min(HOLE_MAX_H, cvs!.height * HOLE_H_RATIO);
+        viewW < 640
+          ? Math.min(150, viewH * 0.2)
+          : Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO);
       const holeX = CW + ((cols - holeCols) / 2) * CW;
-      const holeY = (cvs!.height - holeH) / 2;
+      const holeY = (viewH - holeH) / 2;
       const inHole = (px: number, py: number) => {
         if (px < holeX || px > holeX + holeW || py < holeY || py > holeY + holeH)
           return false;
@@ -616,7 +631,7 @@ export default function WonderScene() {
       };
       const cells: Cell[] = [];
       colsRef.current = cols;
-      for (let y = 0; y * CH < cvs!.height; y++) {
+      for (let y = 0; y * CH < viewH; y++) {
         for (let x = 0; x < cols; x++) {
           cells.push({
             x: (x + 1) * CW, // +1 lajur: lajur pertama adalah margin kiri
@@ -634,8 +649,8 @@ export default function WonderScene() {
       // pemicu spawn lebih jarang (pembagi tick lebih besar).
       // (berbasis lebar stage, bukan jumlah sel — struktur lajur baru
       // mengubah jumlah sel tanpa mengubah kelas perangkatnya)
-      fxCapRef.current = cvs!.width < 640 ? 4 : cvs!.width < 1080 ? 6 : 10;
-      spawnDivRef.current = cvs!.width < 640 ? 2 : cvs!.width < 1080 ? 1 : 1;
+      fxCapRef.current = viewW < 640 ? 4 : viewW < 1080 ? 6 : 10;
+      spawnDivRef.current = viewW < 640 ? 2 : viewW < 1080 ? 1 : 1;
       hiRef.current.clear();
       if (heatRaf !== null) {
         cancelAnimationFrame(heatRaf);
@@ -672,8 +687,8 @@ export default function WonderScene() {
       // 124×30 px, jadi sapuan berbasis indeks akan terlihat condong
       // vertikal seperti tirai, bukan diagonal sudut-ke-sudut.
       // Tiap sel tetap hanya digambar sekali — bukan loop per-frame.
-      const W = cvs!.width;
-      const H = cvs!.height;
+      const W = viewW;
+      const H = viewH;
       const corner = nextCorner();
       const maxDiag = W + H;
       const step = maxDiag / 25; // ±25 langkah × 40 ms ≈ 1 detik
@@ -1742,8 +1757,8 @@ export default function WonderScene() {
     // 0 = kiri atas (kuadran 2), 1 = kanan atas (kuadran 1),
     // 2 = kiri bawah (kuadran 3), 3 = kanan bawah (kuadran 4).
     function distFrom(corner: number, x: number, y: number) {
-      const W = cvs!.width;
-      const H = cvs!.height;
+      const W = viewW;
+      const H = viewH;
       return corner === 0
         ? x + y
         : corner === 1
@@ -1781,7 +1796,7 @@ export default function WonderScene() {
     function stepWave() {
       if (document.hidden || !stageVisible) return;
       const cells = cellsRef.current;
-      const maxDiag = cvs!.width + cvs!.height;
+      const maxDiag = viewW + viewH;
       waveFront += maxDiag / 20; // satu sapuan penuh ±1,6 detik
       const next = new Set<number>();
       for (let i = 0; i < cells.length; i++) {
