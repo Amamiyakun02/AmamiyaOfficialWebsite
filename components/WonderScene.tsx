@@ -126,6 +126,15 @@ type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (p
    ===================================================================== */
 type TitleFxKind = "spiral" | "spark" | "atom" | "blackhole";
 
+// Batas DPR semua kanvas hero: maks 2 di layar besar; KHUSUS viewport
+// sempit (<640px, kelas ponsel) maks 1,5 — disetujui user 2 Nov pada
+// putaran optimasi beban view: piksel yang dicat ulang di hero ponsel
+// turun ±44%, grid hanya sedikit lebih lembut.
+function heroDpr() {
+  const cap = typeof window !== "undefined" && window.innerWidth < 640 ? 1.5 : 2;
+  return Math.min(cap, window.devicePixelRatio || 1);
+}
+
 function drawTitleGlyph(
   ctx: CanvasRenderingContext2D,
   W: number,
@@ -362,7 +371,7 @@ function TitleLetter({
     if (!cvs) return;
     const ctx = cvs.getContext("2d");
     if (!ctx) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = heroDpr();
     const W = cvs.clientWidth || 100;
     const H = cvs.clientHeight || 100;
     cvs.width = W * dpr;
@@ -683,11 +692,12 @@ export default function WonderScene() {
       // seluruh grid terlihat buram, apalagi font grid ponsel kini
       // kecil. Sekarang backing canvas mengikuti DPR layar DIBATASI
       // maks 2x (2x sudah tajam; 3x = 9x piksel terlalu berat untuk
-      // keuntungan visual yang kecil). Ukuran logis tetap piksel CSS
-      // dari elemen canvas (isi <main> di bawah navbar).
+      // keuntungan visual yang kecil) — dan maks 1,5x di viewport
+      // ponsel via heroDpr() (optimasi 2 Nov). Ukuran logis tetap
+      // piksel CSS dari elemen canvas (isi <main> di bawah navbar).
       viewW = cvs!.clientWidth || window.innerWidth;
       viewH = cvs!.clientHeight || window.innerHeight;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dpr = heroDpr();
       cvs!.width = Math.round(viewW * dpr);
       cvs!.height = Math.round(viewH * dpr);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1289,7 +1299,7 @@ export default function WonderScene() {
       const pad = SPARK_GLOW + 2;
       const hw = rxB + pad;
       const hh = ryB + pad;
-      const sdpr = Math.min(2, window.devicePixelRatio || 1);
+      const sdpr = heroDpr();
       const cvs = document.createElement("canvas");
       cvs.width = Math.max(2, Math.ceil(hw * 2 * sdpr));
       cvs.height = Math.max(2, Math.ceil(hh * 2 * sdpr));
@@ -1552,7 +1562,7 @@ export default function WonderScene() {
       const pad = BH_GLOW * 2.5 + 3;
       const hw = R * 2.7 * BH_DISK + pad;
       const hh = R * 1.38 + pad;
-      const sdpr = Math.min(2, window.devicePixelRatio || 1);
+      const sdpr = heroDpr();
       const cvs = document.createElement("canvas");
       cvs.width = Math.max(2, Math.ceil(hw * 2 * sdpr));
       cvs.height = Math.max(2, Math.ceil(hh * 2 * sdpr));
