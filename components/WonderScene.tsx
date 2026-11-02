@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Archivo_Black } from "next/font/google";
 import FxCards from "./FxCards";
+import HeroCtas from "./HeroCtas";
 
 // Font balok untuk kata besar di tengah lubang (permintaan user 31 Okt)
 const blockFont = Archivo_Black({
@@ -2914,9 +2915,10 @@ export default function WonderScene() {
     <main className="stage">
       <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
 
-      {/* Di dalam lubang grid HANYA kata besar AMAMIYA berfont balok —
-          pill status, teks peran, dan tombol CTA sudah dihapus (31 Okt);
-          kata ini diperbesar mengisi lubang dengan margin tersisa. */}
+      {/* Di dalam lubang grid: kata besar AMAMIYA berfont balok + cip
+          efek + tombol aksi pertama. (Pill status & teks peran dihapus
+          31 Okt; tombol CTA kembali 2 Nov atas pilihan user, bentuknya
+          kini baris pil ringkas di bawah cip — lihat HeroCtas.) */}
       <div
         className={`stage-title ${blockFont.variable}${titlePlay ? " title-on" : ""}`}
       >
@@ -2935,6 +2937,8 @@ export default function WonderScene() {
         </h1>
         {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
         <FxCards />
+        {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV */}
+        <HeroCtas />
       </div>
 
       <div className="panel">

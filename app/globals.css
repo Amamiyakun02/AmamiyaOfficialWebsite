@@ -2653,3 +2653,71 @@ code {
   cursor: pointer;
 }
 .pdf-reset:hover { color: #fff; }
+
+/* ===== Tombol aksi pertama hero (2 Nov 2026, pilihan user) ===== */
+/* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
+   pola yang sama dengan .fx-card), pudar + naik lembut tanpa glitch. */
+.stage-title:not(.title-on) .hero-ctas {
+  opacity: 0;
+  pointer-events: none;
+}
+.stage-title.title-on .hero-ctas {
+  animation: chipIn 0.5s ease backwards;
+  animation-delay: 1.85s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-title .hero-ctas {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+.hero-ctas {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding: 0 12px;
+}
+.hero-cta {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #2e2e35;
+  background: rgba(14, 14, 17, 0.78);
+  backdrop-filter: blur(6px);
+  color: #e6e6e9;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
+}
+.hero-cta:hover {
+  border-color: #45454f;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.hero-cta.is-primary {
+  background: #0081fb;
+  border-color: #0081fb;
+  color: #fff;
+}
+.hero-cta.is-primary:hover {
+  background: #2b93ff;
+  border-color: #2b93ff;
+}
+@media (max-width: 640px) {
+  .hero-ctas {
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .hero-cta {
+    padding: 8px 13px;
+    font-size: 13px;
+  }
+}
