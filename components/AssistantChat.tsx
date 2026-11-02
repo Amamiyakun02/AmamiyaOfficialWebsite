@@ -22,7 +22,14 @@ import { apiUrl } from "@/lib/api";
 
 type EngineId = "gemini" | "mercury" | "deepseek";
 
-const ENGINE_ORDER: EngineId[] = ["gemini", "mercury", "deepseek"];
+const ENGINE_ORDER: EngineId[] = ["mercury", "gemini", "deepseek"];
+
+// Engine yang AKTIF dipakai (keputusan user 2 Nov 2026): hanya Mercury.
+// Gemini nonaktif sementara — kunci API Google-nya diblokir (403
+// API_KEY_SERVICE_BLOCKED); DeepSeek nonaktif — modelnya tidak tersedia
+// di pool LARP Router (400). Untuk mengaktifkan lagi, tambahkan id-nya
+// ke daftar ini; status dari backend tetap dicek seperti biasa.
+const ENABLED_ENGINES: EngineId[] = ["mercury"];
 
 const ENGINE_ENDPOINT: Record<EngineId, string> = {
   gemini: "/v1/gemini/chat",
@@ -138,14 +145,14 @@ function MessageText({ text }: { text: string }) {
 export default function AssistantChat() {
   const searchParams = useSearchParams();
   const [engine, setEngine] = useState<EngineId>(() => {
-    if (typeof window === "undefined") return "gemini";
-    const saved = localStorage.getItem("assistant_selected_model");
-    return saved === "mercury" || saved === "deepseek" ? saved : "gemini";
+    if (typeof window === "undefined") return "mercury";
+    const saved = localStorage.getItem("assistant_selected_model") as EngineId | null;
+    return saved && ENABLED_ENGINES.includes(saved) ? saved : "mercury";
   });
   const [engineStatus, setEngineStatus] = useState<Record<EngineId, boolean>>({
-    gemini: true,
-    mercury: true,
-    deepseek: true,
+    gemini: ENABLED_ENGINES.includes("gemini"),
+    mercury: ENABLED_ENGINES.includes("mercury"),
+    deepseek: ENABLED_ENGINES.includes("deepseek"),
   });
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<Message[]>([]);
@@ -199,7 +206,7 @@ export default function AssistantChat() {
         setEngineStatus((prev) => {
           const next = { ...prev };
           for (const e of data.engines!) {
-            if (e?.id && ENGINE_ORDER.includes(e.id as EngineId)) {
+            if (e?.id && ENGINE_ORDER.includes(e.id as EngineId) && ENABLED_ENGINES.includes(e.id as EngineId)) {
               next[e.id as EngineId] = e.available !== false;
             }
           }
