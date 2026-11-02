@@ -76,7 +76,7 @@ export default function Navbar() {
         href="/#tools"
         onClick={(e) => go(e, "tools")}
       >
-        Explore Tools
+        Coba Tools
       </Link>
     </header>
   );

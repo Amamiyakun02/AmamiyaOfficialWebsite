@@ -8,8 +8,8 @@ import SectionTitle from "@/components/SectionTitle";
 // Halaman daftar proyek — data case-study asli dari WebPortofolio lama
 // (lib/projects.ts), gaya visual mengikuti bahasa design Wonder:
 // gelap, kartu kaca, aksen biru.
-const FILTERS: ("All" | ProjectCategory)[] = [
-  "All",
+const FILTERS: ("Semua" | ProjectCategory)[] = [
+  "Semua",
   "AI/ML",
   "Web",
   "Mobile",
@@ -20,17 +20,17 @@ export default function ProjectsSection({
 }: {
   onSelect: (id: string) => void;
 }) {
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Semua");
   const shown =
-    filter === "All"
+    filter === "Semua"
       ? projectsData
       : projectsData.filter((p) => p.category === filter);
   return (
     <div className="section-inner">
       <SectionTitle text="Projects" />
       <p className="page-desc">
-        Full case studies — problem, architecture, tech stack, and
-        results — from projects I have built and run.
+        Studi kasus lengkap — masalah, arsitektur, tumpukan teknologi, dan
+        hasil — dari proyek-proyek yang sudah kubangun dan jalankan.
       </p>
 
       <div className="chips-row">
@@ -55,14 +55,14 @@ export default function ProjectsSection({
                 <span className="proj-icon">
                   <Icon size={20} />
                 </span>
-                {p.featured && <span className="proj-featured">★ Featured</span>}
+                {p.featured && <span className="proj-featured">★ Unggulan</span>}
                 <span className="proj-cat">{p.category}</span>
               </div>
               <h3>
                 <button type="button" className="link-btn title-btn" onClick={() => onSelect(p.id)}>{p.title}</button>
               </h3>
-              <p className="proj-tagline">{p.tagline.en}</p>
-              <p className="proj-desc">{p.description.en}</p>
+              <p className="proj-tagline">{p.tagline.id}</p>
+              <p className="proj-desc">{p.description.id}</p>
               <div className="tech-row">
                 {p.tech.slice(0, 4).map((t) => (
                   <span key={t} className="tech-chip">
@@ -74,7 +74,7 @@ export default function ProjectsSection({
                 )}
               </div>
               <div className="proj-links">
-                <button type="button" className="link-btn" onClick={() => onSelect(p.id)}>Case study →</button>
+                <button type="button" className="link-btn" onClick={() => onSelect(p.id)}>Studi kasus →</button>
                 {p.githubUrl && (
                   <a href={p.githubUrl} target="_blank" rel="noreferrer">
                     GitHub

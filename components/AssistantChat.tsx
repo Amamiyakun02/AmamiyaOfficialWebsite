@@ -51,22 +51,22 @@ const ENGINE_SHORT: Record<EngineId, string> = {
 
 const SUGGESTIONS: Record<EngineId, string[]> = {
   gemini: [
-    "Tell me about Amamiya's Linux scripting.",
-    "What is Amamiya's background?",
-    "Show me Amamiya's latest projects.",
-    "How can we work together?",
+    "Ceritakan tentang scripting Linux Anda.",
+    "Bagaimana latar belakang Anda?",
+    "Tampilkan proyek terbaru Anda.",
+    "Bagaimana cara kita bekerja sama?",
   ],
   mercury: [
-    "What is a diffusion language model?",
-    "Write a short Python API example.",
-    "Tell me about Amamiya's AI stack.",
-    "How can we work together?",
+    "Apa itu diffusion language model?",
+    "Buat contoh API Python singkat.",
+    "Ceritakan stack AI Anda.",
+    "Bagaimana cara kita bekerja sama?",
   ],
   deepseek: [
-    "How do reasoning models work?",
-    "Write a short FastAPI endpoint example.",
-    "Compare DeepSeek with Gemini.",
-    "How can we work together?",
+    "Bagaimana cara kerja model reasoning?",
+    "Buat contoh endpoint FastAPI singkat.",
+    "Bandingkan DeepSeek dengan Gemini.",
+    "Bagaimana cara kita bekerja sama?",
   ],
 };
 
@@ -102,7 +102,7 @@ const nowTime = () =>
 function welcomeMessage(engine: EngineId): Message {
   return {
     sender: "ai",
-    text: `Hi! I'm Vienna, Amamiya's AI assistant (powered by ${ENGINE_LABEL[engine]}). Ask me about his skills, his projects, or how to reach him.`,
+    text: `Halo! Saya Vienna, asisten AI Amamiya (ditenagai oleh ${ENGINE_LABEL[engine]}). Tanyakan tentang keahliannya, proyeknya, atau cara menghubunginya.`,
     timestamp: nowTime(),
   };
 }
@@ -297,7 +297,7 @@ export default function AssistantChat() {
             user_id: userId,
             session_id: localStorage.getItem(`assistant_session_id_${engine}`),
             messages: apiMessages,
-            lang: "en",
+            lang: "id",
           }),
         });
         try {
@@ -315,9 +315,9 @@ export default function AssistantChat() {
             /* bukan JSON */
           }
           if (response.status === 429) {
-            throw new Error(detail || "Too many requests — wait a moment, then try again.");
+            throw new Error(detail || "Terlalu banyak permintaan — tunggu sebentar lalu coba lagi.");
           }
-          throw new Error(detail || "Failed to reach the server.");
+          throw new Error(detail || "Gagal menghubungi server.");
         }
         const reader = response.body?.getReader();
         if (!reader) throw new Error("Response body is not readable");
@@ -383,7 +383,7 @@ export default function AssistantChat() {
             }
           }
         }
-        finishWith(streamedText || "(no answer)");
+        finishWith(streamedText || "(tidak ada jawaban)");
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
@@ -440,9 +440,9 @@ export default function AssistantChat() {
     <div className="chat-page">
       <div className="chat-head">
         <Link href="/#tools" className="chat-back">
-          <ArrowLeft size={16} /> All tools
+          <ArrowLeft size={16} /> Semua tools
         </Link>
-        <div className="chat-engines" role="tablist" aria-label="Choose AI engine">
+        <div className="chat-engines" role="tablist" aria-label="Pilih engine AI">
           {ENGINE_ORDER.map((id) => (
             <button
               key={id}
@@ -451,15 +451,15 @@ export default function AssistantChat() {
               aria-selected={engine === id}
               className={engine === id ? "engine-pill is-active" : "engine-pill"}
               disabled={!engineStatus[id]}
-              title={engineStatus[id] ? ENGINE_LABEL[id] : `${ENGINE_LABEL[id]} is not available on this server yet`}
+              title={engineStatus[id] ? ENGINE_LABEL[id] : `${ENGINE_LABEL[id]} belum tersedia di server`}
               onClick={() => setEngine(id)}
             >
               {ENGINE_SHORT[id]}
             </button>
           ))}
         </div>
-        <button type="button" className="chat-clear" onClick={clearChat} title="Start a new session">
-          <Trash2 size={15} /> New session
+        <button type="button" className="chat-clear" onClick={clearChat} title="Mulai sesi baru">
+          <Trash2 size={15} /> Sesi baru
         </button>
       </div>
 
@@ -520,12 +520,12 @@ export default function AssistantChat() {
               void send(input);
             }
           }}
-          placeholder={`Write a message for Vienna (${ENGINE_SHORT[engine]})…`}
-          aria-label="Type a message"
+          placeholder={`Tulis pesan untuk Vienna (${ENGINE_SHORT[engine]})…`}
+          aria-label="Tulis pesan"
           rows={1}
           maxLength={4000}
         />
-        <button type="submit" className="qp-send" disabled={busy || !input.trim()} aria-label="Send message">
+        <button type="submit" className="qp-send" disabled={busy || !input.trim()} aria-label="Kirim pesan">
           <SendHorizontal size={17} />
         </button>
       </form>
