@@ -1,18 +1,16 @@
-// Helper URL backend Vienna Agent — dipindah dari WebPortofolio lama
-// (src/utils/api.ts), disesuaikan ke env Next.js.
-const LOCAL_API_URL = "http://127.0.0.1:8000";
-const PROD_API_URL = "https://myagentic-apps.fastapicloud.dev";
-
-export const isLocalHost = (): boolean => {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
-  return host === "localhost" || host === "127.0.0.1";
-};
-
+// Helper URL backend Vienna Agent.
+//
+// Strategi (2 Nov 2026): secara default panggilan API bersifat SEASAL
+// (relatif, diawali "/v1/...") — server Next meneruskannya ke backend
+// lokal lewat rewrites di next.config.ts. Dengan begitu situs bekerja
+// dari alamat mana pun: localhost, URL tunnel trycloudflare, atau
+// domain publik, selama backend berjalan di mesin yang sama dengan
+// server Next. Untuk menunjuk backend lain (mis. hosting terpisah),
+// set NEXT_PUBLIC_API_URL saat build.
 export const getApiBaseUrl = (): string => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim().length > 0) return envUrl.replace(/\/$/, "");
-  return isLocalHost() ? LOCAL_API_URL : PROD_API_URL;
+  return "";
 };
 
 export const apiUrl = (path: string): string => {
