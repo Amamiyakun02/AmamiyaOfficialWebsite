@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PdfAnalysis from "@/components/PdfAnalysis";
 
 export const metadata: Metadata = {
-  title: "PDF Analysis — Amamiya",
+  title: "PDF Analysis | Amamiya",
   description:
     "Bedah dokumen PDF: deteksi halaman berwarna vs grayscale per halaman, metadata dokumen, dan ekstrak halaman menjadi PDF baru.",
 };

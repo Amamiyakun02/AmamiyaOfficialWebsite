@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import AssistantChat from "@/components/AssistantChat";
 
 export const metadata: Metadata = {
-  title: "Vienna AI Assistant — Amamiya",
+  title: "Vienna AI Assistant | Amamiya",
   description:
     "Obrol dengan Vienna, asisten AI Amamiya: tanya soal keahlian, proyek, dan cara menghubunginya.",
 };

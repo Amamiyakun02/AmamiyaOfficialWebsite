@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import McpPlayground from "@/components/McpPlayground";
 
 export const metadata: Metadata = {
-  title: "MCP Playground — Amamiya",
+  title: "MCP Playground | Amamiya",
   description:
     "Coba langsung 10 tool Agent MCP (server MCP Python Amamiya) sebagai simulasi browser: math, system, text, dan time.",
 };

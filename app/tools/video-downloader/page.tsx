@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import VideoDownloader from "@/components/VideoDownloader";
 
 export const metadata: Metadata = {
-  title: "Video Downloader — Amamiya",
+  title: "Video Downloader | Amamiya",
   description:
     "Unduh video dari YouTube, Instagram, Threads & Facebook sebagai MP4 atau MP3 — satu engine yt-dlp, deteksi platform otomatis.",
 };
