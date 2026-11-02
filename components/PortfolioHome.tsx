@@ -103,11 +103,10 @@ export default function PortfolioHome() {
 
       <footer className="site-footer">
         <span>
-          © {new Date().getFullYear()} Amamiya — dibangun dengan Next.js di
-          atas panggung grid tipografi interaktif.
+          © {new Date().getFullYear()} Amamiya
         </span>
         <span className="footer-motto">
-          Sekali buat, berguna selamanya.
+          Built once, useful forever.
         </span>
       </footer>
     </div>
