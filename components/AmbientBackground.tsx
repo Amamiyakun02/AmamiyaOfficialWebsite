@@ -24,7 +24,7 @@ import { useEffect, useRef } from "react";
    - partikel di koordinat dokumen — ikut bergulir bersama halaman
      seperti latar sungguhan — dan HANYA digambar di bawah hero
      (docY > tinggi hero), jadi hero Wonder tidak berubah sama sekali
-   - gambar ulang maks ±20fps, berhenti saat tab tersembunyi (rAF)
+   - gambar ulang maks ±10fps, berhenti saat tab tersembunyi (rAF)
    - prefers-reduced-motion: bidang statis tanpa denyut/bloom
    ===================================================================== */
 
@@ -61,7 +61,11 @@ export default function AmbientBackground() {
     const blooms: Bloom[] = [];
 
     const resize = () => {
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      // DPR latar dibatasi 1,5 (2 Nov): titik & huruf ambien bersifat
+      // lembut/rendah-frekuensi — ketajaman ekstra di atas itu tidak
+      // terlihat, tapi luas piksel yang dicat ulang tiap frame turun
+      // banyak di layar padat (ponsel DPR 3).
+      const dpr = Math.min(1.5, window.devicePixelRatio || 1);
       viewW = window.innerWidth;
       viewH = window.innerHeight;
       cvs.width = Math.round(viewW * dpr);
@@ -192,7 +196,10 @@ export default function AmbientBackground() {
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
-      if (now - lastFrame < 50) return;
+      // ±10fps cukup (2 Nov): denyut titik berperiode ±14 detik dan
+      // hanyutan huruf lebih lambat lagi — 20fps hanya membakar ulang
+      // piksel yang nyaris tidak berubah.
+      if (now - lastFrame < 100) return;
       lastFrame = now;
       drawField(now, true);
     };

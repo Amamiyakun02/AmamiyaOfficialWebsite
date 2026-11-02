@@ -828,7 +828,7 @@ export default function WonderScene() {
       // (berbasis lebar stage, bukan jumlah sel — struktur lajur baru
       // mengubah jumlah sel tanpa mengubah kelas perangkatnya)
       fxCapRef.current = viewW < 640 ? 4 : viewW < 1080 ? 6 : 10;
-      spawnDivRef.current = viewW < 640 ? 2 : viewW < 1080 ? 1 : 1;
+      spawnDivRef.current = viewW < 640 ? 3 : viewW < 1080 ? 2 : 1;
       hiRef.current.clear();
       if (heatRaf !== null) {
         cancelAnimationFrame(heatRaf);

@@ -38,7 +38,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
     // DPR cip ikon sampai 3x (beda dari stage yang maks 2x): cip ini
     // mungil sehingga murah, dan di HP ber-DPR 3 batas 2x membuat
     // glyph di-upscale paksa dan terlihat buram (observasi user).
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
     const W = cvs.clientWidth || 232;
     const H = cvs.clientHeight || 104;
     // Faktor ketajaman glyph kecil: glow & tebal garis minimum
