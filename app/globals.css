@@ -2655,6 +2655,23 @@ code {
 .pdf-reset:hover { color: #fff; }
 
 /* ===== Tombol aksi pertama hero (2 Nov 2026, pilihan user) ===== */
+/* KOMPENSASI TINGGI (perbaikan laporan user 2 Nov malam): blok tengah
+   .stage-title terpusat sebagai SATU tumpukan (judul + cip + tombol),
+   jadi menambah baris tombol mengangkat judul keluar dari lubang
+   grid-nya (terukur: judul naik ±40px desktop, ±66px ponsel) dan di
+   ponsel/tablet judul menimpa baris-baris grid. Obatnya: padding-top
+   sebesar tinggi total baris tombol (margin + tingginya) menggeser
+   pusat tumpukan turun tepat setengahnya, mengembalikan judul + cip
+   ke posisi semula yang sejajar lubang, sekalian membuat tombol
+   duduk lebih rendah seperti diminta user. */
+.stage-title {
+  padding-top: 81px;
+}
+@media (max-width: 640px) {
+  .stage-title {
+    padding-top: 132px;
+  }
+}
 /* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
    pola yang sama dengan .fx-card), pudar + naik lembut tanpa glitch. */
 .stage-title:not(.title-on) .hero-ctas {
