@@ -78,6 +78,7 @@ export default function ContactSection() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              maxLength={100}
               autoComplete="name"
             />
           </label>
@@ -97,6 +98,7 @@ export default function ContactSection() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               required
+              maxLength={4600}
               rows={6}
             />
           </label>
