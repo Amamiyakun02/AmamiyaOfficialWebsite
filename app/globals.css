@@ -2667,9 +2667,23 @@ code {
 .stage-title {
   padding-top: 81px;
 }
+/* Tablet: tombol diminta user duduk LEBIH RENDAH (2 Nov malam) —
+   margin tombol +30 sekaligus kompensasi +30 agar judul diam. */
+@media (min-width: 641px) and (max-width: 1080px) {
+  .stage-title {
+    padding-top: 111px;
+  }
+  .hero-ctas {
+    margin-top: 52px;
+  }
+}
+/* Ponsel: tombol diperkecil jadi SEBARIS bertiga (perbaikan 2 Nov
+   malam — sebelumnya membungkus dua baris dan tombol ketiga hilang
+   tertutup/terpotong di HP user), jadi kompensasinya mengecil
+   mengikuti tinggi baris tunggal: margin 14 + tinggi ±33. */
 @media (max-width: 640px) {
   .stage-title {
-    padding-top: 132px;
+    padding-top: 48px;
   }
 }
 /* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
@@ -2730,11 +2744,20 @@ code {
 }
 @media (max-width: 640px) {
   .hero-ctas {
-    gap: 8px;
-    margin-top: 16px;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 0 4px;
+    flex-wrap: nowrap;
   }
   .hero-cta {
-    padding: 8px 13px;
-    font-size: 13px;
+    padding: 7px 9px;
+    font-size: 12px;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .hero-cta svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
   }
 }
