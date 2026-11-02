@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: "Amamiya — Portofolio",
   description:
     "Portofolio Amamiya: aplikasi AI, web & mobile, dan alat otomatisasi. Dibangun di atas panggung grid tipografi interaktif ala Muse Wonder.",
+  // Ikon aplikasi: logo monogram "AM" dari user (public/favicon.png,
+  // ditambahkan user 2 Nov 2026 menggantikan tawaran ikon ∞ yang lama).
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
