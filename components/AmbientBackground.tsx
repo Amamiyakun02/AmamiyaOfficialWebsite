@@ -7,12 +7,17 @@ import { useEffect, useRef } from "react";
    lembut + huruf-huruf acak (A/M/I/Y + sisipan DEV/BUILD/CODE/UNIVERSE) di
    BELAKANG semua section di bawah hero — tema lebih ramah dan ringan
    dari grid tipografi di atas. Konten section mengambang di depannya;
-   titik dan huruf menyala mengikuti mouse (glow tembus terlihat di
-   sela-sela kartu), berdenyut pelan, dan sesekali mekar (bloom).
+   titik dan huruf berdenyut pelan dan sesekali mekar (bloom).
    Huruf-hurufnya SENGAJA tetap tersebar acak — mekanik menyusun
    kata saat mouse menyorot pernah dicoba dan dicabut user (lag);
    huruf di sini murni lapisan hash statis seperti titik: tanpa
    state, tanpa pelacakan, dihitung sebaris per frame.
+
+   Highlight mengikuti mouse di latar ini DIHILANGKAN atas permintaan
+   user (2 Nov 2026, perbaikan tampilan tablet & mobile): dahulu titik
+   di radius kursor mencerah dan berubah bentuk jadi glyph mini —
+   kini bidangnya tenang sepenuhnya. Highlight mouse hanya hidup di
+   hero AMAMIYA (WonderScene), tidak di section bawah.
 
    Ringan, mengikuti kaidah performa situs ini:
    - satu kanvas fixed sebesar viewport (bukan sebesar halaman)
@@ -20,14 +25,13 @@ import { useEffect, useRef } from "react";
      seperti latar sungguhan — dan HANYA digambar di bawah hero
      (docY > tinggi hero), jadi hero Wonder tidak berubah sama sekali
    - gambar ulang maks ±20fps, berhenti saat tab tersembunyi (rAF)
-   - prefers-reduced-motion: bidang statis tanpa denyut/glow/bloom
+   - prefers-reduced-motion: bidang statis tanpa denyut/bloom
    ===================================================================== */
 
 const SPACING = 46;
 const LETTER_SPACING = 110;
 const LETTER_CHARS = "AMAMIYA";
 const INSERTS = ["DEV", "BUILD", "CODE", "UNIVERSE"];
-const GLOW_R = 210;
 
 function hash2(ix: number, iy: number, salt: number) {
   const s = Math.sin(ix * 127.1 + iy * 311.7 + salt * 74.7) * 43758.5453;
@@ -53,10 +57,6 @@ export default function AmbientBackground() {
     let viewH = 0;
     let raf = 0;
     let lastFrame = 0;
-    let mouseX = -9999;
-    let mouseY = -9999;
-    let glowAlpha = 0;
-    let lastMove = 0;
     let lastSpawn = 0;
     const blooms: Bloom[] = [];
 
@@ -68,7 +68,8 @@ export default function AmbientBackground() {
       cvs.height = Math.round(viewH * dpr);
       // Ukuran CSS elemen harus = viewport (lihat .ambient-bg di
       // globals.css) — kalau tidak, di DPR pecahan kanvas tertampil
-      // sebesar backing store dan highlight bergeser dari kursor.
+      // sebesar backing store dan gambar bergeser dari posisi
+      // sebenarnya.
       cvs.style.width = `${viewW}px`;
       cvs.style.height = `${viewH}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -76,171 +77,6 @@ export default function AmbientBackground() {
     };
 
     const heroBottom = () => (hero ? hero.offsetTop + hero.offsetHeight : 0);
-
-    /* --- Empat glyph mini (spiral/sparkle/atom/black hole): titik-titik latar di
-       dalam radius kursor BERUBAH BENTUK menjadi salah satunya
-       (permintaan user — bukan glyph yang muncul melayang sendiri).
-       Skala kecil (maks ±20px) agar ringan, hanya di latar ambien
-       bawah (hero tidak disentuh). Digambar ringkas, tanpa shadow. --- */
-    const drawSpiral = (x: number, y: number, R: number, a: number, t: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(t * 0.00025);
-      // inti lebih terang & padat (versi lama terlalu tipis — keluhan user)
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.6);
-      g.addColorStop(0, `rgba(215, 230, 255, ${0.8 * a})`);
-      g.addColorStop(1, "rgba(215, 230, 255, 0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 0.6, 0, 7);
-      ctx.fill();
-      // lengan digambar juga sebagai garis halus agar bentuk spiral
-      // terbaca jelas di ukuran kecil, bukan hanya titik-titik lepas
-      ctx.strokeStyle = `rgba(190, 208, 245, ${0.5 * a})`;
-      ctx.lineWidth = Math.max(1, R * 0.1);
-      for (let arm = 0; arm < 4; arm++) {
-        ctx.beginPath();
-        for (let i = 1; i <= 11; i++) {
-          const f = i / 11;
-          const ang = (arm * Math.PI) / 2 + f * 2.2;
-          const px = Math.cos(ang) * R * f;
-          const py = Math.sin(ang) * R * f * 0.82;
-          if (i === 1) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-      // bintang lengan lebih besar & terang dari versi lama
-      ctx.fillStyle = "rgba(205, 220, 250, 1)";
-      for (let arm = 0; arm < 4; arm++) {
-        for (let i = 1; i <= 11; i++) {
-          const f = i / 11;
-          const ang = (arm * Math.PI) / 2 + f * 2.2;
-          ctx.globalAlpha = a * (0.5 + 0.5 * hash2(arm * 12 + i, 3, 11));
-          ctx.beginPath();
-          ctx.arc(Math.cos(ang) * R * f, Math.sin(ang) * R * f * 0.82, Math.max(0.7, R * 0.085 * (1 - f * 0.35)), 0, 7);
-          ctx.fill();
-        }
-      }
-      // nukleus padat
-      ctx.globalAlpha = a;
-      ctx.fillStyle = "rgba(225, 238, 255, 1)";
-      ctx.beginPath();
-      ctx.arc(0, 0, Math.max(1, R * 0.14), 0, 7);
-      ctx.fill();
-      ctx.restore();
-      ctx.globalAlpha = 1;
-    };
-    const drawSparkle = (x: number, y: number, R: number, a: number, t: number) => {
-      const p = 1 + 0.06 * Math.sin(t * 0.002);
-      const ry = R * 1.12 * p;
-      const rx = R * 0.8 * p;
-      const c = 0.3;
-      ctx.save();
-      ctx.translate(x, y);
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 1.3);
-      g.addColorStop(0, `rgba(160, 195, 255, ${0.35 * a})`);
-      g.addColorStop(1, "rgba(160, 195, 255, 0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 1.3, 0, 7);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(0, -ry);
-      ctx.quadraticCurveTo(rx * c, -ry * c, rx, 0);
-      ctx.quadraticCurveTo(rx * c, ry * c, 0, ry);
-      ctx.quadraticCurveTo(-rx * c, ry * c, -rx, 0);
-      ctx.quadraticCurveTo(-rx * c, -ry * c, 0, -ry);
-      ctx.closePath();
-      ctx.fillStyle = `rgba(205, 222, 255, ${0.92 * a})`;
-      ctx.fill();
-      ctx.restore();
-    };
-    const drawAtom = (x: number, y: number, R: number, a: number, t: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.lineWidth = 1;
-      const rot = t * 0.0006;
-      for (let k = 0; k < 3; k++) {
-        const th = rot + (k * Math.PI) / 3;
-        ctx.strokeStyle = `rgba(190, 205, 240, ${0.7 * a})`;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, R, R * 0.38, th, 0, 7);
-        ctx.stroke();
-        const ea = t * 0.0016 + k * 2.1;
-        const ex = Math.cos(ea) * R;
-        const ey = Math.sin(ea) * R * 0.38;
-        const cs = Math.cos(th);
-        const sn = Math.sin(th);
-        ctx.beginPath();
-        ctx.arc(ex * cs - ey * sn, ex * sn + ey * cs, 1.4, 0, 7);
-        ctx.fillStyle = `rgba(210, 226, 255, ${a})`;
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(0, 0, 2, 0, 7);
-      ctx.fillStyle = `rgba(220, 232, 255, ${a})`;
-      ctx.fill();
-      ctx.restore();
-    };
-    const drawBlackhole = (x: number, y: number, R: number, a: number, t: number) => {
-      // Black hole mini TAMPAK DEPAN (elemen keempat, 31 Okt): cincin
-      // cahaya melingkar + bola hitam bertepi foton + pita terang
-      // memotong tengah; debu mengorbit — rotasi poros. Ringkas,
-      // tanpa shadow, seperti glyph ambien lainnya.
-      ctx.save();
-      ctx.translate(x, y);
-      const r = R / 1.38;
-      const bandRx = R * 1.75;
-      const bandRy = Math.max(0.8, r * 0.2);
-      const band = (mul: number) => {
-        const gr = ctx.createLinearGradient(-bandRx, 0, bandRx, 0);
-        gr.addColorStop(0, "rgba(196,218,252,0)");
-        gr.addColorStop(0.2, `rgba(196,218,252,${0.3 * mul * a})`);
-        gr.addColorStop(0.5, `rgba(232,242,255,${0.85 * mul * a})`);
-        gr.addColorStop(0.8, `rgba(196,218,252,${0.3 * mul * a})`);
-        gr.addColorStop(1, "rgba(196,218,252,0)");
-        return gr;
-      };
-      ctx.beginPath();
-      ctx.ellipse(0, 0, bandRx, bandRy, 0, 0, 7);
-      ctx.fillStyle = band(0.55);
-      ctx.fill();
-      ctx.lineWidth = Math.max(1, R * 0.09);
-      ctx.strokeStyle = `rgba(205, 226, 252, ${0.55 * a})`;
-      ctx.beginPath();
-      ctx.arc(0, 0, R, 0, 7);
-      ctx.stroke();
-      ctx.strokeStyle = `rgba(232, 243, 255, ${0.85 * a})`;
-      ctx.lineWidth = Math.max(1, R * 0.11);
-      ctx.beginPath();
-      ctx.arc(0, 0, R, -Math.PI * 0.72, -Math.PI * 0.28);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(0, 0, R, Math.PI * 0.28, Math.PI * 0.72);
-      ctx.stroke();
-      ctx.fillStyle = `rgba(220, 235, 255, ${0.9 * a})`;
-      for (let i = 0; i < 5; i++) {
-        const th = hash2(i * 7 + 2, 5, 9) * Math.PI * 2 - t * 0.0012;
-        ctx.beginPath();
-        ctx.arc(Math.cos(th) * R, Math.sin(th) * R, Math.max(0.7, R * 0.07), 0, 7);
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, 7);
-      ctx.fillStyle = `rgba(2, 2, 5, ${a})`;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(0, 0, r * 1.04, 0, 7);
-      ctx.strokeStyle = `rgba(238, 246, 255, ${0.9 * a})`;
-      ctx.lineWidth = Math.max(0.8, r * 0.13);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(0, 0, bandRx, bandRy, 0, 0, 7);
-      ctx.fillStyle = band(1);
-      ctx.fill();
-      ctx.restore();
-    };
 
     // OPTIMASI (31 Okt, hasil profil): clearRect layar penuh SETIAP
     // frame — walau area ambien belum terlihat — mengotori layer
@@ -270,12 +106,6 @@ export default function AmbientBackground() {
       const iy1 = Math.ceil(docBottom / SPACING);
 
       if (animated) {
-        // Intensitas glow memudar saat mouse diam. POSISI highlight
-        // memakai posisi mouse MENTAH (tanpa lerp/ekor) agar glyph
-        // selalu tepat di titiknya — keluhan user 31 Okt: kemunculan
-        // glyph jauh dari lokasi kursor (misslocation).
-        const target = now - lastMove < 2600 && lastMove > 0 ? 1 : 0;
-        glowAlpha += (target - glowAlpha) * 0.08;
         // mekar sesekali di area yang terlihat
         if (now - lastSpawn > 2400 && blooms.length < 3) {
           lastSpawn = now;
@@ -299,17 +129,6 @@ export default function AmbientBackground() {
           let a = animated
             ? 0.05 + 0.05 * (0.5 + 0.5 * Math.sin(now * 0.00045 + phase))
             : 0.085;
-          let infl = 0;
-          if (animated && glowAlpha > 0.01) {
-            const ddx = x - mouseX;
-            const ddy = y - mouseY;
-            const d = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (d < GLOW_R) {
-              infl = 1 - d / GLOW_R;
-              a += infl * infl * 0.5 * glowAlpha;
-              r += infl * 1.6 * glowAlpha;
-            }
-          }
           if (animated) {
             for (const b of blooms) {
               const age = now - b.start;
@@ -325,27 +144,10 @@ export default function AmbientBackground() {
               }
             }
           }
-          // Titik di dalam radius kursor BERUBAH BENTUK menjadi glyph
-          // (jenis per titik dari hash: spiral/sparkle/atom) — bukan
-          // muncul dari ketiadaan: makin dekat ke pusat radius makin
-          // besar glyph-nya; jumlah glyph = jumlah titik yang masuk
-          // radius. Titik di luar ambang digambar sebagai titik biasa.
-          if (animated && glowAlpha > 0.02 && infl > 0.3) {
-            const k = (infl - 0.3) / 0.7;
-            const R = 3 + k * 9.5;
-            const ga = glowAlpha * (0.3 + 0.7 * k);
-            const gt = hash2(ix, iy, 12);
-            const tt = now + hash2(ix, iy, 13) * 4000;
-            if (gt < 0.25) drawSpiral(x, y, R, ga, tt);
-            else if (gt < 0.5) drawSparkle(x, y, R * 0.95, ga, tt);
-            else if (gt < 0.75) drawAtom(x, y, R, ga, tt);
-            else drawBlackhole(x, y, R, ga, tt);
-          } else {
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(196, 205, 224, ${Math.min(0.85, a).toFixed(3)})`;
-            ctx.fill();
-          }
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(196, 205, 224, ${Math.min(0.85, a).toFixed(3)})`;
+          ctx.fill();
         }
       }
       // bersihkan bloom yang selesai
@@ -354,8 +156,7 @@ export default function AmbientBackground() {
       }
 
       /* Lapisan huruf acak — murni hash per sel seperti titik (tanpa
-         state/formasi): melayang pelan dari fungsi waktu, dan di dekat
-         mouse hanya mencerah seperti titik, tidak berkumpul. */
+         state/formasi): melayang pelan dari fungsi waktu. */
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       const ly0 = Math.floor(docTop / LETTER_SPACING);
@@ -370,18 +171,9 @@ export default function AmbientBackground() {
           const x = hx + (animated ? Math.sin(now * 0.00021 + phase) * 6 : 0);
           const y = hy - scrollTop + (animated ? Math.cos(now * 0.00017 + phase * 1.3) * 6 : 0);
           if (y < -20 || y > viewH + 20) continue;
-          let a = animated
+          const a = animated
             ? 0.085 + 0.05 * (0.5 + 0.5 * Math.sin(now * 0.0004 + phase))
             : 0.11;
-          if (animated && glowAlpha > 0.01) {
-            const ddx = x - mouseX;
-            const ddy = y - mouseY;
-            const d = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (d < GLOW_R) {
-              const infl = 1 - d / GLOW_R;
-              a += infl * infl * 0.38 * glowAlpha;
-            }
-          }
           if (hash2(ix, iy, 9) > 0.94) {
             ctx.font = "600 10px monospace";
             ctx.fillStyle = `rgba(160, 175, 205, ${Math.min(0.4, a).toFixed(3)})`;
@@ -398,12 +190,6 @@ export default function AmbientBackground() {
 
     const drawStatic = () => drawField(0, false);
 
-    const onPointer = (e: PointerEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      lastMove = performance.now();
-    };
-
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       if (now - lastFrame < 50) return;
@@ -413,8 +199,6 @@ export default function AmbientBackground() {
 
     resize();
     window.addEventListener("resize", resize);
-    scroller.addEventListener("pointermove", onPointer, { passive: true });
-    scroller.addEventListener("pointerdown", onPointer, { passive: true });
     if (reduced) {
       scroller.addEventListener("scroll", drawStatic, { passive: true });
       drawStatic();
@@ -424,8 +208,6 @@ export default function AmbientBackground() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
-      scroller.removeEventListener("pointermove", onPointer);
-      scroller.removeEventListener("pointerdown", onPointer);
       scroller.removeEventListener("scroll", drawStatic);
     };
   }, []);
