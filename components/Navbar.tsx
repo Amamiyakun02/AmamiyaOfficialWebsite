@@ -9,15 +9,15 @@ import { scrollToSection } from "@/lib/scroll";
    Tentang, Kontak) dengan scrollspy: menu aktif mengikuti section yang
    sedang terlihat. CTA menuju section Tools. */
 const LINKS = [
-  { id: "beranda", label: "Beranda" },
-  { id: "proyek", label: "Proyek" },
+  { id: "home", label: "Home" },
+  { id: "projects", label: "Projects" },
   { id: "tools", label: "Tools" },
-  { id: "tentang", label: "Tentang" },
-  { id: "kontak", label: "Kontak" },
+  { id: "about", label: "About" },
+  { id: "contact", label: "Contact" },
 ];
 
 export default function Navbar() {
-  const [current, setCurrent] = useState("beranda");
+  const [current, setCurrent] = useState("home");
 
   // Di halaman utama, klik menu menggulir mulus langsung ke lokasi
   // section (dengan koreksi posisi untuk section malas-render) alih-
@@ -52,9 +52,9 @@ export default function Navbar() {
     <header className="navbar">
       <div className="nav-left">
         <Link
-          href="/#beranda"
+          href="/#home"
           className="brand"
-          onClick={(e) => go(e, "beranda")}
+          onClick={(e) => go(e, "home")}
         >
           <span className="brand-mark">∞</span> Amamiya
         </Link>
@@ -76,7 +76,7 @@ export default function Navbar() {
         href="/#tools"
         onClick={(e) => go(e, "tools")}
       >
-        Coba Tools
+        Explore Tools
       </Link>
     </header>
   );

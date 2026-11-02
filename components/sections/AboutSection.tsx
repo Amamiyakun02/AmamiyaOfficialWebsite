@@ -11,22 +11,22 @@ const CATS: SkillCategory[] = ["All", "AI/ML", "Web", "Systems", "Other"];
 
 const TIMELINE = [
   {
-    year: "2024 - Sekarang",
+    year: "2024 - Present",
     title: "Freelance AI & Automation Engineer",
-    subtitle: "Aplikasi AI kustom & otomatisasi",
-    desc: "Membangun alur otomatisasi, workflow RAG, dasbor agen, dan alat manajemen server.",
+    subtitle: "Custom AI apps & automation",
+    desc: "Building automation pipelines, RAG workflows, agent dashboards, and server management tools.",
   },
   {
     year: "2022 - 2024",
-    title: "Pengembang Perangkat Lunak & Seluler",
-    subtitle: "Aplikasi web & lintas-platform",
-    desc: "Membangun frontend web dan aplikasi utilitas mobile berbasis database dengan Flutter.",
+    title: "Software & Mobile Developer",
+    subtitle: "Web & cross-platform apps",
+    desc: "Building web frontends and database-driven mobile utility apps with Flutter.",
   },
   {
     year: "2021",
     title: "Linux & Otomatisasi",
-    subtitle: "Scripting & setup sistem",
-    desc: "Fokus pada shell scripting, setup server, dan alat CLI kecil.",
+    subtitle: "Scripting & system setup",
+    desc: "Focused on shell scripting, server setup, and small CLI tools.",
   },
 ];
 
@@ -36,13 +36,13 @@ export default function AboutSection() {
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
     <div className="section-inner section-narrow">
-      <SectionTitle text="Tentang Saya" />
+      <SectionTitle text="About" />
       <p className="page-desc">
-        Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
-        Sekali buat, berguna selamanya.
+        I like building practical tools that solve real problems.
+        Built once, useful forever.
       </p>
 
-      <h2 className="sec-title">Keahlian</h2>
+      <h2 className="sec-title">Skills</h2>
       <div className="chips-row">
         {CATS.map((c) => (
           <button
@@ -51,7 +51,7 @@ export default function AboutSection() {
             className={cat === c ? "chip chip-on" : "chip"}
             onClick={() => setCat(c)}
           >
-            {c === "All" ? "Semua" : c}
+            {c === "All" ? "All" : c}
           </button>
         ))}
       </div>
@@ -65,13 +65,13 @@ export default function AboutSection() {
             <div className="skill-bar">
               <span style={{ width: `${s.level}%` }} />
             </div>
-            <p>{s.desc.id}</p>
+            <p>{s.desc.en}</p>
             <span className="proj-cat">{s.category}</span>
           </article>
         ))}
       </div>
 
-      <h2 className="sec-title">Pengalaman</h2>
+      <h2 className="sec-title">Experience</h2>
       <div className="timeline">
         {TIMELINE.map((t) => (
           <article key={t.title} className="tl-item">

@@ -36,7 +36,7 @@ export default function ContactSection() {
       setSent(true);
     } catch {
       setError(
-        "Gagal mengirim pesan. Silakan coba lagi sebentar, atau hubungi lewat kanal lain.",
+        "Failed to send your message. Please try again in a moment, or reach me through another channel.",
       );
     } finally {
       setSubmitting(false);
@@ -45,17 +45,17 @@ export default function ContactSection() {
 
   return (
     <div className="section-inner section-narrow">
-      <SectionTitle text="Hubungi Saya" />
+      <SectionTitle text="Contact" />
       <p className="page-desc">
-        Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,
-        atau sekadar menyapa.
+        Send me a message through this form — for freelance opportunities,
+        collaboration, or just to say hello.
       </p>
 
       {sent ? (
         <div className="form-done">
-          <h2>Pesan Terkirim</h2>
+          <h2>Message Sent</h2>
           <p>
-            Terima kasih sudah menghubungi. Saya akan membalas secepatnya.
+            Thank you for reaching out. I will get back to you as soon as I can.
           </p>
           <button
             type="button"
@@ -67,13 +67,13 @@ export default function ContactSection() {
               setMessage("");
             }}
           >
-            Kirim pesan lainnya
+            Send another message
           </button>
         </div>
       ) : (
         <form className="contact-form" onSubmit={submit}>
           <label>
-            Nama Anda
+            Your Name
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -83,7 +83,7 @@ export default function ContactSection() {
             />
           </label>
           <label>
-            Email Anda
+            Your Email
             <input
               type="email"
               value={email}
@@ -93,7 +93,7 @@ export default function ContactSection() {
             />
           </label>
           <label>
-            Pesan Anda
+            Your Message
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -104,7 +104,7 @@ export default function ContactSection() {
           </label>
           {error && <p className="form-error">{error}</p>}
           <button type="submit" className="hero-btn hero-btn-primary" disabled={submitting}>
-            {submitting ? "Mengirim..." : "Kirim Pesan"}
+            {submitting ? "Sending..." : "Send Message"}
           </button>
         </form>
       )}

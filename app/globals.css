@@ -1129,7 +1129,7 @@ code {
 /* Pembatas Beranda → Proyek DIHAPUS (permintaan user 31 Okt): hero
    mengalir langsung ke section Proyek tanpa garis. Pembatas antar
    section SETELAHNYA (dan footer) tetap seperti biasa. */
-.lz-section#proyek {
+.lz-section#projects {
   border-top: none;
 }
 .lz-placeholder {

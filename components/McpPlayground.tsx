@@ -84,18 +84,18 @@ export default function McpPlayground() {
     <div className="mcp-page">
       <div className="mcp-inner">
         <Link href="/#tools" className="chat-back">
-          <ArrowLeft size={14} /> Kembali ke Tools
+          <ArrowLeft size={14} /> Back to Tools
         </Link>
 
         <div className="mcp-kicker">
           <Bot size={15} />
-          <span>Demo integrasi AI</span>
+          <span>AI Integration Demo</span>
         </div>
         <h1 className="mcp-title">MCP Playground</h1>
         <p className="mcp-sub">
-          Coba 10 tool Agent MCP langsung di sini. Ini simulasi browser dari
-          kontrak tool terketik yang sama dengan yang diekspos server Python
-          via stdio — server penuh ada di GitHub.
+          Try 10 Agent MCP tools right here. This is a browser simulation of
+          the same typed tool contract the Python server exposes over
+          stdio — the full server is on GitHub.
         </p>
 
         <div className="mcp-actions">
@@ -113,7 +113,7 @@ export default function McpPlayground() {
             onClick={copySnippet}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            Salin config Claude
+            Copy Claude config
           </button>
         </div>
 
@@ -142,7 +142,7 @@ export default function McpPlayground() {
                 <span className="mcp-tool-name">{tool.name}</span>
                 <span className="mcp-badge">{tool.category}</span>
               </div>
-              <p className="mcp-desc">{tool.description.id}</p>
+              <p className="mcp-desc">{tool.description.en}</p>
               <div className="mcp-schema">{tool.schema}</div>
               <div className="mcp-run-row">
                 <input
@@ -156,8 +156,8 @@ export default function McpPlayground() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") runTool(tool.name);
                   }}
-                  placeholder="argumen..."
-                  aria-label={`Argumen ${tool.name}`}
+                  placeholder="arguments..."
+                  aria-label={`Arguments for ${tool.name}`}
                 />
                 <button
                   type="button"
@@ -177,9 +177,9 @@ export default function McpPlayground() {
         <p className="mcp-note">
           <FlaskConical size={13} />
           <span>
-            Simulasi berjalan lokal di browser (math/text/clock sepenuhnya
-            nyata; sys_ping mengarah ke /status untuk cek asli). Server MCP
-            Python memakai nama + skema JSON yang identik via stdio.
+            The simulation runs locally in your browser (math/text/clock are
+            fully real; sys_ping points to /status for the live check). The
+            Python MCP server uses identical names + JSON schemas via stdio.
           </span>
         </p>
       </div>

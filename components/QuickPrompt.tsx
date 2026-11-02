@@ -10,9 +10,9 @@ import { SendHorizontal, Sparkles } from "lucide-react";
 // otomatis di sana. Komponen ini sendiri TIDAK memanggil backend —
 // halaman utama tetap ringan.
 const SUGGESTIONS = [
-  "Ceritakan keahlian Amamiya",
-  "Tampilkan proyek terbarunya",
-  "Bagaimana cara menghubunginya?",
+  "Tell me about Amamiya's skills",
+  "Show me his latest projects",
+  "How can I get in touch with him?",
 ];
 
 export default function QuickPrompt() {
@@ -37,7 +37,7 @@ export default function QuickPrompt() {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Tanya Vienna, asisten AI-ku, apa saja…"
+          placeholder="Ask Vienna, my AI assistant, anything…"
           aria-label="Tulis pertanyaan untuk asisten AI"
           maxLength={500}
         />

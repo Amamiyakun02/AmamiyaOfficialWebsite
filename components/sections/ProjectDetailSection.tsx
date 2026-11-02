@@ -23,15 +23,15 @@ export default function ProjectDetailSection({
         </span>
         <div>
           <SectionTitle text={p.title} />
-          <p className="page-desc">{p.tagline.id}</p>
+          <p className="page-desc">{p.tagline.en}</p>
         </div>
         <button
           type="button"
           className="chip detail-close"
           onClick={onClose}
-          aria-label="Tutup studi kasus"
+          aria-label="Close case study"
         >
-          ✕ Tutup
+          ✕ Close
         </button>
       </div>
       <div className="tech-row">
@@ -57,24 +57,24 @@ export default function ProjectDetailSection({
       {p.metrics.length > 0 && (
         <div className="metric-row">
           {p.metrics.map((m) => (
-            <div key={m.label.id} className="metric">
+            <div key={m.label.en} className="metric">
               <span className="metric-value">{m.value}</span>
-              <span className="metric-label">{m.label.id}</span>
+              <span className="metric-label">{m.label.en}</span>
             </div>
           ))}
         </div>
       )}
 
       <section className="detail-sec">
-        <h2>Masalah</h2>
-        <p>{p.problem.id}</p>
+        <h2>Problem</h2>
+        <p>{p.problem.en}</p>
       </section>
       <section className="detail-sec">
-        <h2>Arsitektur</h2>
-        <p>{p.architecture.id}</p>
+        <h2>Architecture</h2>
+        <p>{p.architecture.en}</p>
       </section>
       <section className="detail-sec">
-        <h2>Tumpukan Teknologi</h2>
+        <h2>Tech Stack</h2>
         <div className="stack-cols">
           <div>
             <h3>Frontend</h3>
@@ -104,7 +104,7 @@ export default function ProjectDetailSection({
       </section>
       {p.apiEndpoints.length > 0 && (
         <section className="detail-sec">
-          <h2>Endpoint API</h2>
+          <h2>API Endpoints</h2>
           <ul className="endpoint-list">
             {p.apiEndpoints.map((e) => (
               <li key={e}>
@@ -115,22 +115,22 @@ export default function ProjectDetailSection({
         </section>
       )}
       <section className="detail-sec">
-        <h2>Cuplikan Kode</h2>
+        <h2>Code Snippet</h2>
         <pre className="code-block">
           <code>{p.codeSnippet.code}</code>
         </pre>
       </section>
       <section className="detail-sec">
-        <h2>Langkah Demo</h2>
-        <p>{p.demoSteps.id}</p>
+        <h2>Demo Steps</h2>
+        <p>{p.demoSteps.en}</p>
       </section>
       <section className="detail-sec">
-        <h2>Hasil</h2>
-        <p>{p.results.id}</p>
+        <h2>Results</h2>
+        <p>{p.results.en}</p>
       </section>
       <section className="detail-sec">
-        <h2>Trade-off</h2>
-        <p>{p.tradeoffs.id}</p>
+        <h2>Trade-offs</h2>
+        <p>{p.tradeoffs.en}</p>
       </section>
     </div>
   );

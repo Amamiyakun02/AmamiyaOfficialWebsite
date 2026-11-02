@@ -54,7 +54,7 @@ export default function PortfolioHome() {
     requestAnimationFrame(() => {
       setTimeout(() => {
         document
-          .getElementById("studi-kasus")
+          .getElementById("case-study")
           ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 60);
     });
@@ -66,19 +66,19 @@ export default function PortfolioHome() {
           (digambar hanya di bawah hero — hero tidak berubah) */}
       <AmbientBackground />
       {/* Section 1: panggung Wonder (hero) — selalu dirender penuh */}
-      <div id="beranda" className="hero-wrap">
+      <div id="home" className="hero-wrap">
         <WonderScene />
       </div>
 
       {/* Section 2: daftar proyek */}
-      <LazySection id="proyek" minHeight={900}>
+      <LazySection id="projects" minHeight={900}>
         <ProjectsSection onSelect={openCase} />
       </LazySection>
 
       {/* Section 3: studi kasus — hanya ada bila proyek dipilih, dan
           hanya merender SATU proyek terpilih */}
       {selectedId && (
-        <section id="studi-kasus" className="lz-section">
+        <section id="case-study" className="lz-section">
           <ProjectDetailSection
             projectId={selectedId}
             onClose={() => setSelectedId(null)}
@@ -92,22 +92,22 @@ export default function PortfolioHome() {
       </LazySection>
 
       {/* Section 5: tentang */}
-      <LazySection id="tentang" minHeight={760}>
+      <LazySection id="about" minHeight={760}>
         <AboutSection />
       </LazySection>
 
       {/* Section 6: kontak */}
-      <LazySection id="kontak" minHeight={560}>
+      <LazySection id="contact" minHeight={560}>
         <ContactSection />
       </LazySection>
 
       <footer className="site-footer">
         <span>
-          © {new Date().getFullYear()} Amamiya — dibangun dengan Next.js di
-          atas panggung grid tipografi interaktif.
+          © {new Date().getFullYear()} Amamiya — built with Next.js on an
+          interactive typographic grid stage.
         </span>
         <span className="footer-motto">
-          Sekali buat, berguna selamanya.
+          Built once, useful forever.
         </span>
       </footer>
     </div>

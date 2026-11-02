@@ -13,16 +13,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Amamiya — Portofolio",
+  title: "Amamiya — Portfolio",
   description:
-    "Portofolio Amamiya: aplikasi AI, web & mobile, dan alat otomatisasi. Dibangun di atas panggung grid tipografi interaktif ala Muse Wonder.",
+    "Amamiya's portfolio: AI, web & mobile apps, and automation tools. Built on an interactive typographic grid stage in the style of Muse Wonder.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id">
+    <html lang="en">
       <body>
         <div className="app">
           <Navbar />

@@ -160,7 +160,7 @@ export default function VideoDownloader() {
       );
       const response = await fetch(endpoint);
       if (!response.ok) {
-        throw new Error(await readError(response, "Gagal mengambil info media."));
+        throw new Error(await readError(response, "Failed to fetch media info."));
       }
       const data = (await response.json()) as MediaInfo;
       setInfo(data);
@@ -173,7 +173,7 @@ export default function VideoDownloader() {
       if (data.too_long) setError(TOO_LONG_MSG);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "Gagal terhubung ke layanan unduhan.");
+      setError(msg || "Failed to connect to the download service.");
     } finally {
       setChecking(false);
     }
@@ -211,7 +211,7 @@ export default function VideoDownloader() {
         body: JSON.stringify({ url: trimmed, format, quality }),
       });
       if (!response.ok) {
-        throw new Error(await readError(response, "Unduhan gagal."));
+        throw new Error(await readError(response, "Download failed."));
       }
       setFromCache(response.headers.get("X-Cache") === "HIT");
       setFromPlatform(response.headers.get("X-Platform"));
@@ -233,7 +233,7 @@ export default function VideoDownloader() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "Gagal terhubung ke layanan unduhan.");
+      setError(msg || "Failed to connect to the download service.");
     } finally {
       setDownloading(false);
     }
@@ -256,7 +256,7 @@ export default function VideoDownloader() {
     <div className="vd-page">
       <div className="vd-inner">
         <Link href="/#tools" className="chat-back">
-          <ArrowLeft size={14} /> Kembali ke Tools
+          <ArrowLeft size={14} /> Back to Tools
         </Link>
 
         <div className="vd-head">
@@ -266,8 +266,8 @@ export default function VideoDownloader() {
           <div>
             <h1 className="vd-title">Video Downloader</h1>
             <p className="vd-sub">
-              Unduh video dari YouTube, Instagram, Threads &amp; Facebook
-              sebagai MP4 atau MP3. Tempel tautan, pratinjau, lalu simpan.
+              Download videos from YouTube, Instagram, Threads &amp; Facebook
+              as MP4 or MP3. Paste a link, preview it, then save.
             </p>
             <div className="vd-chips">
               {(
@@ -301,7 +301,7 @@ export default function VideoDownloader() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleCheck();
                   }}
-                  placeholder="Tempel tautan video (YouTube, IG Reel, Threads, FB...)"
+                  placeholder="Paste a video link (YouTube, IG Reel, Threads, FB...)"
                   spellCheck={false}
                 />
                 <button
@@ -318,7 +318,7 @@ export default function VideoDownloader() {
                   ) : (
                     <>
                       <Search size={14} />
-                      <span>Cek Video</span>
+                      <span>Check Video</span>
                     </>
                   )}
                 </button>
@@ -349,13 +349,13 @@ export default function VideoDownloader() {
                     </div>
                   </div>
                   <div>
-                    <span className="vd-label">Kualitas</span>
+                    <span className="vd-label">Quality</span>
                     <select
                       value={quality}
                       onChange={(e) => setQuality(e.target.value)}
                       disabled={format === "mp3"}
                       className="vd-select"
-                      aria-label="Kualitas"
+                      aria-label="Quality"
                     >
                       {format === "mp3" ? (
                         <option value="audio">192 kbps MP3</option>
@@ -388,7 +388,7 @@ export default function VideoDownloader() {
                       <>
                         <Download size={14} />
                         <span>
-                          Unduh {format.toUpperCase()}
+                          Download {format.toUpperCase()}
                           {format === "mp4"
                             ? ` ${QUALITY_LABELS[quality] || quality}`
                             : ""}
@@ -402,12 +402,12 @@ export default function VideoDownloader() {
                     disabled={downloading || checking}
                     className="vd-btn vd-btn-reset"
                   >
-                    Tautan Baru
+                    New Link
                   </button>
                   {fromCache !== null && (
                     <p className="vd-cache-note">
                       {fromPlatform ? `${fromPlatform} · ` : ""}
-                      {fromCache ? "dari cache — instan" : "baru diunduh"}
+                      {fromCache ? "from cache — instant" : "freshly downloaded"}
                     </p>
                   )}
                 </div>
@@ -416,8 +416,8 @@ export default function VideoDownloader() {
               <p className="vd-hint">
                 <Globe size={11} />
                 <span>
-                  Konten privat atau yang butuh login tidak bisa diunduh.
-                  Postingan publik paling aman.
+                  Private or login-gated content cannot be downloaded.
+                  Public posts work best.
                 </span>
               </p>
             </div>
@@ -439,8 +439,8 @@ export default function VideoDownloader() {
               <div className="vd-empty">
                 <Clapperboard size={40} strokeWidth={1.2} />
                 <p>
-                  Tempel tautan video di atas lalu tekan Cek Video untuk
-                  melihat judul, durasi, dan kualitas yang tersedia.
+                  Paste a video link above and press Check Video to see
+                  its title, duration, and available qualities.
                 </p>
               </div>
             ) : (

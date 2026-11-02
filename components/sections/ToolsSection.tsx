@@ -11,9 +11,9 @@ export default function ToolsSection() {
     <div className="section-inner">
       <SectionTitle text="Tools" />
       <p className="page-desc">
-        Tool-tool yang kubangun dan kupakai sendiri — asisten AI, pengunduh
-        video, pengolah PDF dan gambar, sampai playground MCP server-ku.
-        Semuanya sedang dipindah ke rumah baru ini secara bertahap.
+        Tools I built and use myself — an AI assistant, a video downloader,
+        PDF and image processors, and my MCP server playground.
+        All of them are being moved into this new home, step by step.
       </p>
       <QuickPrompt />
       <div className="proj-grid">
@@ -27,7 +27,7 @@ export default function ToolsSection() {
                   <Icon size={20} />
                 </span>
                 <span className={live ? "tool-badge tool-live" : "tool-badge"}>
-                  {live ? "Aktif" : "Tahap migrasi"}
+                  {live ? "Live" : "Migrating"}
                 </span>
               </div>
               <h3>
@@ -40,7 +40,7 @@ export default function ToolsSection() {
               <p className="proj-desc">{t.desc}</p>
               {live && (
                 <div className="proj-links">
-                  <Link href={`/tools/${t.slug}`}>Buka tool →</Link>
+                  <Link href={`/tools/${t.slug}`}>Open tool →</Link>
                 </div>
               )}
             </article>

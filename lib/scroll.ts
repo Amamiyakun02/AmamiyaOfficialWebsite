@@ -17,9 +17,9 @@ export function scrollToSection(id: string) {
   const scroller = document.querySelector<HTMLElement>(".home-scroll");
   const el = document.getElementById(id);
   if (!scroller || !el) return;
-  const OFFSET = id === "beranda" ? 0 : 70; // tinggi navbar + napas
+  const OFFSET = id === "home" ? 0 : 70; // tinggi navbar + napas
   const desired = () =>
-    id === "beranda"
+    id === "home"
       ? 0
       : scroller.scrollTop +
         el.getBoundingClientRect().top -
