@@ -26,7 +26,7 @@ export type ToolDef = {
 export const toolsData: ToolDef[] = [
   { slug: "assistant", name: "Vienna AI Assistant", desc: "Obrol dengan asisten AI-ku — agen FastAPI + RAG yang bisa menjawab soal proyek, keahlian, dan menjalankan tool.", icon: Bot, status: "live" },
   { slug: "video-downloader", name: "Video Downloader", desc: "Unduh video dari YouTube, Instagram, Threads, dan Facebook — satu engine yt-dlp, deteksi platform otomatis.", icon: Video, status: "live" },
-  { slug: "pdf-analysis", name: "PDF Analysis", desc: "Bedah PDF: jumlah halaman, font, gambar tersemat, rincian warna per halaman, plus ringkasan LLM dan potong/bagi PDF.", icon: FileText, status: "migrasi" },
+  { slug: "pdf-analysis", name: "PDF Analysis", desc: "Bedah PDF: rincian warna per halaman (berwarna vs grayscale), metadata dokumen, dan ekstrak halaman menjadi PDF baru.", icon: FileText, status: "live" },
   { slug: "image-to-pdf", name: "Image to PDF", desc: "Ubah kumpulan gambar menjadi satu berkas PDF rapi.", icon: FileImage, status: "migrasi" },
   { slug: "remove-bg", name: "Remove Background", desc: "Hapus latar belakang foto secara otomatis dengan model AI.", icon: Eraser, status: "migrasi" },
   { slug: "anime-downloader", name: "Anime Downloader", desc: "Cari dan unduh anime dari katalog, lengkap dengan pilihan resolusi.", icon: Clapperboard, status: "migrasi" },
