@@ -58,12 +58,16 @@ body {
   font-weight: 700;
   color: #fff;
   letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
 }
 
-.brand-mark {
-  color: #0081fb;
-  font-size: 24px;
-  font-weight: 700;
+/* Logo monogram AM (file yang sama dengan favicon, dari user 2 Nov). */
+.brand-logo {
+  height: 30px;
+  width: auto;
+  display: block;
 }
 
 .navbar nav {
@@ -491,8 +495,8 @@ code {
   .brand {
     font-size: 17px;
   }
-  .brand-mark {
-    font-size: 21px;
+  .brand-logo {
+    height: 26px;
   }
   .navbar .nav-cta {
     padding: 7px 14px;

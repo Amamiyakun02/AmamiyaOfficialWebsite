@@ -56,7 +56,7 @@ export default function Navbar() {
           className="brand"
           onClick={(e) => go(e, "home")}
         >
-          <span className="brand-mark">∞</span> Amamiya
+          <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
         </Link>
         <nav>
           {LINKS.map((l) => (
