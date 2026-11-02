@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { scrollToSection } from "@/lib/scroll";
 
 /* Navbar portofolio — sejak situs jadi SATU halaman, menu adalah
@@ -18,6 +19,7 @@ const LINKS = [
 
 export default function Navbar() {
   const [current, setCurrent] = useState("home");
+  const pathname = usePathname();
 
   // Di halaman utama, klik menu menggulir mulus langsung ke lokasi
   // section (dengan koreksi posisi untuk section malas-render) alih-
@@ -27,12 +29,23 @@ export default function Navbar() {
   const go = (e: MouseEvent, id: string) => {
     if (window.location.pathname === "/") {
       e.preventDefault();
+      // Garis bawah langsung pindah mengikuti klik (scrollspy
+      // mengonfirmasi ulang begitu section-nya tiba di pita pantau).
+      setCurrent(id);
       scrollToSection(id);
       window.history.pushState(null, "", `/#${id}`);
     }
   };
 
+  // Scrollspy. WAJIB jalan ulang tiap pindah rute: Navbar tinggal di
+  // layout root dan TIDAK ikut ter-mount ulang saat navigasi klien,
+  // jadi bila app pertama kali dibuka dari halaman tool, kelima
+  // section beranda belum ada di DOM dan pengamat lama tidak pernah
+  // memasang target — garis bawah membeku di "home" selamanya
+  // (bug yang dilaporkan user 2 Nov). Karena itu: amati yang sudah
+  // ada sekarang, lalu jajak singkat sampai semua section muncul.
   useEffect(() => {
+    if (pathname !== "/") return;
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -41,12 +54,32 @@ export default function Navbar() {
       },
       { rootMargin: "-38% 0px -55% 0px" },
     );
-    for (const l of LINKS) {
-      const el = document.getElementById(l.id);
-      if (el) io.observe(el);
+    const observed = new Set<string>();
+    const tryObserve = () => {
+      for (const l of LINKS) {
+        if (observed.has(l.id)) continue;
+        const el = document.getElementById(l.id);
+        if (el) {
+          io.observe(el);
+          observed.add(l.id);
+        }
+      }
+      return observed.size === LINKS.length;
+    };
+    let timer = 0;
+    let stop = 0;
+    if (!tryObserve()) {
+      timer = window.setInterval(() => {
+        if (tryObserve()) window.clearInterval(timer);
+      }, 300);
+      stop = window.setTimeout(() => window.clearInterval(timer), 6000);
     }
-    return () => io.disconnect();
-  }, []);
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(stop);
+      io.disconnect();
+    };
+  }, [pathname]);
 
   return (
     <header className="navbar">
