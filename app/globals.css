@@ -2673,17 +2673,20 @@ code {
   .stage-title {
     padding-top: 111px;
   }
-  .hero-ctas {
+  /* pemilih ganda: wajib mengalahkan aturan dasar .hero-ctas yang
+     letaknya lebih bawah di berkas ini */
+  .stage-title .hero-ctas {
     margin-top: 52px;
   }
 }
 /* Ponsel: tombol diperkecil jadi SEBARIS bertiga (perbaikan 2 Nov
    malam — sebelumnya membungkus dua baris dan tombol ketiga hilang
    tertutup/terpotong di HP user), jadi kompensasinya mengecil
-   mengikuti tinggi baris tunggal: margin 14 + tinggi ±33. */
+   mengikuti tinggi baris tunggal: margin 14 + tinggi wadah 51 = 65
+   (terukur di rig). */
 @media (max-width: 640px) {
   .stage-title {
-    padding-top: 48px;
+    padding-top: 65px;
   }
 }
 /* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
