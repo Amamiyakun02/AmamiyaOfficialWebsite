@@ -2788,11 +2788,11 @@ code {
    sejajar lubang grid pada panggung yang lebih tinggi; nilai disetel
    dari pengukuran lubang di rig. */
 .login-wrap .stage-title {
-  padding-top: 400px;
+  padding-top: 358px;
 }
 @media (min-width: 641px) and (max-width: 1080px) {
   .login-wrap .stage-title {
-    padding-top: 430px;
+    padding-top: 388px;
   }
 }
 @media (max-width: 640px) {
@@ -2822,7 +2822,9 @@ code {
   pointer-events: auto;
   width: min(340px, 86vw);
   margin: 22px auto 0;
-  padding: 22px 22px 20px;
+  /* Dipadatkan (5 Nov): di layar laptop pendek (864 CSS px) form
+     versi longgar menjorok melewati tepi bawah panggung. */
+  padding: 16px 20px 14px;
   background: rgba(14, 14, 17, 0.86);
   border: 1px solid #26262b;
   border-radius: 18px;
@@ -2830,7 +2832,7 @@ code {
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .login-form-title {
   font-size: 16px;
@@ -2858,7 +2860,7 @@ code {
   background: #0c0c0e;
   border: 1px solid #26262b;
   border-radius: 10px;
-  padding: 11px 12px;
+  padding: 9px 12px;
   font-size: 14px;
   color: #f2f2f4;
   outline: none;
@@ -2882,7 +2884,7 @@ code {
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 11px 18px;
+  padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
