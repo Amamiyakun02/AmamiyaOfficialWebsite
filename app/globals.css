@@ -2787,7 +2787,7 @@ code {
    grid dan form menggantung di bawahnya. Nilai awal hasil hitungan,
    disetel dari pengukuran rig. */
 .login-wrap .stage-title {
-  padding-top: 372px;
+  padding-top: 358px;
 }
 @media (min-width: 641px) and (max-width: 1080px) {
   .login-wrap .stage-title {
