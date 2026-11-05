@@ -2801,7 +2801,10 @@ code {
    lebih tinggi dari hurufnya, form tidak menjorok keluar. */
 @media (max-height: 820px) {
   .login-wrap .stage-title {
-    padding-top: 280px;
+    padding-top: 250px;
+  }
+  .login-wrap .login-form {
+    gap: 8px;
   }
 }
 @media (max-width: 640px) {
