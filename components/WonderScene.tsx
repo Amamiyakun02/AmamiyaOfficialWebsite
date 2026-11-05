@@ -538,11 +538,16 @@ function TitleWord({ enabled }: { enabled: boolean }) {
 
 export default function WonderScene({
   belowChips,
+  loginMode = false,
 }: {
   /* Konten pengganti baris tombol aksi di bawah cip — dipakai halaman
      login dashboard (5 Nov): panggung entrance yang sama persis, tapi
      di tengahnya form login, bukan tombol CTA. Beranda tidak berubah. */
   belowChips?: ReactNode;
+  /* Mode login (koreksi user 5 Nov): form diletakkan TEPAT di tengah
+     panggung, di posisi kata besar AMAMIYA — jadi blok tengah hanya
+     berisi form, tanpa judul dan tanpa cip. Grid + lubangnya sama. */
+  loginMode?: boolean;
 } = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cellsRef = useRef<Cell[]>([]);
@@ -2929,24 +2934,31 @@ export default function WonderScene({
       <div
         className={`stage-title ${blockFont.variable}${titlePlay ? " title-on" : ""}`}
       >
-        <h1
-          className={
-            !titlePlay
-              ? "t-pre"
-              : reducedMotion
-                ? "t-instant"
-                : titleReady
-                  ? "t-done"
-                  : "t-play"
-          }
-        >
-          <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
-        </h1>
-        {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
-        <FxCards />
-        {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV.
-            Halaman login dashboard menggantinya dengan form (belowChips). */}
-        {belowChips ?? <HeroCtas />}
+        {loginMode ? (
+          /* Posisi AMAMIYA diisi form login (permintaan user 5 Nov). */
+          belowChips
+        ) : (
+          <>
+            <h1
+              className={
+                !titlePlay
+                  ? "t-pre"
+                  : reducedMotion
+                    ? "t-instant"
+                    : titleReady
+                      ? "t-done"
+                      : "t-play"
+              }
+            >
+              <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
+            </h1>
+            {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
+            <FxCards />
+            {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV.
+                Halaman login dashboard menggantinya dengan form (belowChips). */}
+            {belowChips ?? <HeroCtas />}
+          </>
+        )}
       </div>
 
       <div className="panel">

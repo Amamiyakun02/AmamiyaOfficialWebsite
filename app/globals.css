@@ -2781,23 +2781,16 @@ code {
 .hero-wrap.login-wrap {
   height: 100%;
 }
-/* KOMPENSASI TINGGI (pola perbaikan 2 Nov): form menggantikan baris
-   tombol di tumpukan tengah, jadi padding-top .stage-title diperbesar
-   sebesar tinggi form agar judul + cip tetap duduk sejajar lubang
-   grid dan form menggantung di bawahnya. Nilai awal hasil hitungan,
-   disetel dari pengukuran rig. */
+/* POSISI FORM (koreksi user 5 Nov): form ditaruh TEPAT di tengah
+   panggung, di posisi kata besar AMAMIYA — blok tengah hanya berisi
+   form (mode login WonderScene), jadi kompensasi padding versi
+   tumpukan judul+cip+form tidak berlaku lagi: tanpa padding, grid
+   place-content:center menaruh form persis di pusat stage/lubang. */
 .login-wrap .stage-title {
-  padding-top: 358px;
+  padding-top: 0;
 }
-@media (min-width: 641px) and (max-width: 1080px) {
-  .login-wrap .stage-title {
-    padding-top: 402px;
-  }
-}
-@media (max-width: 640px) {
-  .login-wrap .stage-title {
-    padding-top: 336px;
-  }
+.login-wrap .login-form {
+  margin-top: 0;
 }
 /* Form muncul terakhir, gerbang sama dengan tombol CTA (.title-on). */
 .stage-title:not(.title-on) .login-form {
