@@ -22,6 +22,10 @@ const AmbientBackground = dynamic(() => import("./AmbientBackground"), {
   ssr: false,
 });
 
+const ProjectsPanel = dynamic(() => import("./dashboard/ProjectsPanel"), {
+  ssr: false,
+});
+
 type Tab = { id: string; label: string; desc: string };
 
 const TABS: Tab[] = [
@@ -141,10 +145,14 @@ export default function DashboardShell() {
         <section className="dash-panel">
           <h2 className="dash-panel-title">{tab.label}</h2>
           <p className="dash-panel-desc">{tab.desc}</p>
-          <p className="dash-panel-note">
-            Modul ini sedang disiapkan — kerangka dan gerbang loginnya
-            sudah live; isinya dibangun bertahap berikutnya.
-          </p>
+          {tab.id === "projects" ? (
+            <ProjectsPanel />
+          ) : (
+            <p className="dash-panel-note">
+              Modul ini sedang disiapkan — kerangka dan gerbang loginnya
+              sudah live; isinya dibangun bertahap berikutnya.
+            </p>
+          )}
         </section>
       </div>
     </div>
