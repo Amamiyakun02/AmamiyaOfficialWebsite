@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Archivo_Black } from "next/font/google";
 import FxCards from "./FxCards";
 import HeroCtas from "./HeroCtas";
@@ -536,7 +536,14 @@ function TitleWord({ enabled }: { enabled: boolean }) {
   );
 }
 
-export default function WonderScene() {
+export default function WonderScene({
+  belowChips,
+}: {
+  /* Konten pengganti baris tombol aksi di bawah cip — dipakai halaman
+     login dashboard (5 Nov): panggung entrance yang sama persis, tapi
+     di tengahnya form login, bukan tombol CTA. Beranda tidak berubah. */
+  belowChips?: ReactNode;
+} = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cellsRef = useRef<Cell[]>([]);
   const colsRef = useRef(0);
@@ -2937,8 +2944,9 @@ export default function WonderScene() {
         </h1>
         {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
         <FxCards />
-        {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV */}
-        <HeroCtas />
+        {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV.
+            Halaman login dashboard menggantinya dengan form (belowChips). */}
+        {belowChips ?? <HeroCtas />}
       </div>
 
       <div className="panel">

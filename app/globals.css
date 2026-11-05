@@ -2764,3 +2764,270 @@ code {
     flex-shrink: 0;
   }
 }
+
+/* ===== System Dashboard (5 Nov 2026): login = entrance + form ===== */
+/* Halaman login memakai panggung entrance halaman utama APA ADANYA
+   (permintaan user): grid AMAMIYA + judul + cip + panel kontrol.
+   Bungkus login membuat panggung setinggi layar penuh di semua
+   ukuran — di beranda tablet/ponsel memang dipendekkan, tapi halaman
+   login tidak punya isi di bawahnya. */
+.login-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.hero-wrap.login-wrap {
+  height: 100%;
+}
+/* KOMPENSASI TINGGI (pola perbaikan 2 Nov): form menggantikan baris
+   tombol di tumpukan tengah, jadi padding-top .stage-title diperbesar
+   sebesar tinggi form agar judul + cip tetap duduk sejajar lubang
+   grid dan form menggantung di bawahnya. Nilai awal hasil hitungan,
+   disetel dari pengukuran rig. */
+.login-wrap .stage-title {
+  padding-top: 372px;
+}
+@media (min-width: 641px) and (max-width: 1080px) {
+  .login-wrap .stage-title {
+    padding-top: 402px;
+  }
+}
+@media (max-width: 640px) {
+  .login-wrap .stage-title {
+    padding-top: 336px;
+  }
+}
+/* Form muncul terakhir, gerbang sama dengan tombol CTA (.title-on). */
+.stage-title:not(.title-on) .login-form {
+  opacity: 0;
+  pointer-events: none;
+}
+.stage-title.title-on .login-form {
+  animation: chipIn 0.5s ease backwards;
+  animation-delay: 1.85s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-title .login-form {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+.login-form {
+  pointer-events: auto;
+  width: min(340px, 86vw);
+  margin: 22px auto 0;
+  padding: 22px 22px 20px;
+  background: rgba(14, 14, 17, 0.86);
+  border: 1px solid #26262b;
+  border-radius: 18px;
+  backdrop-filter: blur(10px);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.login-form-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f2f2f4;
+}
+.login-form-sub {
+  font-size: 13px;
+  color: #9a9aa2;
+  margin-top: -6px;
+}
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.login-field span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9a9aa2;
+}
+.login-field input {
+  background: #0c0c0e;
+  border: 1px solid #26262b;
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 14px;
+  color: #f2f2f4;
+  outline: none;
+  width: 100%;
+}
+.login-field input:focus {
+  border-color: #0081fb;
+}
+.login-error {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #ff8585;
+  background: rgba(255, 90, 90, 0.08);
+  border: 1px solid rgba(255, 90, 90, 0.25);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+.login-submit {
+  margin-top: 2px;
+  background: #0081fb;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+.login-submit:hover:not(:disabled) {
+  background: #1a8dff;
+}
+.login-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (max-width: 640px) {
+  .login-form {
+    margin-top: 14px;
+    padding: 18px 16px 16px;
+  }
+}
+
+/* ===== System Dashboard: kerangka + latar ambien penuh ===== */
+/* Halaman-halaman dashboard berlatar AmbientBackground section bawah
+   (ladang titik + huruf acak + highlight mouse desktop) yang dipakai
+   PENUH satu halaman — meniru tampilan section Projects (permintaan
+   user 5 Nov). Komponen latar menggambar di seluruh bidang bila
+   scroller-nya tidak punya .hero-wrap, jadi cukup wadah gulir +
+   aturan z-index kembaran .home-scroll. */
+.dash-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  position: relative;
+}
+.dash-scroll > *:not(.ambient-bg) {
+  position: relative;
+  z-index: 1;
+}
+.dash-checking {
+  text-align: center;
+  color: #9a9aa2;
+  font-size: 14px;
+  padding-top: 120px;
+}
+.dash-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 22px 70px;
+}
+.dash-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dash-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #f2f2f4;
+}
+.dash-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #9a9aa2;
+}
+.dash-head-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dash-user {
+  font-size: 13px;
+  color: #c9c9cf;
+  border: 1px solid #26262b;
+  background: rgba(16, 16, 19, 0.7);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.dash-logout {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f2f2f4;
+  background: rgba(16, 16, 19, 0.7);
+  border: 1px solid #26262b;
+  border-radius: 999px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+.dash-logout:hover {
+  border-color: #3a3a41;
+  background: rgba(24, 24, 28, 0.85);
+}
+.dash-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 26px 0 18px;
+}
+.dash-tab {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c9c9cf;
+  background: rgba(16, 16, 19, 0.7);
+  border: 1px solid #26262b;
+  border-radius: 999px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.dash-tab:hover {
+  border-color: #3a3a41;
+  color: #fff;
+}
+.dash-tab-on {
+  background: #0081fb;
+  border-color: transparent;
+  color: #fff;
+}
+.dash-panel {
+  background: rgba(14, 14, 17, 0.8);
+  border: 1px solid #26262b;
+  border-radius: 18px;
+  padding: 26px;
+}
+.dash-panel-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f2f2f4;
+}
+.dash-panel-desc {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #c9c9cf;
+  max-width: 65ch;
+}
+.dash-panel-note {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed #26262b;
+  font-size: 13px;
+  color: #8a8a92;
+}
+@media (max-width: 640px) {
+  .dash-inner {
+    padding: 24px 14px 50px;
+  }
+  .dash-title {
+    font-size: 24px;
+  }
+  .dash-panel {
+    padding: 20px 16px;
+  }
+}
