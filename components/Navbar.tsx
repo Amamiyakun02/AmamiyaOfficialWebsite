@@ -81,6 +81,10 @@ export default function Navbar() {
     };
   }, [pathname]);
 
+  // Halaman login dashboard tampil TANPA navbar (permintaan user
+  // 5 Nov): entrance-nya memenuhi layar penuh seperti gambar acuan.
+  if (pathname === "/dashboard/login") return null;
+
   return (
     <header className="navbar">
       <div className="nav-left">

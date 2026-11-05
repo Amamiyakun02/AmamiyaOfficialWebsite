@@ -14,7 +14,7 @@ export default function DashboardLoginStage() {
   return (
     <div className="login-scroll">
       <div className="hero-wrap login-wrap">
-        <WonderScene loginMode belowChips={<DashboardLoginForm />} />
+        <WonderScene belowChips={<DashboardLoginForm />} />
       </div>
     </div>
   );
