@@ -2758,6 +2758,19 @@ code {
     gap: 5px;
     white-space: nowrap;
   }
+  /* Ponsel sempit (≤380px): baris tombol total ±350px pas-pasan di
+     layar 360 (margin 5px) dan meluap di 320 — diperkecil lagi agar
+     tetap sebaris bertiga dengan margin yang wajar. */
+  @media (max-width: 380px) {
+    .hero-ctas {
+      gap: 5px;
+    }
+    .hero-cta {
+      padding: 6px 7px;
+      font-size: 11px;
+      gap: 4px;
+    }
+  }
   .hero-cta svg {
     width: 13px;
     height: 13px;
@@ -2807,9 +2820,26 @@ code {
     gap: 8px;
   }
 }
+/* Ponsel: 305 (bukan 350 lama) — pada 350 form terlalu rendah dan
+   hanya berjarak ±4px dari panel kontrol di 390x844. */
 @media (max-width: 640px) {
   .login-wrap .stage-title {
-    padding-top: 350px;
+    padding-top: 305px;
+  }
+}
+/* Ponsel pendek (≤820px): kompensasi terkecil + form ditarik naik +
+   dipadatkan. WAJIB paling akhir: aturan max-width 640 di atas dan
+   max-height 820 sebelumnya saling menimpa — urutan lama membuat
+   ponsel selalu memakai 350 sehingga form BERTABRAKAN dengan panel
+   kontrol (terukur 360x800 tumpang tindih 13px, 360x740 43px). */
+@media (max-width: 640px) and (max-height: 820px) {
+  .login-wrap .stage-title {
+    padding-top: 250px;
+  }
+  .login-wrap .login-form {
+    margin-top: 10px;
+    gap: 6px;
+    padding: 12px 16px 10px;
   }
 }
 .login-wrap .login-form {
