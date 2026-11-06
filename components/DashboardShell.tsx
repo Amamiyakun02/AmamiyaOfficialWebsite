@@ -26,6 +26,10 @@ const ProjectsPanel = dynamic(() => import("./dashboard/ProjectsPanel"), {
   ssr: false,
 });
 
+const LogsPanel = dynamic(() => import("./dashboard/LogsPanel"), {
+  ssr: false,
+});
+
 type Tab = { id: string; label: string; desc: string };
 
 const TABS: Tab[] = [
@@ -147,6 +151,8 @@ export default function DashboardShell() {
           <p className="dash-panel-desc">{tab.desc}</p>
           {tab.id === "projects" ? (
             <ProjectsPanel />
+          ) : tab.id === "logs" ? (
+            <LogsPanel />
           ) : (
             <p className="dash-panel-note">
               Modul ini sedang disiapkan — kerangka dan gerbang loginnya
