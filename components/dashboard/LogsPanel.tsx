@@ -141,20 +141,21 @@ export default function LogsPanel() {
     }
   }, [fetchJson]);
 
-  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const vDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (debounce.current) clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => void loadVault(), 250);
+    if (vDebounce.current) clearTimeout(vDebounce.current);
+    vDebounce.current = setTimeout(() => void loadVault(), 250);
     return () => {
-      if (debounce.current) clearTimeout(debounce.current);
+      if (vDebounce.current) clearTimeout(vDebounce.current);
     };
   }, [loadVault]);
 
+  const bDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (debounce.current) clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => void loadBackend(), 250);
+    if (bDebounce.current) clearTimeout(bDebounce.current);
+    bDebounce.current = setTimeout(() => void loadBackend(), 250);
     return () => {
-      if (debounce.current) clearTimeout(debounce.current);
+      if (bDebounce.current) clearTimeout(bDebounce.current);
     };
   }, [loadBackend]);
 
