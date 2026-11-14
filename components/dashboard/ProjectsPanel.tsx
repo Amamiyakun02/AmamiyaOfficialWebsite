@@ -19,6 +19,8 @@ type Project = {
   links: Record<string, string>;
   demo_video_url: string | null;
   demo_video_thumbnail: string | null;
+  is_featured: boolean;
+  featured_order: number | null;
   updated_at: string | null;
 };
 
@@ -111,6 +113,83 @@ export default function ProjectsPanel() {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [tick, setTick] = useState(0);
+  // Top Project (pin unggulan -> section Projects portofolio): daftar
+  // featured SELALU dimuat tanpa filter agar urutan & batas 4 akurat.
+  const [featuredItems, setFeaturedItems] = useState<Project[]>([]);
+
+  const loadFeatured = useCallback(async () => {
+    try {
+      const res = await fetch(apiUrl("/v1/dashboard/projects"), {
+        headers: { "X-Admin-Token": token() },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { items: Project[] };
+      const feat = data.items
+        .filter((p) => p.is_featured)
+        .sort(
+          (a, b) =>
+            (a.featured_order ?? 99) - (b.featured_order ?? 99) ||
+            a.name.localeCompare(b.name),
+        );
+      setFeaturedItems(feat);
+    } catch {
+      /* strip featured gagal dimuat — daftar utama tetap jalan */
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadFeatured();
+  }, [loadFeatured, tick]);
+
+  async function toggleFeatured(p: Project) {
+    try {
+      const res = await fetch(
+        apiUrl(`/v1/dashboard/projects/${p.id}/featured`),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Token": token(),
+          },
+          body: JSON.stringify({ featured: !p.is_featured }),
+        },
+      );
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as {
+          detail?: string;
+        };
+        throw new Error(data.detail || `Gagal mengubah pin (${res.status}).`);
+      }
+      setTick((t) => t + 1);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal mengubah pin.");
+    }
+  }
+
+  async function moveFeatured(p: Project, dir: -1 | 1) {
+    const ids = featuredItems.map((x) => x.id);
+    const i = ids.indexOf(p.id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    try {
+      const res = await fetch(
+        apiUrl("/v1/dashboard/projects/reorder-featured"),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Token": token(),
+          },
+          body: JSON.stringify({ ids }),
+        },
+      );
+      if (!res.ok) throw new Error(`Gagal mengurutkan (${res.status}).`);
+      setTick((t) => t + 1);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal mengurutkan.");
+    }
+  }
 
   const token = () =>
     typeof window !== "undefined"
@@ -222,6 +301,62 @@ export default function ProjectsPanel() {
 
   return (
     <div className="proj">
+      <div className="top-strip">
+        <div className="top-strip-head">
+          <span className="top-strip-title">
+            ★ Top Project — tampil di section Projects portofolio
+          </span>
+          <span className="top-count">{featuredItems.length}/4</span>
+        </div>
+        {featuredItems.length === 0 ? (
+          <p className="top-empty">
+            Belum ada yang di-pin. Klik tombol Pin pada project di bawah —
+            maksimal 4, urutannya bisa diatur di sini.
+          </p>
+        ) : (
+          <ol className="top-list">
+            {featuredItems.map((p, i) => (
+              <li key={p.id} className="top-item">
+                <span className="top-rank">{i + 1}</span>
+                <span className="top-name">{p.name}</span>
+                {(p.status === "idea" || p.status === "archived") && (
+                  <span className="top-warn">
+                    status {p.status} — tidak tampil ke publik
+                  </span>
+                )}
+                <span className="top-btns">
+                  <button
+                    type="button"
+                    className="top-btn"
+                    disabled={i === 0}
+                    onClick={() => void moveFeatured(p, -1)}
+                    aria-label={`Naikkan ${p.name}`}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="top-btn"
+                    disabled={i === featuredItems.length - 1}
+                    onClick={() => void moveFeatured(p, 1)}
+                    aria-label={`Turunkan ${p.name}`}
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    className="top-btn top-btn-off"
+                    onClick={() => void toggleFeatured(p)}
+                  >
+                    Lepas
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+
       <div className="proj-toolbar">
         <input
           className="proj-search"
@@ -402,6 +537,12 @@ export default function ProjectsPanel() {
                   <span className={`proj-badge proj-badge-${p.status}`}>
                     {p.status}
                   </span>
+                  {p.is_featured && (
+                    <span className="proj-badge proj-badge-top">
+                      ★ TOP
+                      {p.featured_order ? ` #${p.featured_order}` : ""}
+                    </span>
+                  )}
                 </div>
                 {p.description && (
                   <p className="proj-desc">{p.description}</p>
@@ -460,6 +601,23 @@ export default function ProjectsPanel() {
                   </>
                 ) : (
                   <>
+                    <button
+                      type="button"
+                      className={
+                        p.is_featured ? "proj-mini proj-pin-on" : "proj-mini"
+                      }
+                      disabled={
+                        !p.is_featured && featuredItems.length >= 4
+                      }
+                      title={
+                        !p.is_featured && featuredItems.length >= 4
+                          ? "Top Project sudah penuh (4) — lepas pin salah satu dulu"
+                          : undefined
+                      }
+                      onClick={() => void toggleFeatured(p)}
+                    >
+                      {p.is_featured ? "★ Ter-pin" : "☆ Pin"}
+                    </button>
                     <button
                       type="button"
                       className="proj-mini"

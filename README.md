@@ -1,4 +1,4 @@
-# Wonder Background — Next.js
+# Amamiya_Official_Website — Next.js
 
 Website Next.js dengan background grid tipografi ala halaman Muse Wonder
 (Meta): satu kata diulang menjadi pola di atas canvas, digambar sekali,

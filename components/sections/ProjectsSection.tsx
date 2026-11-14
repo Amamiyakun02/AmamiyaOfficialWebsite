@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Layers } from "lucide-react";
 import { projectsData, type ProjectCategory } from "@/lib/projects";
+import {
+  fetchFeaturedProjects,
+  techList,
+  type PublicProject,
+} from "@/lib/publicProjects";
 import SectionTitle from "@/components/SectionTitle";
 
-// Halaman daftar proyek — data case-study asli dari WebPortofolio lama
-// (lib/projects.ts), gaya visual mengikuti bahasa design Wonder:
-// gelap, kartu kaca, aksen biru.
+// Section Projects — sejak 6 Nov 2026 sumber utamanya adalah Top Project
+// yang di-pin dari System Dashboard (GET /v1/projects/featured, maks 4),
+// sesuai keputusan user menggantikan daftar statis showcase.
+// Bila backend tidak terjangkau, section jatuh kembali ke daftar statis
+// lama (lib/projects.ts, lengkap dengan studi kasusnya) agar situs tetap
+// utuh. Tombol "More Projects" menuju /projects (semua project publik).
+
 const FILTERS: ("Semua" | ProjectCategory)[] = [
   "Semua",
   "AI/ML",
@@ -15,7 +25,12 @@ const FILTERS: ("Semua" | ProjectCategory)[] = [
   "Mobile",
 ];
 
-export default function ProjectsSection({
+const STATUS_LABEL: Record<string, string> = {
+  active: "Aktif",
+  maintenance: "Pemeliharaan",
+};
+
+function StaticProjects({
   onSelect,
 }: {
   onSelect: (id: string) => void;
@@ -26,13 +41,7 @@ export default function ProjectsSection({
       ? projectsData
       : projectsData.filter((p) => p.category === filter);
   return (
-    <div className="section-inner">
-      <SectionTitle text="Projects" />
-      <p className="page-desc">
-        Studi kasus lengkap — masalah, arsitektur, tumpukan teknologi, dan
-        hasil — dari proyek-proyek yang sudah kubangun dan jalankan.
-      </p>
-
+    <>
       <div className="chips-row">
         {FILTERS.map((f) => (
           <button
@@ -90,6 +99,146 @@ export default function ProjectsSection({
           );
         })}
       </div>
+    </>
+  );
+}
+
+export function PublicProjectCard({ p }: { p: PublicProject }) {
+  const tech = techList(p.tech_stack);
+  return (
+    <article className="proj-card">
+      {p.demo_video_thumbnail && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="proj-card-thumb"
+          src={p.demo_video_thumbnail}
+          alt=""
+          loading="lazy"
+        />
+      )}
+      <div className="proj-card-top">
+        <span className="proj-icon">
+          <Layers size={20} />
+        </span>
+        {p.is_featured && (
+          <span className="proj-featured">
+            ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
+          </span>
+        )}
+        <span className="proj-cat">
+          {STATUS_LABEL[p.status] ?? p.status}
+        </span>
+      </div>
+      <h3>{p.name}</h3>
+      {p.description && <p className="proj-desc">{p.description}</p>}
+      {tech.length > 0 && (
+        <div className="tech-row">
+          {tech.slice(0, 4).map((t) => (
+            <span key={t} className="tech-chip">
+              {t}
+            </span>
+          ))}
+          {tech.length > 4 && (
+            <span className="tech-chip">+{tech.length - 4}</span>
+          )}
+        </div>
+      )}
+      <div className="proj-links">
+        {p.repo_url && (
+          <a href={p.repo_url} target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+        )}
+        {p.links?.demo && (
+          <a href={p.links.demo} target="_blank" rel="noreferrer">
+            Live
+          </a>
+        )}
+        {p.links?.docs && (
+          <a href={p.links.docs} target="_blank" rel="noreferrer">
+            Docs
+          </a>
+        )}
+        {p.demo_video_url && (
+          <a href={p.demo_video_url} target="_blank" rel="noreferrer">
+            Video demo
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+export default function ProjectsSection({
+  onSelect,
+}: {
+  onSelect: (id: string) => void;
+}) {
+  const [phase, setPhase] = useState<"loading" | "live" | "fallback">(
+    "loading",
+  );
+  const [items, setItems] = useState<PublicProject[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    void fetchFeaturedProjects().then((rows) => {
+      if (!alive) return;
+      if (rows === null) {
+        setPhase("fallback");
+      } else {
+        setItems(rows);
+        setPhase("live");
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <div className="section-inner">
+      <SectionTitle text="Projects" />
+      <p className="page-desc">
+        Project unggulan yang kupilih langsung dari dashboard-ku — empat
+        terbaik yang sedang dan sudah kubangun. Daftar lengkapnya ada di
+        halaman Projects.
+      </p>
+
+      {phase === "loading" && (
+        <div className="proj-grid" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <article key={i} className="proj-card proj-skeleton">
+              <div className="sk-line sk-w40" />
+              <div className="sk-line sk-w80" />
+              <div className="sk-line sk-w100" />
+              <div className="sk-line sk-w60" />
+            </article>
+          ))}
+        </div>
+      )}
+
+      {phase === "fallback" && <StaticProjects onSelect={onSelect} />}
+
+      {phase === "live" &&
+        (items.length === 0 ? (
+          <p className="page-desc">
+            Belum ada project unggulan yang di-pin dari dashboard.
+          </p>
+        ) : (
+          <div className="proj-grid">
+            {items.map((p) => (
+              <PublicProjectCard key={p.id} p={p} />
+            ))}
+          </div>
+        ))}
+
+      {phase === "live" && (
+        <div className="more-projects-row">
+          <Link className="more-projects-btn" href="/projects">
+            More Projects →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

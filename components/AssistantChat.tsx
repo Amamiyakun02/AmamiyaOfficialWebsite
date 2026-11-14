@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, SendHorizontal, Trash2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -16,6 +17,9 @@ import { apiUrl } from "@/lib/api";
    - jawaban streaming SSE: baris "data: {json}" dengan {text},
      {done, usage, sources}, {error}, dan "[DONE]"; ada fallback
      respons JSON polos seperti versi lama.
+   - potongan SSE Mercury besar-besar (model difusi): teks diterima
+     diungkap bertahap seperti mengetik oleh loop rAF (startReveal);
+     pesan AI yang selesai dirender markdown betulan (react-markdown).
    Quick prompt dari halaman utama tiba sebagai ?q= dan terkirim
    otomatis sekali saat halaman dibuka.
    ===================================================================== */
@@ -118,6 +122,18 @@ function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
   return { tokens: estimateTokens(fallbackText), realTokens: false };
 }
 
+// Isi pesan AI yang SUDAH selesai dirender sebagai markdown betulan
+// (tebal, daftar, judul, tautan) — sebelumnya markdown tampil mentah.
+// Saat streaming berjalan, pesan ditampilkan teks polos + karet ketik
+// (lihat MessageText) lalu ditukar ke render ini begitu selesai.
+function MessageMarkdown({ text }: { text: string }) {
+  return (
+    <div className="msg-md">
+      <ReactMarkdown>{text}</ReactMarkdown>
+    </div>
+  );
+}
+
 // Render teks pesan: blok ```...``` jadi <pre>, sisanya pre-wrap biasa.
 function MessageText({ text }: { text: string }) {
   const segments = text.split("```");
@@ -161,7 +177,20 @@ export default function AssistantChat() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  // Streaming halus (9 Nov): backend mengirim SSE dalam potongan besar
+  // (Mercury = model difusi), jadi teks yang SUDAH diterima diungkap
+  // bertahap oleh loop rAF agar mengalir seperti mengetik. streamId =
+  // pesan yang sedang diungkap (dirender polos + karet, belum markdown).
+  const [streamId, setStreamId] = useState<string | null>(null);
+  const targetRef = useRef("");
+  const shownRef = useRef(0);
+  const streamDoneRef = useRef(false);
+  const rafRef = useRef(0);
   const logRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Tetap menempel ke bawah saat streaming HANYA bila user memang
+  // sedang di dekat bawah; user yang menggulir ke atas tidak ditarik.
+  const stickRef = useRef(true);
   const quickSentRef = useRef(false);
   const [userId] = useState(() => {
     if (typeof window === "undefined") return "guest";
@@ -223,8 +252,11 @@ export default function AssistantChat() {
 
   useEffect(() => {
     const el = logRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, waiting]);
+
+  // Hentikan loop ungkap saat komponen dilepas.
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
   const persist = useCallback(
     (engineKey: EngineId, msgs: Message[]) => {
@@ -249,6 +281,8 @@ export default function AssistantChat() {
       setMessages(history);
       persist(engine, history);
       setInput("");
+      if (inputRef.current) inputRef.current.style.height = "auto";
+      stickRef.current = true;
       setBusy(true);
       setWaiting(true);
       const startTime = performance.now();
@@ -258,6 +292,7 @@ export default function AssistantChat() {
       const aiId = `stream_${Date.now()}`;
 
       const finishWith = (finalText: string) => {
+        setStreamId(null);
         const latencyMs = Math.round(performance.now() - startTime);
         const tk = resolveTokens(streamUsage, text + finalText);
         setMessages((prev) => {
@@ -284,6 +319,47 @@ export default function AssistantChat() {
           persist(engine, withMeta);
           return withMeta;
         });
+      };
+
+      // Mesin ungkap bertahap: targetRef menampung SELURUH teks yang
+      // sudah diterima dari SSE; loop rAF menggeser shownRef menuju
+      // target dengan laju adaptif (sisa besar = lebih cepat, dibatasi
+      // ±24 karakter/frame) sehingga potongan besar dari backend tampil
+      // mengalir. Begitu stream selesai DAN teks tertampil penuh,
+      // finishWith menutup pesan (meta + simpan). prefers-reduced-
+      // motion: ungkap seketika tanpa animasi.
+      targetRef.current = "";
+      shownRef.current = 0;
+      streamDoneRef.current = false;
+      let revealStarted = false;
+      const startReveal = () => {
+        if (revealStarted) return;
+        revealStarted = true;
+        const reduced =
+          typeof window !== "undefined" &&
+          window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        const step = () => {
+          const target = targetRef.current;
+          const shown = shownRef.current;
+          if (shown < target.length) {
+            const remaining = target.length - shown;
+            const inc = reduced
+              ? remaining
+              : Math.max(1, Math.min(Math.ceil(remaining / 18), 24));
+            const next = Math.min(target.length, shown + inc);
+            shownRef.current = next;
+            const slice = target.slice(0, next);
+            setMessages((prev) =>
+              prev.map((m) => (m.id === aiId ? { ...m, text: slice } : m)),
+            );
+            rafRef.current = requestAnimationFrame(step);
+          } else if (!streamDoneRef.current) {
+            rafRef.current = requestAnimationFrame(step);
+          } else {
+            finishWith(target || "(tidak ada jawaban)");
+          }
+        };
+        rafRef.current = requestAnimationFrame(step);
       };
 
       try {
@@ -352,6 +428,7 @@ export default function AssistantChat() {
               }
             }
             setWaiting(false);
+            setStreamId(aiId);
             setMessages((prev) => [
               ...prev,
               { id: aiId, sender: "ai", text: "", timestamp: nowTime() },
@@ -377,14 +454,18 @@ export default function AssistantChat() {
             }
             if (parsed.text) {
               streamedText += parsed.text;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === aiId ? { ...m, text: streamedText } : m)),
-              );
+              targetRef.current = streamedText;
+              startReveal();
             }
           }
         }
-        finishWith(streamedText || "(tidak ada jawaban)");
+        // Stream selesai: loop ungkap memanggil finishWith begitu
+        // teks tertampil mengejar target (atau langsung di sini bila
+        // tidak ada potongan teks sama sekali).
+        streamDoneRef.current = true;
+        if (!revealStarted) finishWith(streamedText || "(tidak ada jawaban)");
       } catch (err) {
+        cancelAnimationFrame(rafRef.current);
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
         setWaiting(false);
@@ -463,46 +544,70 @@ export default function AssistantChat() {
         </button>
       </div>
 
-      <div className="chat-log" ref={logRef}>
+      <div
+        className="chat-log"
+        ref={logRef}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+        }}
+      >
         {messages.map((m, i) => (
           <div key={m.id ?? i} className={m.sender === "user" ? "msg msg-user" : "msg msg-ai"}>
-            <div className="msg-bubble">
-              <MessageText text={m.text} />
-            </div>
-            <div className="msg-meta">
-              <span>{m.timestamp}</span>
-              {m.meta && (
-                <span>
-                  {" · "}
-                  {m.meta.engine} · {(m.meta.latencyMs / 1000).toFixed(1)} dtk ·{" "}
-                  {m.meta.realTokens ? "" : "±"}
-                  {m.meta.tokens} token
-                  {m.meta.sources && m.meta.sources.length > 0
-                    ? ` · sumber: ${m.meta.sources.join(", ")}`
-                    : ""}
-                </span>
-              )}
+            {m.sender === "ai" && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+            )}
+            <div className="msg-col">
+              <div className="msg-bubble">
+                {m.sender === "ai" && m.id !== streamId ? (
+                  <MessageMarkdown text={m.text} />
+                ) : (
+                  <MessageText text={m.text} />
+                )}
+                {m.id === streamId && <span className="msg-caret" aria-hidden="true" />}
+              </div>
+              <div className="msg-meta">
+                <span>{m.timestamp}</span>
+                {m.meta && (
+                  <span>
+                    {" · "}
+                    {m.meta.engine} · {(m.meta.latencyMs / 1000).toFixed(1)} dtk ·{" "}
+                    {m.meta.realTokens ? "" : "±"}
+                    {m.meta.tokens} token
+                    {m.meta.sources && m.meta.sources.length > 0
+                      ? ` · sumber: ${m.meta.sources.join(", ")}`
+                      : ""}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
         {waiting && (
           <div className="msg msg-ai">
-            <div className="msg-bubble msg-typing">
-              <span className="dot" />
-              <span className="dot" />
-              <span className="dot" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+            <div className="msg-col">
+              <div className="msg-bubble msg-typing">
+                <span className="dot" />
+                <span className="dot" />
+                <span className="dot" />
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="chat-suggest">
-        {SUGGESTIONS[engine].map((s) => (
-          <button key={s} type="button" className="qp-chip" onClick={() => void send(s)} disabled={busy}>
-            {s}
-          </button>
-        ))}
-      </div>
+      {messages.length <= 1 && (
+        <div className="chat-suggest">
+          {SUGGESTIONS[engine].map((s) => (
+            <button key={s} type="button" className="qp-chip" onClick={() => void send(s)} disabled={busy}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
 
       <form
         className="chat-input-row"
@@ -512,8 +617,15 @@ export default function AssistantChat() {
         }}
       >
         <textarea
+          ref={inputRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            // Kotak tulis membesar mengikuti isi (maks 120px dari CSS).
+            const el = e.target;
+            el.style.height = "auto";
+            el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

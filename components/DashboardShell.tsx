@@ -30,6 +30,19 @@ const LogsPanel = dynamic(() => import("./dashboard/LogsPanel"), {
   ssr: false,
 });
 
+const IntegrationsPanel = dynamic(
+  () => import("./dashboard/IntegrationsPanel"),
+  { ssr: false },
+);
+
+const UsersPanel = dynamic(() => import("./dashboard/UsersPanel"), {
+  ssr: false,
+});
+
+const ContentsPanel = dynamic(() => import("./dashboard/ContentsPanel"), {
+  ssr: false,
+});
+
 type Tab = { id: string; label: string; desc: string };
 
 const TABS: Tab[] = [
@@ -46,12 +59,12 @@ const TABS: Tab[] = [
   {
     id: "integrations",
     label: "Integrations",
-    desc: "Integrasi API pihak ketiga. Kredensial disimpan terenkripsi atau sebagai referensi environment — tidak pernah teks polos.",
+    desc: "Integrasi API pihak ketiga. Kredensial dirujuk lewat nama environment variable — nilai secret tidak pernah disimpan di database maupun ditampilkan.",
   },
   {
     id: "contents",
     label: "Contents",
-    desc: "Konten portofolio (teks section, proyek, dan halaman) yang bisa diubah tanpa menyentuh kode.",
+    desc: "Artikel dan tulisan portofolio (project, blog, paper, research) dalam markdown. Yang berstatus published bisa dibaca publik lewat API; draft hanya terlihat di sini.",
   },
   {
     id: "users",
@@ -153,6 +166,12 @@ export default function DashboardShell() {
             <ProjectsPanel />
           ) : tab.id === "logs" ? (
             <LogsPanel />
+          ) : tab.id === "integrations" ? (
+            <IntegrationsPanel />
+          ) : tab.id === "users" ? (
+            <UsersPanel />
+          ) : tab.id === "contents" ? (
+            <ContentsPanel />
           ) : (
             <p className="dash-panel-note">
               Modul ini sedang disiapkan — kerangka dan gerbang loginnya
