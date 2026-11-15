@@ -584,9 +584,9 @@ export default function WonderScene({
   const mouseOnRef = useRef(true);
   const debugOnRef = useRef(false);
 
-  const [mouseOn, setMouseOn] = useState(true);
-  const [debugOn, setDebugOn] = useState(false);
-  const [debugText, setDebugText] = useState("—");
+  const [mouseOn] = useState(true); // selalu ON sejak panel dev dihapus (15 Nov)
+  const [debugOn] = useState(false); // selalu OFF sejak panel dev dihapus
+  const [, setDebugText] = useState("—");
   const [reducedMotion, setReducedMotion] = useState(false);
   // Intro judul: kata besar AMAMIYA baru muncul SETELAH animasi masuk
   // grid selesai (afterReveal) — dipicu sekali dari dalam effect utama.
@@ -2961,15 +2961,10 @@ export default function WonderScene({
         )}
       </div>
 
-      <div className="panel">
-        <button type="button" onClick={() => setMouseOn((v) => !v)}>
-          Highlight mouse: {mouseOn ? "ON" : "OFF"}
-        </button>
-        <button type="button" onClick={() => setDebugOn((v) => !v)}>
-          Debug: {debugOn ? "ON" : "OFF"}
-        </button>
-        <output>{debugText}</output>
-      </div>
+      {/* Panel kontrol dev (saklar Highlight mouse + Debug + statistik
+          sel) DIHAPUS 15 Nov: panel itu ikut ter-deploy dan terlihat
+          semua pengunjung di situs publik. Highlight mouse kini selalu
+          menyala (nilai bawaan state), debug selalu mati. */}
 
     </main>
   );
