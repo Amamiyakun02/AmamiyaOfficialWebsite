@@ -204,10 +204,17 @@ body {
   width: 0.6em;
   height: 0.46em;
   transform: translate(-50%, -54%);
+  /* Ukuran titik SEBANDING ukuran huruf (pilihan user 16 Nov):
+     sebelumnya tetap 1,6px/1,9px sehingga di huruf besar AMAMIYA
+     titiknya relatif kecil-renggang dibanding judul section.
+     Kini 0,036em/0,043em — di font section 44px hasilnya sama
+     seperti dulu (±1,6px/1,9px), di font hero ±98px titiknya
+     membesar proporsional (±3,5px/4,2px), kepadatan relatifnya
+     kini sama di semua ukuran judul. */
   background-image: radial-gradient(
     circle at center,
-    rgba(238, 238, 248, 0.95) 1.6px,
-    transparent 1.9px
+    rgba(238, 238, 248, 0.95) 0.036em,
+    transparent 0.043em
   );
   background-size: 25% 50%;
 }
