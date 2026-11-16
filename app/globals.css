@@ -98,6 +98,152 @@ body {
   text-decoration: none;
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== Sidebar mobile gaya situs docs (16 Nov 2026, permintaan
+   user): di ponsel menu atas diganti tombol hamburger + drawer
+   polos yang bergeser dari kiri — daftar tautan vertikal bersih
+   dengan aksen garis kiri untuk item aktif, SENGAJA bukan gaya
+   sidebar dashboard (tanpa rel ikon/grup lipat). Desktop tidak
+   berubah sama sekali. ===== */
+.nav-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid #2a2a31;
+  border-radius: 9px;
+  background: transparent;
+  color: #e6e6e9;
+  cursor: pointer;
+}
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(4, 4, 6, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.nav-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 60;
+  width: min(300px, 84vw);
+  display: flex;
+  flex-direction: column;
+  background: #0e0e11;
+  border-right: 1px solid #1f1f23;
+  transform: translateX(-105%);
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+.nav-drawer.is-open {
+  transform: translateX(0);
+  pointer-events: auto;
+  box-shadow: 24px 0 48px rgba(0, 0, 0, 0.45);
+}
+.nav-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid #1c1c20;
+}
+.nav-drawer .brand {
+  font-size: 17px;
+  /* brand di luar .navbar tidak terkena aturan penghapus garis
+     bawah tautan milik navbar — samakan di sini */
+  text-decoration: none;
+}
+.nav-drawer .brand-logo {
+  height: 26px;
+}
+.nav-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #9a9aa2;
+  cursor: pointer;
+}
+.nav-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+.nav-drawer-list {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  overflow-y: auto;
+}
+.nav-drawer-link {
+  display: block;
+  padding: 11px 20px;
+  font-size: 15.5px;
+  color: #c6c6cd;
+  text-decoration: none;
+}
+.nav-drawer-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+.nav-drawer-link.is-active {
+  color: #fff;
+  background: rgba(0, 129, 251, 0.1);
+  box-shadow: inset 2.5px 0 0 #0081fb;
+}
+.nav-drawer-foot {
+  margin-top: auto;
+  padding: 16px 18px 20px;
+  border-top: 1px solid #1c1c20;
+}
+.nav-drawer-cta {
+  display: block;
+  text-align: center;
+  background: #0081fb;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.nav-drawer-cta:hover {
+  background: #0064e0;
+}
+@media (max-width: 760px) {
+  .nav-burger {
+    display: inline-flex;
+  }
+}
+@media (min-width: 761px) {
+  .nav-drawer,
+  .nav-backdrop {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer,
+  .nav-backdrop {
+    transition: none;
+  }
+}
+
 /* Stage: sisa layar di bawah navbar, tempat scene grid tinggal. */
 .stage {
   position: relative;

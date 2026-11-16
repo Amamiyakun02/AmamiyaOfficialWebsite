@@ -3,6 +3,7 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { scrollToSection } from "@/lib/scroll";
 
 /* Navbar portofolio — sejak situs jadi SATU halaman, menu adalah
@@ -19,7 +20,31 @@ const LINKS = [
 
 export default function Navbar() {
   const [current, setCurrent] = useState("home");
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  // Sidebar mobile gaya situs docs (permintaan user 16 Nov): drawer
+  // geser dari kiri berisi daftar menu vertikal yang bersih — bukan
+  // sidebar dashboard. Selama terbuka: halaman di belakang terkunci
+  // gulirnya, tombol Escape menutup.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open ]);
+
+  // Pindah rute (mis. dari halaman tool) selalu menutup drawer.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   // Di halaman utama, klik menu menggulir mulus langsung ke lokasi
   // section (dengan koreksi posisi untuk section malas-render) alih-
@@ -86,35 +111,105 @@ export default function Navbar() {
   if (pathname === "/dashboard/login") return null;
 
   return (
-    <header className="navbar">
-      <div className="nav-left">
-        <Link
-          href="/#home"
-          className="brand"
-          onClick={(e) => go(e, "home")}
-        >
-          <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
-        </Link>
-        <nav>
+    <>
+      <header className="navbar">
+        <div className="nav-left">
+          <Link
+            href="/#home"
+            className="brand"
+            onClick={(e) => go(e, "home")}
+          >
+            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+          </Link>
+          <nav>
+            {LINKS.map((l) => (
+              <Link
+                key={l.id}
+                href={`/#${l.id}`}
+                className={current === l.id ? "nav-active" : undefined}
+                onClick={(e) => go(e, l.id)}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="nav-right">
+          <Link
+            className="nav-cta"
+            href="/#tools"
+            onClick={(e) => go(e, "tools")}
+          >
+            Coba Tools
+          </Link>
+          <button
+            type="button"
+            className="nav-burger"
+            aria-label="Buka menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+          >
+            <Menu size={21} />
+          </button>
+        </div>
+      </header>
+
+      {/* Sidebar mobile gaya docs: panel polos bergeser dari kiri,
+          daftar tautan vertikal, item aktif beraksen garis kiri. */}
+      <div
+        className={`nav-backdrop${open ? " is-open" : ""}`}
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
+      <aside className={`nav-drawer${open ? " is-open" : ""}`} aria-hidden={!open}>
+        <div className="nav-drawer-head">
+          <Link
+            href="/#home"
+            className="brand"
+            onClick={(e) => {
+              go(e, "home");
+              setOpen(false);
+            }}
+          >
+            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+          </Link>
+          <button
+            type="button"
+            className="nav-drawer-close"
+            aria-label="Tutup menu"
+            onClick={() => setOpen(false)}
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <nav className="nav-drawer-list">
           {LINKS.map((l) => (
             <Link
               key={l.id}
               href={`/#${l.id}`}
-              className={current === l.id ? "nav-active" : undefined}
-              onClick={(e) => go(e, l.id)}
+              className={`nav-drawer-link${current === l.id ? " is-active" : ""}`}
+              onClick={(e) => {
+                go(e, l.id);
+                setOpen(false);
+              }}
             >
               {l.label}
             </Link>
           ))}
         </nav>
-      </div>
-      <Link
-        className="nav-cta"
-        href="/#tools"
-        onClick={(e) => go(e, "tools")}
-      >
-        Coba Tools
-      </Link>
-    </header>
+        <div className="nav-drawer-foot">
+          <Link
+            className="nav-cta nav-drawer-cta"
+            href="/#tools"
+            onClick={(e) => {
+              go(e, "tools");
+              setOpen(false);
+            }}
+          >
+            Coba Tools
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }
