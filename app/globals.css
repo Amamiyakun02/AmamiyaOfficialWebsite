@@ -223,15 +223,15 @@ h1.t-pre .t-char {
 }
 h1.t-play .t-char {
   animation: tCharIn 0.6s ease both;
-  animation-delay: calc(var(--i) * 85ms);
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 h1.t-play .t-dots {
   animation: tDots 0.6s ease both;
-  animation-delay: calc(var(--i) * 85ms);
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 h1.t-play .t-block {
   animation: tBlock 0.6s ease both;
-  animation-delay: calc(var(--i) * 85ms);
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 h1.t-instant .t-dots,
 h1.t-instant .t-block {

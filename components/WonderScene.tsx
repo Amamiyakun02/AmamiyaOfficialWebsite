@@ -613,13 +613,16 @@ export default function WonderScene({
   }, []);
 
   // Hover huruf aktif hanya setelah seluruh intro selesai dimainkan.
+  // Durasi total memakai rumus yang sama persis dengan SectionTitle
+  // (620 + jumlah huruf x jenjang + 150) agar intro AMAMIYA dan intro
+  // judul section satu irama (penyelarasan 16 Nov).
   useEffect(() => {
     if (!titlePlay) return;
     if (reducedMotion) {
       setTitleReady(true);
       return;
     }
-    const t = window.setTimeout(() => setTitleReady(true), 1250);
+    const t = window.setTimeout(() => setTitleReady(true), 620 + 7 * 85 + 150);
     return () => window.clearTimeout(t);
   }, [titlePlay, reducedMotion]);
 
@@ -2949,6 +2952,9 @@ export default function WonderScene({
                       ? "t-done"
                       : "t-play"
               }
+              /* Jenjang per huruf lewat variabel --sd, mekanisme yang
+                 sama dengan SectionTitle (16 Nov). */
+              style={{ "--sd": "85ms" } as React.CSSProperties}
             >
               <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
             </h1>
