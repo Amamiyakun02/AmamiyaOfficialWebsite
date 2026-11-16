@@ -45,7 +45,7 @@ const HEAT_RY = 57; // (idem)
 // (matriks titik -> balok dua nada -> karakter) yang menyapu
 // MENYAMPING tegak lurus arah gerak kursor dalam radius petak huruf.
 const RIPPLE_R = 7; // radius gelombang: 7 petak huruf dari kursor (10 terasa terlalu luas, kata user)
-const RIPPLE_STAGGER_MS = 60; // jeda mulai per petak sepanjang sumbu sapuan — diperlambat agar pergiliran fasenya terbaca mata (permintaan user)
+const RIPPLE_STAGGER_MS = 150; // jeda mulai per petak sepanjang sumbu sapuan — 60ms terasa BARANGAN kata user (fase antar petak cuma beda 7% dari durasi 800ms); 150ms membuat tiap petak jelas bergiliran: satu petak sudah berbalok saat petak berikutnya baru bertitik
 const MAT_MS = 800; // durasi materialisasi per huruf — diperlambat dari 600ms intro judul agar perubahan titik->balok->karakter sempat terlihat (permintaan user)
 const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
 const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
