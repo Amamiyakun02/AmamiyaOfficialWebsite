@@ -1,8 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { AtSign, Mail, ArrowUpRight } from "lucide-react";
 import { apiUrl } from "@/lib/api";
 import SectionTitle from "@/components/SectionTitle";
+import { InstagramIcon, FacebookIcon } from "@/components/BrandIcons";
+
+// Kanal lain di samping formulir (permintaan user 16 Nov): tombol ke
+// Instagram, Threads, Facebook, dan email di kolom kanan formulir.
+// Username & URL asli dari user (16 Nov 2026).
+const SOCIALS = [
+  {
+    name: "Instagram",
+    handle: "@_agonystic_",
+    href: "https://www.instagram.com/_agonystic_",
+  },
+  {
+    name: "Threads",
+    handle: "@_agonystic_",
+    href: "https://www.threads.com/@_agonystic_",
+  },
+  {
+    name: "Facebook",
+    handle: "Amamiya",
+    href: "https://www.facebook.com/amamiya.kun.5",
+  },
+  {
+    name: "Email",
+    handle: "amamiyakun02@gmail.com",
+    href: "mailto:amamiyakun02@gmail.com",
+  },
+];
+const SOCIAL_ICONS: Record<string, React.ReactNode> = {
+  Instagram: <InstagramIcon size={19} />,
+  Threads: <AtSign size={19} />,
+  Facebook: <FacebookIcon size={19} />,
+  Email: <Mail size={19} />,
+};
 
 // Halaman Kontak — formulir yang sama seperti WebPortofolio lama:
 // pesan dikirim sebagai feedback ke backend Vienna Agent
@@ -51,6 +85,8 @@ export default function ContactSection() {
         atau sekadar menyapa.
       </p>
 
+      <div className="contact-layout">
+        <div>
       {sent ? (
         <div className="form-done">
           <h2>Pesan Terkirim</h2>
@@ -108,6 +144,31 @@ export default function ContactSection() {
           </button>
         </form>
       )}
+        </div>
+
+        <aside className="contact-social">
+          <h3 className="social-title">Terhubung</h3>
+          <div className="social-list">
+            {SOCIALS.map(({ name, handle, href }) => (
+              <a
+                key={name}
+                className="social-btn"
+                href={href}
+                {...(href.startsWith("http")
+                  ? { target: "_blank", rel: "noreferrer" }
+                  : {})}
+              >
+                <span className="social-ic">{SOCIAL_ICONS[name]}</span>
+                <span>
+                  <span className="social-name">{name}</span>
+                  <span className="social-handle">{handle}</span>
+                </span>
+                <ArrowUpRight size={16} className="social-arrow" />
+              </a>
+            ))}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

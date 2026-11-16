@@ -4,7 +4,12 @@ import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { GithubIcon } from "./BrandIcons";
 import { scrollToSection } from "@/lib/scroll";
+
+// Tombol kanan navbar = ikon GitHub ke profil user (permintaan user
+// 16 Nov, menggantikan tombol "Coba Tools").
+const GITHUB_URL = "https://github.com/Amamiyakun02";
 
 /* Navbar portofolio — sejak situs jadi SATU halaman, menu adalah
    jangkar ke section-section di halaman utama (Beranda, Proyek, Tools,
@@ -135,13 +140,15 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="nav-right">
-          <Link
-            className="nav-cta"
-            href="/#tools"
-            onClick={(e) => go(e, "tools")}
+          <a
+            className="nav-github"
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub Amamiyakun02"
           >
-            Coba Tools
-          </Link>
+            <GithubIcon size={20} />
+          </a>
           <button
             type="button"
             className="nav-burger"
@@ -198,16 +205,15 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="nav-drawer-foot">
-          <Link
-            className="nav-cta nav-drawer-cta"
-            href="/#tools"
-            onClick={(e) => {
-              go(e, "tools");
-              setOpen(false);
-            }}
+          <a
+            className="nav-drawer-github"
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setOpen(false)}
           >
-            Coba Tools
-          </Link>
+            <GithubIcon size={18} /> GitHub
+          </a>
         </div>
       </aside>
     </>
