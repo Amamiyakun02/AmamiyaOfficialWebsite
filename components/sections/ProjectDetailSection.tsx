@@ -16,7 +16,7 @@ export default function ProjectDetailSection({
   if (!p) return null;
   const Icon = p.icon;
   return (
-    <div className="section-inner section-narrow">
+    <div className="section-inner">
       <div className="detail-head">
         <span className="proj-icon proj-icon-lg">
           <Icon size={26} />

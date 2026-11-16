@@ -44,7 +44,7 @@ export default function ContactSection() {
   }
 
   return (
-    <div className="section-inner section-narrow">
+    <div className="section-inner">
       <SectionTitle text="Contact" />
       <p className="page-desc">
         Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,

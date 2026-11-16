@@ -35,7 +35,7 @@ export default function AboutSection() {
   const shown =
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
-    <div className="section-inner section-narrow">
+    <div className="section-inner">
       <SectionTitle text="About" />
       <p className="page-desc">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
