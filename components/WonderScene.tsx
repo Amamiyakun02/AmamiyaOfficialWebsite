@@ -38,12 +38,17 @@ const GLITCH_CELLS = 14; // jumlah sel yang disentuh tiap interval (dari 24)
 const ALT_WORDS = ["DEV", "BUILD", "CODE", "UNIVERSE"]; // kata sisipan yang muncul lebih terang (UNIVERSE ditambahkan user 31 Okt — 8 huruf, lebih panjang dari AMAMIYA: drawCell mengecilkan font-nya agar muat selebar sel)
 const ALT_BOOST = 0.38; // tambahan opasitas kata sisipan
 const ALT_MS = 2200; // durasi dasar kata sisipan (ditambah acak 0–3,3 detik → total ±2,2–5,5 detik)
-const HEAT_RX = 78; // jangkauan panas per HURUF: ±3 huruf lebih dari kursor -> tambalan ±6 huruf ke samping (pengamatan user dari video Wonder asli)
-const HEAT_RY = 57; // ±1,5 baris -> tambalan ±3 blok huruf ke atas/bawah
-const HEAT_DECAY = 0.9; // heat dikalikan ini tiap frame rAF — jejak kursor memudar
-const HEAT_MIN = 0.08; // di bawah ambang ini sel kembali ke huruf asli
-const HEAT_MAX_MS = 1400; // batas waktu keras: sel panas WAJIB pulih sebelum ini, walau frame lambat
-const HEAT_GLITCH = ["▌", "▐", "▚", ":", "⠿"]; // karakter kedip acak sesekali di sel panas
+const HEAT_RX = 78; // warisan elips heat lama — kini hanya dipakai plumbing skala gridRef
+const HEAT_RY = 57; // (idem)
+// GELOMBANG MATERIALISASI kursor (16 Nov 2026, permintaan user):
+// highlight huruf grid kini memakai animasi entrance judul section
+// (matriks titik -> balok dua nada -> karakter) yang MERAMBAT ke
+// segala arah dari titik kursor sejauh radius petak huruf.
+const RIPPLE_R = 6; // radius gelombang: 6 petak huruf ke segala arah
+const RIPPLE_STAGGER_MS = 45; // jeda mulai per petak — gelombang merambat keluar
+const MAT_MS = 600; // durasi materialisasi per huruf (sama dengan intro judul 0,6 dtk)
+const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
+const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
 const WAVE_BOOST = 0.45; // tambahan opasitas sel saat dilewati gelombang sapuan (0,26 -> 0,45: efek jalan dari sudut DIPERJELAS, permintaan user 30 Okt)
 const WAVE_BAND = 200; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal) — dipersempit dari 260 agar garis depannya lebih tegas
 const HOLE_MAX_W = 660; // lebar maksimum lubang tengah (px)
@@ -114,8 +119,8 @@ const BH_P_MIN = 0.25; // skala awal/akhir black hole
 /* ===================================================================== */
 
 type Cell = { x: number; y: number; a: number; shown: boolean; hole: boolean };
-type SlotHeat = { heat: number; glyph: string; born: number; order: number[] }; // panas per slot huruf; order = urutan menyala 8 titiknya
-type HeatState = { slots: (SlotHeat | null)[] }; // keadaan panas sebuah kata (per slot)
+type SlotHeat = { startAt: number; peak: number }; // gelombang materialisasi per slot huruf: waktu mulai (termasuk jeda rambat dari kursor) + kecerahan puncak
+type HeatState = { slots: (SlotHeat | null)[] }; // keadaan gelombang sebuah kata (per slot)
 
 /* =====================================================================
    KATA BESAR INTERAKTIF (31 Okt, permintaan user): tiap huruf judul
@@ -2523,30 +2528,29 @@ export default function WonderScene({
       restoreBand();
     }
 
-    // HIGHLIGHT KURSOR "HEAT" (dari analisa video Muse Wonder): huruf di
-    // sekitar kursor berubah jadi karakter blok/dither. Panas dihitung PER
-    // HURUF (bukan per kata) — tambalannya ±6 huruf ke samping dan ±3 baris
-    // ke atas/bawah mengikuti kursor, menyeberang batas kata seperti grid
-    // karakter aslinya (pengamatan user dari video Wonder). Tiap huruf
-    // punya heat 0..1 — dipanaskan oleh kedekatan kursor (1 - jarak +
-    // noise, jadi tepinya bergerigi), mendingin ×0,9 tiap frame (jejak
-    // memudar pelan), lalu kembali ke huruf asli di bawah ambang. Heat
-    // dipetakan ke matriks 8 titik terang: makin dekat kursor makin
-    // banyak titik menyala (puncaknya blok padat), dengan
-    // peluang kecil karakter glitch agar berkedip. Digambar per slot
-    // huruf supaya tekstur kata grid tetap utuh; hanya sel panas yang
-    // diproses tiap frame rAF — tetap ringan.
+    // HIGHLIGHT KURSOR "GELOMBANG MATERIALISASI" (16 Nov 2026,
+    // permintaan user — menggantikan sistem heat/blok dither lama):
+    // huruf di sekitar kursor MENJALANI animasi entrance yang sama
+    // dengan judul section & kata besar (matriks titik 4x2 -> balok
+    // dua nada tumbuh -> karakter muncul terang), tetapi alurnya
+    // berupa GELOMBANG: tiap huruf mulai terbangun dengan jeda
+    // sebanding jarak petaknya dari kursor, jadi animasinya merambat
+    // ke segala arah sejauh RIPPLE_R (6 petak huruf). Selesai
+    // terbangun, huruf bertahan terang sejenak lalu memudar pulang
+    // ke huruf dasar. Sekali per lintasan kursor (spentSet sama
+    // seperti dulu): huruf yang sudah bermain tidak dipicu ulang
+    // sampai kursor keluar dari jangkauannya. Warna dibuat terang
+    // seperti highlight lama (nyaris putih 245,245,255).
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
-    let lastHeatFrame = 0; // cap waktu frame heat terakhir (untuk throttle 30fps + decay berbasis dt)
-    // Sel yang sudah menyala pada lintasan kursor kali ini: TIDAK dipanaskan
-    // lagi sampai kursor benar-benar keluar dari jangkauannya — efeknya
-    // sekali saja per geseran kursor, bukan menyala terus selama kursor dekat.
+    let lastHeatFrame = 0; // cap waktu frame gelombang terakhir (untuk throttle 30fps)
+    // Sel yang sudah bermain pada lintasan kursor kali ini: TIDAK
+    // dipicu lagi sampai kursor benar-benar keluar dari jangkauannya.
     const spentSet = new Set<number>(); // kunci slot: idx * WORD.length + slot
     function slotCenterX(c: Cell, i: number) {
       return slotX(c, i) + slotMetrics().charW / 2;
     }
-    function drawHeatCell(c: Cell, hc: HeatState) {
+    function drawHeatCell(c: Cell, hc: HeatState, now: number) {
       const g = ctx!;
       g.clearRect(c.x, c.y, CW, CH);
       g.font = FONT;
@@ -2560,82 +2564,98 @@ export default function WonderScene({
       }
       g.shadowBlur = 0;
       g.shadowColor = "rgba(0,0,0,0)";
+      const charW = slotMetrics().charW;
+      const capH = capHeight();
       for (let i = 0; i < WORD.length; i++) {
         const s = hc.slots[i];
-        if (!s) {
-          // slot dingin: huruf asli pada opasitas dasar kata
-          g.fillStyle = `rgba(${INK},${c.a})`;
-          g.fillText(WORD[i], slotX(c, i), c.y + TEXT_Y);
-          continue;
-        }
-        // EFEK 8 TITIK (permintaan user dari gambar referensi Wonder):
-        // huruf panas digambar sebagai matriks 8 titik (2 kolom x 4
-        // baris) — jumlah titik menyala mengikuti panasnya, urutan
-        // menyala acak per slot (ditentukan saat slot dinyalakan) agar
-        // teksturnya organik; panas hampir penuh menjadi blok padat.
-        // Warnanya nyaris putih terang (lebih menyala dari blok ░▒▓█
-        // versi sebelumnya yang tampak kusam).
-        if (Math.random() < 0.08) {
-          // kedip huruf glitch sesekali, dipertahankan dari versi lama
-          const a = Math.min(1, 0.5 + s.heat * 0.5);
-          g.fillStyle = `rgba(245,245,255,${a.toFixed(3)})`;
-          g.fillText(
-            HEAT_GLITCH[(Math.random() * HEAT_GLITCH.length) | 0],
-            slotX(c, i),
-            c.y + TEXT_Y,
-          );
-          continue;
-        }
-        const h = Math.max(0, Math.min(1, s.heat));
-        const a = 0.65 + 0.35 * h;
-        g.fillStyle = `rgba(245,245,255,${a.toFixed(3)})`;
         const x0 = slotX(c, i);
-        const charW = slotMetrics().charW;
-        const capH = capHeight();
-        if (h >= 0.92) {
-          // puncak panas: blok padat terang (seperti referensi)
-          const bw = charW * 0.96;
-          const bh = capH * 1.08;
-          g.fillRect(
-            x0 + (charW - bw) / 2,
-            c.y + TEXT_Y - capH - (bh - capH) / 2,
-            bw,
-            bh,
-          );
+        if (!s) {
+          // slot diam: huruf asli pada opasitas dasar kata
+          g.fillStyle = `rgba(${INK},${c.a})`;
+          g.fillText(WORD[i], x0, c.y + TEXT_Y);
           continue;
         }
-        const lit = Math.max(1, Math.round(h * 8));
-        const dx = charW * 0.24;
-        const rowStep = capH / 4;
-        const top = c.y + TEXT_Y - capH;
-        const r = Math.max(1.2, charW * 0.17); // titik besar & tegas seperti referensi
-        for (let d = 0; d < lit; d++) {
-          const p = s.order[d];
-          const px = x0 + charW / 2 + (p % 2 === 0 ? -dx : dx);
-          const py = top + rowStep * (((p / 2) | 0) + 0.5);
-          g.beginPath();
-          g.arc(px, py, r, 0, Math.PI * 2);
-          g.fill();
+        const p = (now - s.startAt) / MAT_MS;
+        if (p < 0) {
+          // gelombang belum tiba di huruf ini
+          g.fillStyle = `rgba(${INK},${c.a})`;
+          g.fillText(WORD[i], x0, c.y + TEXT_Y);
+          continue;
+        }
+        const cx = x0 + charW / 2;
+        if (p >= 1) {
+          // terbangun utuh: huruf terang bertahan, lalu memudar pulang
+          const t = now - s.startAt - MAT_MS;
+          const fade =
+            t <= MAT_HOLD_MS
+              ? 1
+              : Math.max(0, 1 - (t - MAT_HOLD_MS) / MAT_FADE_MS);
+          if (fade < 1) {
+            g.fillStyle = `rgba(${INK},${c.a})`;
+            g.fillText(WORD[i], x0, c.y + TEXT_Y);
+          }
+          g.fillStyle = `rgba(245,245,255,${(fade * s.peak).toFixed(3)})`;
+          g.fillText(WORD[i], x0, c.y + TEXT_Y);
+          continue;
+        }
+        // Fase titik (0–0,42): matriks 4 kolom x 2 baris seperti
+        // lapisan .t-dots pada intro judul — muncul cepat, bertahan,
+        // lalu larut saat balok masuk.
+        if (p < 0.42) {
+          const aDots =
+            p < 0.12 ? p / 0.12 : p < 0.3 ? 1 : 1 - (p - 0.3) / 0.12;
+          const r = Math.max(1.1, charW * 0.07);
+          const mw = charW * 0.84;
+          const mh = capH * 0.62;
+          const cy = c.y + TEXT_Y - capH / 2;
+          g.fillStyle = `rgba(238,238,248,${(0.95 * aDots * s.peak).toFixed(3)})`;
+          for (let d = 0; d < 8; d++) {
+            const px = cx + ((d % 4) - 1.5) * (mw / 3);
+            const py = cy + (((d / 4) | 0) - 0.5) * mh;
+            g.beginPath();
+            g.arc(px, py, r, 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+        // Fase balok (0,30–0,84): balok dua nada tumbuh scaleX dari
+        // tengah lalu larut — proporsi sama dengan keyframes tBlock.
+        if (p >= 0.3 && p < 0.84) {
+          const sx = p < 0.48 ? 0.15 + 0.85 * ((p - 0.3) / 0.18) : 1;
+          const aBlk = p < 0.68 ? 1 : 1 - (p - 0.68) / 0.16;
+          const bw = charW * 0.96 * sx;
+          const bh = capH * 1.08;
+          const bx = cx - bw / 2;
+          const by = c.y + TEXT_Y - capH - (bh - capH) / 2;
+          g.fillStyle = `rgba(227,227,242,${(aBlk * s.peak).toFixed(3)})`;
+          g.fillRect(bx, by, bw * 0.55, bh);
+          g.fillStyle = `rgba(146,146,172,${(aBlk * s.peak).toFixed(3)})`;
+          g.fillRect(bx + bw * 0.55, by, bw * 0.45, bh);
+        }
+        // Fase karakter (0,60–1): huruf muncul mengisi balok, naik
+        // tipis seperti keyframes tCharIn, dalam warna terang.
+        if (p >= 0.6) {
+          const aCh = Math.min(1, (p - 0.6) / 0.24);
+          const yOff =
+            (1 - Math.min(1, (p - 0.6) / 0.4)) * FONT_SIZE * 0.06;
+          g.fillStyle = `rgba(245,245,255,${(aCh * s.peak).toFixed(3)})`;
+          g.fillText(WORD[i], x0, c.y + TEXT_Y + yOff);
         }
       }
       redrawsRef.current++;
     }
     function stepHeat() {
-      // OPTIMASI (30 Okt): loop heat juga dibatasi ±30fps; pendinginan
-      // diskalakan dengan dt (pangkat) agar kecepatan memudarnya sama
-      // seperti 60fps sebelumnya.
+      // OPTIMASI (30 Okt): loop gelombang juga dibatasi ±30fps.
       const frameNow = performance.now();
       if (lastHeatFrame !== 0 && frameNow - lastHeatFrame < 33) {
         heatRaf = requestAnimationFrame(stepHeat);
         return;
       }
-      const heatDt = lastHeatFrame === 0 ? 16.7 : frameNow - lastHeatFrame;
       lastHeatFrame = frameNow;
-      const heatDecay = Math.pow(HEAT_DECAY, heatDt / 16.7);
       const cells = cellsRef.current;
       const cols = colsRef.current;
       const m = mouseRef.current;
       const now = frameNow;
+      const adv = slotMetrics().adv; // jarak antar huruf (petak mendatar)
       // 0) bebaskan slot "habis pakai" yang kursornya sudah jauh / pergi
       for (const key of Array.from(spentSet)) {
         const idx = Math.floor(key / WORD.length);
@@ -2645,22 +2665,26 @@ export default function WonderScene({
           spentSet.delete(key);
           continue;
         }
-        const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
-        const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-        if (dx * dx + dy * dy >= 1) spentSet.delete(key);
+        const dxT = (slotCenterX(cell, i) - m.x) / adv;
+        const dyT = (cell.y + CH / 2 - m.y) / CH;
+        if (Math.sqrt(dxT * dxT + dyT * dyT) > RIPPLE_R + 0.75)
+          spentSet.delete(key);
       }
-      // 1) panaskan HURUF di sekitar kursor — panas dihitung per slot huruf
-      // dari jarak titik tengah huruf ke kursor (elips ±3 huruf x ±1,5
-      // baris): tambalannya ±6 huruf ke samping dan ±3 baris ke atas/bawah,
-      // bisa menyeberang batas kata seperti grid karakter aslinya.
-      // SEKALI per lintasan: slot yang sedang/baru menyala tidak dipanaskan
-      // lagi sampai kursor keluar dari jangkauannya.
+      // 1) picu gelombang pada HURUF di sekitar kursor: jarak dihitung
+      // dalam PETAK (mendatar = jarak antar huruf, tegak = tinggi
+      // baris); huruf dalam radius RIPPLE_R dijadwalkan mulai
+      // terbangun pada now + jarak x RIPPLE_STAGGER_MS — dari situlah
+      // rambatan ke segala arahnya berasal. SEKALI per lintasan:
+      // slot yang sedang/sudah bermain tidak dipicu lagi sampai
+      // kursor keluar dari jangkauannya.
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
-        const c0 = Math.max(0, Math.floor((m.x - HEAT_RX - CW) / CW));
+        const rxPx = RIPPLE_R * adv;
+        const ryPx = RIPPLE_R * CH;
+        const c0 = Math.max(0, Math.floor((m.x - rxPx - CW) / CW));
         // c1 dikurangi 1 lajur: kolom kata mulai setelah margin kiri
-        const c1 = Math.min(cols - 1, Math.floor((m.x + HEAT_RX) / CW) - 1);
-        const r0 = Math.max(0, Math.floor((m.y - HEAT_RY) / CH));
-        const r1 = Math.floor((m.y + HEAT_RY) / CH);
+        const c1 = Math.min(cols - 1, Math.floor((m.x + rxPx) / CW) - 1);
+        const r0 = Math.max(0, Math.floor((m.y - ryPx) / CH));
+        const r1 = Math.floor((m.y + ryPx) / CH);
         for (let r = r0; r <= r1; r++) {
           for (let cc = c0; cc <= c1; cc++) {
             const idx = r * cols + cc;
@@ -2681,35 +2705,24 @@ export default function WonderScene({
               if (hc?.slots[i]) continue;
               const key = idx * WORD.length + i;
               if (spentSet.has(key)) continue;
-              const dx = (slotCenterX(cell, i) - m.x) / HEAT_RX;
-              const dy = (cell.y + CH / 2 - m.y) / HEAT_RY;
-              const dd = dx * dx + dy * dy;
-              if (dd >= 1) continue;
-              const h = 1 - Math.sqrt(dd) + (Math.random() - 0.5) * 0.35;
-              if (h <= 0.05) continue;
+              const dxT = (slotCenterX(cell, i) - m.x) / adv;
+              const dyT = (cell.y + CH / 2 - m.y) / CH;
+              const dTiles = Math.sqrt(dxT * dxT + dyT * dyT);
+              if (dTiles > RIPPLE_R) continue;
               if (!hc) {
                 hc = { slots: new Array(WORD.length).fill(null) };
                 hiRef.current.set(idx, hc);
               }
-              // urutan menyala 8 titik diacak sekali saat slot menyala
-              const order = [0, 1, 2, 3, 4, 5, 6, 7];
-              for (let k = order.length - 1; k > 0; k--) {
-                const j = (Math.random() * (k + 1)) | 0;
-                const tmp = order[k];
-                order[k] = order[j];
-                order[j] = tmp;
-              }
               hc.slots[i] = {
-                heat: Math.min(1, Math.max(0.02, h)),
-                glyph: "",
-                born: now,
-                order,
+                startAt: now + dTiles * RIPPLE_STAGGER_MS,
+                // tepi gelombang sedikit lebih redup, pusat paling terang
+                peak: 1 - (dTiles / RIPPLE_R) * 0.25,
               };
             }
           }
         }
       }
-      // 2) dinginkan per slot + gambar ulang kata yang masih punya slot panas
+      // 2) jalankan siklus hidup per slot + gambar ulang kata yang masih punya slot bermain
       for (const [idx, hc] of Array.from(hiRef.current)) {
         const cell = cells[idx];
         if (!cell || cell.hole) {
@@ -2726,24 +2739,23 @@ export default function WonderScene({
           hiRef.current.delete(idx); // tampilannya diambil alih sistem lain
           continue;
         }
-        let anyHot = false;
+        let anyActive = false;
         for (let i = 0; i < WORD.length; i++) {
           const s = hc.slots[i];
           if (!s) continue;
-          s.heat *= heatDecay;
-          if (s.heat < HEAT_MIN || now - s.born > HEAT_MAX_MS) {
+          if (now - s.startAt > MAT_MS + MAT_HOLD_MS + MAT_FADE_MS) {
             hc.slots[i] = null;
-            spentSet.add(idx * WORD.length + i); // jangan menyala lagi pada lintasan yang sama
+            spentSet.add(idx * WORD.length + i); // jangan bermain lagi pada lintasan yang sama
           } else {
-            anyHot = true;
+            anyActive = true;
           }
         }
-        if (!anyHot) {
+        if (!anyActive) {
           hiRef.current.delete(idx);
-          draw(cell, cell.a); // semua slot dingin: kata kembali utuh
+          draw(cell, cell.a); // semua slot selesai: kata kembali utuh
           continue;
         }
-        drawHeatCell(cell, hc);
+        drawHeatCell(cell, hc, now);
       }
       heatRaf =
         hiRef.current.size > 0 || performance.now() - lastMoveAt < 150
