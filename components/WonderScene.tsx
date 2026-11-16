@@ -42,10 +42,10 @@ const HEAT_RX = 78; // warisan elips heat lama — kini hanya dipakai plumbing s
 const HEAT_RY = 57; // (idem)
 // GELOMBANG MATERIALISASI kursor (16 Nov 2026, permintaan user):
 // highlight huruf grid kini memakai animasi entrance judul section
-// (matriks titik -> balok dua nada -> karakter) yang MERAMBAT ke
-// segala arah dari titik kursor sejauh radius petak huruf.
-const RIPPLE_R = 6; // radius gelombang: 6 petak huruf ke segala arah
-const RIPPLE_STAGGER_MS = 45; // jeda mulai per petak — gelombang merambat keluar
+// (matriks titik -> balok dua nada -> karakter) yang menyapu
+// MENYAMPING tegak lurus arah gerak kursor dalam radius petak huruf.
+const RIPPLE_R = 10; // radius gelombang: 10 petak huruf dari kursor
+const RIPPLE_STAGGER_MS = 30; // jeda mulai per petak sepanjang sumbu sapuan
 const MAT_MS = 600; // durasi materialisasi per huruf (sama dengan intro judul 0,6 dtk)
 const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
 const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
@@ -2532,10 +2532,13 @@ export default function WonderScene({
     // permintaan user — menggantikan sistem heat/blok dither lama):
     // huruf di sekitar kursor MENJALANI animasi entrance yang sama
     // dengan judul section & kata besar (matriks titik 4x2 -> balok
-    // dua nada tumbuh -> karakter muncul terang), tetapi alurnya
-    // berupa GELOMBANG: tiap huruf mulai terbangun dengan jeda
-    // sebanding jarak petaknya dari kursor, jadi animasinya merambat
-    // ke segala arah sejauh RIPPLE_R (6 petak huruf). Selesai
+    // dua nada tumbuh -> karakter muncul terang), dengan alur
+    // SAPUAN MENYAMPING: jeda mulai tiap huruf ditentukan posisinya
+    // sepanjang sumbu yang TEGAK LURUS arah gerak kursor — kursor
+    // bergerak mendatar -> animasi menyapu tegak; bergerak tegak ->
+    // menyapu mendatar; bergerak serong -> sapuan menyesuaikan
+    // (tegak lurus serongnya). Jangkauan sapuan: cakram radius
+    // RIPPLE_R (10 petak huruf) di sekitar kursor. Selesai
     // terbangun, huruf bertahan terang sejenak lalu memudar pulang
     // ke huruf dasar. Sekali per lintasan kursor (spentSet sama
     // seperti dulu): huruf yang sudah bermain tidak dipicu ulang
@@ -2547,6 +2550,12 @@ export default function WonderScene({
     // Sel yang sudah bermain pada lintasan kursor kali ini: TIDAK
     // dipicu lagi sampai kursor benar-benar keluar dari jangkauannya.
     const spentSet = new Set<number>(); // kunci slot: idx * WORD.length + slot
+    // Arah gerak kursor terakhir (unit, dihaluskan antar frame) —
+    // sumbu sapuan gelombang adalah tegak lurus arah ini.
+    let moveDirX = 1;
+    let moveDirY = 0;
+    let prevMX: number | null = null;
+    let prevMY: number | null = null;
     function slotCenterX(c: Cell, i: number) {
       return slotX(c, i) + slotMetrics().charW / 2;
     }
@@ -2656,6 +2665,25 @@ export default function WonderScene({
       const m = mouseRef.current;
       const now = frameNow;
       const adv = slotMetrics().adv; // jarak antar huruf (petak mendatar)
+      // Perbarui arah gerak kursor dari geseran nyata antar frame
+      // (dihaluskan 60/40 agar sapuan tidak bergetar saat arah
+      // berganti-ganti kecil); kursor diam mempertahankan arah terakhir.
+      if (m) {
+        if (prevMX !== null && prevMY !== null) {
+          const vx = m.x - prevMX;
+          const vy = m.y - prevMY;
+          const len = Math.sqrt(vx * vx + vy * vy);
+          if (len >= 3) {
+            const nx = moveDirX * 0.6 + (vx / len) * 0.4;
+            const ny = moveDirY * 0.6 + (vy / len) * 0.4;
+            const nl = Math.sqrt(nx * nx + ny * ny) || 1;
+            moveDirX = nx / nl;
+            moveDirY = ny / nl;
+          }
+        }
+        prevMX = m.x;
+        prevMY = m.y;
+      }
       // 0) bebaskan slot "habis pakai" yang kursornya sudah jauh / pergi
       for (const key of Array.from(spentSet)) {
         const idx = Math.floor(key / WORD.length);
@@ -2673,13 +2701,22 @@ export default function WonderScene({
       // 1) picu gelombang pada HURUF di sekitar kursor: jarak dihitung
       // dalam PETAK (mendatar = jarak antar huruf, tegak = tinggi
       // baris); huruf dalam radius RIPPLE_R dijadwalkan mulai
-      // terbangun pada now + jarak x RIPPLE_STAGGER_MS — dari situlah
-      // rambatan ke segala arahnya berasal. SEKALI per lintasan:
-      // slot yang sedang/sudah bermain tidak dipicu lagi sampai
-      // kursor keluar dari jangkauannya.
+      // terbangun menurut posisinya sepanjang sumbu sapuan (tegak
+      // lurus arah gerak kursor): startAt = now + (posisi + R) x
+      // RIPPLE_STAGGER_MS, jadi muka gelombang berjalan menyamping
+      // melintasi cakram dari satu sisi ke sisi lain. SEKALI per
+      // lintasan: slot yang sedang/sudah bermain tidak dipicu lagi
+      // sampai kursor keluar dari jangkauannya.
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
         const rxPx = RIPPLE_R * adv;
         const ryPx = RIPPLE_R * CH;
+        // Sumbu sapuan dalam ruang petak: arah gerak dipetakan ke
+        // petak lalu diputar 90 derajat.
+        const vTx = moveDirX / adv;
+        const vTy = moveDirY / CH;
+        const vLen = Math.sqrt(vTx * vTx + vTy * vTy) || 1;
+        const nTx = -vTy / vLen;
+        const nTy = vTx / vLen;
         const c0 = Math.max(0, Math.floor((m.x - rxPx - CW) / CW));
         // c1 dikurangi 1 lajur: kolom kata mulai setelah margin kiri
         const c1 = Math.min(cols - 1, Math.floor((m.x + rxPx) / CW) - 1);
@@ -2713,9 +2750,12 @@ export default function WonderScene({
                 hc = { slots: new Array(WORD.length).fill(null) };
                 hiRef.current.set(idx, hc);
               }
+              // posisi sepanjang sumbu sapuan (-R..R): menentukan
+              // giliran huruf terbangun saat muka gelombang lewat
+              const sT = dxT * nTx + dyT * nTy;
               hc.slots[i] = {
-                startAt: now + dTiles * RIPPLE_STAGGER_MS,
-                // tepi gelombang sedikit lebih redup, pusat paling terang
+                startAt: now + (sT + RIPPLE_R) * RIPPLE_STAGGER_MS,
+                // tepi cakram sedikit lebih redup, pusat paling terang
                 peak: 1 - (dTiles / RIPPLE_R) * 0.25,
               };
             }
