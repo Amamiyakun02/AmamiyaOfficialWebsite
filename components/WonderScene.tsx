@@ -44,9 +44,9 @@ const HEAT_RY = 57; // (idem)
 // highlight huruf grid kini memakai animasi entrance judul section
 // (matriks titik -> balok dua nada -> karakter) yang menyapu
 // MENYAMPING tegak lurus arah gerak kursor dalam radius petak huruf.
-const RIPPLE_R = 10; // radius gelombang: 10 petak huruf dari kursor
-const RIPPLE_STAGGER_MS = 30; // jeda mulai per petak sepanjang sumbu sapuan
-const MAT_MS = 600; // durasi materialisasi per huruf (sama dengan intro judul 0,6 dtk)
+const RIPPLE_R = 7; // radius gelombang: 7 petak huruf dari kursor (10 terasa terlalu luas, kata user)
+const RIPPLE_STAGGER_MS = 60; // jeda mulai per petak sepanjang sumbu sapuan — diperlambat agar pergiliran fasenya terbaca mata (permintaan user)
+const MAT_MS = 800; // durasi materialisasi per huruf — diperlambat dari 600ms intro judul agar perubahan titik->balok->karakter sempat terlihat (permintaan user)
 const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
 const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
 const WAVE_BOOST = 0.45; // tambahan opasitas sel saat dilewati gelombang sapuan (0,26 -> 0,45: efek jalan dari sudut DIPERJELAS, permintaan user 30 Okt)
@@ -2538,7 +2538,7 @@ export default function WonderScene({
     // bergerak mendatar -> animasi menyapu tegak; bergerak tegak ->
     // menyapu mendatar; bergerak serong -> sapuan menyesuaikan
     // (tegak lurus serongnya). Jangkauan sapuan: cakram radius
-    // RIPPLE_R (10 petak huruf) di sekitar kursor. Selesai
+    // RIPPLE_R (7 petak huruf) di sekitar kursor. Selesai
     // terbangun, huruf bertahan terang sejenak lalu memudar pulang
     // ke huruf dasar. Sekali per lintasan kursor (spentSet sama
     // seperti dulu): huruf yang sudah bermain tidak dipicu ulang
