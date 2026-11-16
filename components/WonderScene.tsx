@@ -2533,11 +2533,14 @@ export default function WonderScene({
     // huruf di sekitar kursor MENJALANI animasi entrance yang sama
     // dengan judul section & kata besar (matriks titik 4x2 -> balok
     // dua nada tumbuh -> karakter muncul terang), dengan alur
-    // SAPUAN MENYAMPING: jeda mulai tiap huruf ditentukan posisinya
-    // sepanjang sumbu yang TEGAK LURUS arah gerak kursor — kursor
-    // bergerak mendatar -> animasi menyapu tegak; bergerak tegak ->
-    // menyapu mendatar; bergerak serong -> sapuan menyesuaikan
-    // (tegak lurus serongnya). Jangkauan sapuan: cakram radius
+    // SAPUAN MENYAMPING DARI PUSAT: posisi kursor adalah pusatnya —
+    // jeda mulai tiap huruf ditentukan jaraknya dari garis kursor
+    // sepanjang sumbu yang TEGAK LURUS arah gerak kursor, dan
+    // gelombang merambat ke KEDUA arah berlawanan sepanjang sumbu
+    // itu: kursor bergerak mendatar -> animasi merambat tegak ke
+    // atas dan ke bawah; bergerak tegak -> merambat mendatar ke
+    // kiri dan ke kanan; bergerak serong -> sumbunya menyesuaikan
+    // (tegak lurus serongnya). Jangkauan: cakram radius
     // RIPPLE_R (7 petak huruf) di sekitar kursor. Selesai
     // terbangun, huruf bertahan terang sejenak lalu memudar pulang
     // ke huruf dasar. Sekali per lintasan kursor (spentSet sama
@@ -2701,12 +2704,13 @@ export default function WonderScene({
       // 1) picu gelombang pada HURUF di sekitar kursor: jarak dihitung
       // dalam PETAK (mendatar = jarak antar huruf, tegak = tinggi
       // baris); huruf dalam radius RIPPLE_R dijadwalkan mulai
-      // terbangun menurut posisinya sepanjang sumbu sapuan (tegak
-      // lurus arah gerak kursor): startAt = now + (posisi + R) x
-      // RIPPLE_STAGGER_MS, jadi muka gelombang berjalan menyamping
-      // melintasi cakram dari satu sisi ke sisi lain. SEKALI per
-      // lintasan: slot yang sedang/sudah bermain tidak dipicu lagi
-      // sampai kursor keluar dari jangkauannya.
+      // terbangun menurut JARAKNYA DARI GARIS KURSOR sepanjang sumbu
+      // sapuan (tegak lurus arah gerak kursor): startAt = now +
+      // |jarak| x RIPPLE_STAGGER_MS — posisi kursor adalah pusatnya,
+      // gelombang merambat ke kedua arah berlawanan sekaligus
+      // (koreksi user 16 Nov: bukan sapuan satu arah dari tepi).
+      // SEKALI per lintasan: slot yang sedang/sudah bermain tidak
+      // dipicu lagi sampai kursor keluar dari jangkauannya.
       if (cells.length && cols && m && mouseOnRef.current && !reduced) {
         const rxPx = RIPPLE_R * adv;
         const ryPx = RIPPLE_R * CH;
@@ -2750,11 +2754,13 @@ export default function WonderScene({
                 hc = { slots: new Array(WORD.length).fill(null) };
                 hiRef.current.set(idx, hc);
               }
-              // posisi sepanjang sumbu sapuan (-R..R): menentukan
-              // giliran huruf terbangun saat muka gelombang lewat
-              const sT = dxT * nTx + dyT * nTy;
+              // Jarak dari GARIS KURSOR sepanjang sumbu sapuan:
+              // kursor adalah PUSATNYA — huruf di garis kursor mulai
+              // lebih dulu, lalu gelombang merambat ke KEDUA arah
+              // berlawanan sepanjang sumbu itu sebanding |jarak|.
+              const sT = Math.abs(dxT * nTx + dyT * nTy);
               hc.slots[i] = {
-                startAt: now + (sT + RIPPLE_R) * RIPPLE_STAGGER_MS,
+                startAt: now + sT * RIPPLE_STAGGER_MS,
                 // tepi cakram sedikit lebih redup, pusat paling terang
                 peak: 1 - (dTiles / RIPPLE_R) * 0.25,
               };
