@@ -4035,6 +4035,10 @@ code {
 }
 .proj-list {
   list-style: none;
+  /* padding WAJIB 0: tanpa ini indent bawaan <ul> peramban (40px)
+     menggeser semua kartu ke kanan dari toolbar di atasnya —
+     dikeluhkan user 18 Nov ("bagian kirinya belum rapi"). */
+  padding: 0;
   margin-top: 16px;
   display: flex;
   flex-direction: column;
@@ -4203,6 +4207,7 @@ code {
 }
 .top-list {
   list-style: none;
+  padding: 0;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
