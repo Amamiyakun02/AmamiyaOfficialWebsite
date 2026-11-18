@@ -5132,3 +5132,38 @@ code {
 .dcard-foot-note .proj-links {
   margin: 0;
 }
+
+/* Bingkai chat AI Agent (permintaan user 18 Nov: ukuran tidak
+   selaras — dibuat satu bingkai ber-border agar header, ruang
+   chat, dan composer selaras; area scroll jadi terlihat rapi
+   saat percakapan panjang). */
+.aag-wrap {
+  border: 1px solid #26262c;
+  border-radius: 16px;
+  background: rgba(12, 12, 15, 0.55);
+  overflow: hidden;
+  gap: 0;
+}
+.aag-header {
+  padding: 12px 18px;
+  margin-bottom: 0;
+  background: rgba(255, 255, 255, 0.015);
+}
+.aag-log {
+  border-bottom: 1px solid #202026;
+  scrollbar-width: thin;
+  scrollbar-color: #2e2e35 transparent;
+}
+.aag-log::-webkit-scrollbar {
+  width: 8px;
+}
+.aag-log::-webkit-scrollbar-thumb {
+  background: #2e2e35;
+  border-radius: 99px;
+}
+.aag-log::-webkit-scrollbar-track {
+  background: transparent;
+}
+.aag-composer {
+  padding: 12px 18px 14px;
+}
