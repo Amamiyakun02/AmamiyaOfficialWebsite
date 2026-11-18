@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import {
+  Check,
+  Loader2,
+  Pencil,
+  Trash2,
+  X,
+  Zap,
+} from "lucide-react";
 
 /* Modul 3 System Dashboard — Integrations (spec vault §5; diskusi
    skema 8 Nov 2026). Registry integrasi API lewat
@@ -466,47 +474,53 @@ export default function IntegrationsPanel() {
           {items.map((i) => {
             const tr = testResults[i.id];
             return (
-              <li key={i.id} className="proj-card">
-                <div className="proj-main">
-                  <div className="proj-row1">
-                    <span className="proj-name">{i.name}</span>
-                    <span className="proj-badge">{i.kind}</span>
-                    <span className={`proj-badge proj-badge-${i.status === "active" ? "active" : "archived"}`}>
-                      {i.status}
+                            <li key={i.id} className="dcard">
+                <div className="dcard-head">
+                  <span className="dcard-name">{i.name}</span>
+                  <span className="proj-badge">{i.kind}</span>
+                  <span
+                    className={`proj-badge proj-badge-${i.status === "active" ? "active" : "archived"}`}
+                  >
+                    {i.status}
+                  </span>
+                </div>
+                <p className="dcard-sub">
+                  <span className="proj-path">{i.base_url}</span>
+                </p>
+                <p className="dcard-sub">
+                  {i.auth_type === "none" ? (
+                    <span>Auth: tanpa auth</span>
+                  ) : (
+                    <span>
+                      Auth: {i.auth_type}
+                      {i.auth_env_var ? ` · env ${i.auth_env_var} · ` : " · "}
+                      {i.auth_env_var &&
+                        (i.auth_env_present ? (
+                          <span className="intg-ok">
+                            ✓ tersedia di backend
+                          </span>
+                        ) : (
+                          <span className="intg-bad">
+                            ✗ belum ada di env backend
+                          </span>
+                        ))}
                     </span>
-                  </div>
-                  <p className="proj-meta">
-                    <span className="proj-path">{i.base_url}</span>
-                  </p>
-                  <div className="proj-meta">
-                    {i.auth_type === "none" ? (
-                      <span>Auth: tanpa auth</span>
-                    ) : (
-                      <span>
-                        Auth: {i.auth_type}
-                        {i.auth_env_var ? ` · env ${i.auth_env_var} · ` : " · "}
-                        {i.auth_env_var &&
-                          (i.auth_env_present ? (
-                            <span className="intg-ok">✓ tersedia di backend</span>
-                          ) : (
-                            <span className="intg-bad">
-                              ✗ belum ada di env backend
-                            </span>
-                          ))}
-                      </span>
-                    )}
-                    {i.updated_at && (
-                      <span>Diubah {fmtDateTime(i.updated_at)}</span>
-                    )}
-                  </div>
-                  {i.notes && <p className="proj-desc">{i.notes}</p>}
-                  {(i.last_tested_at || tr) && (
-                    <p className="proj-meta">
-                      {tr ? (
+                  )}
+                  {i.updated_at && (
+                    <span>Diubah {fmtDateTime(i.updated_at)}</span>
+                  )}
+                </p>
+                {i.notes && <p className="dcard-desc">{i.notes}</p>}
+                <div className="dcard-foot">
+                  <span className="dcard-foot-note">
+                    {i.last_tested_at || tr ? (
+                      tr ? (
                         tr.ok ? (
                           <span className="intg-ok">
                             ✓ Test barusan: HTTP {tr.status_code}
-                            {tr.latency_ms != null ? ` · ${tr.latency_ms} ms` : ""}
+                            {tr.latency_ms != null
+                              ? ` · ${tr.latency_ms} ms`
+                              : ""}
                           </span>
                         ) : (
                           <span className="intg-bad">
@@ -524,56 +538,70 @@ export default function IntegrationsPanel() {
                           ✗ Test terakhir gagal ·{" "}
                           {fmtDateTime(i.last_tested_at)}
                         </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-                <div className="proj-actions">
+                      )
+                    ) : (
+                      <span className="aip-dim">Belum pernah dites</span>
+                    )}
+                  </span>
                   {confirmId === i.id ? (
-                    <>
-                      <span className="proj-confirm-text">
+                    <span className="dcard-confirm">
+                      <span className="dcard-confirm-text">
                         Hapus integrasi ini?
                       </span>
                       <button
                         type="button"
-                        className="proj-del-yes"
+                        className="dicon-btn is-danger"
+                        title="Ya, hapus"
+                        aria-label="Ya, hapus"
                         onClick={() => void remove(i)}
                       >
-                        Ya, hapus
+                        <Check size={15} />
                       </button>
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="dicon-btn"
+                        title="Batal"
+                        aria-label="Batal"
                         onClick={() => setConfirmId(null)}
                       >
-                        Batal
+                        <X size={15} />
                       </button>
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span className="dcard-actions">
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="dicon-btn"
+                        title="Test koneksi"
+                        aria-label="Test koneksi"
                         disabled={testingId === i.id}
                         onClick={() => void runTest(i)}
                       >
-                        {testingId === i.id ? "Mengetes…" : "Test"}
+                        {testingId === i.id ? (
+                          <Loader2 size={15} className="aip-spin" />
+                        ) : (
+                          <Zap size={15} />
+                        )}
                       </button>
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="dicon-btn"
+                        title="Ubah"
+                        aria-label="Ubah"
                         onClick={() => openEdit(i)}
                       >
-                        Ubah
+                        <Pencil size={15} />
                       </button>
                       <button
                         type="button"
-                        className="proj-mini proj-del"
+                        className="dicon-btn is-danger"
+                        title="Hapus"
+                        aria-label="Hapus"
                         onClick={() => setConfirmId(i.id)}
                       >
-                        Hapus
+                        <Trash2 size={15} />
                       </button>
-                    </>
+                    </span>
                   )}
                 </div>
               </li>

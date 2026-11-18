@@ -3,6 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import {
+  Ban,
+  Check,
+  KeyRound,
+  Pencil,
+  RotateCcw,
+  Trash2,
+  X,
+} from "lucide-react";
 
 /* Modul 5 System Dashboard — Users (spec vault §7; diskusi skema
    8 Nov 2026). Registry user per project lewat /v1/dashboard/users
@@ -437,119 +446,138 @@ export default function UsersPanel() {
       ) : (
         <ul className="proj-list">
           {items.map((u) => (
-            <li key={u.id} className="proj-card">
-              <div className="proj-main">
-                <div className="proj-row1">
-                  <span className="proj-name">{u.username}</span>
-                  <span className="proj-badge">{u.role}</span>
-                  <span
-                    className={`proj-badge proj-badge-${
-                      u.status === "active" ? "active" : "archived"
-                    }`}
-                  >
-                    {u.status}
-                  </span>
-                </div>
-                <p className="proj-meta">
-                  <span className="proj-path">{u.project}</span>
-                  <span>{u.email}</span>
-                </p>
-                <div className="proj-meta">
-                  <span>
-                    Login terakhir:{" "}
-                    {u.last_login_at
-                      ? fmtDateTime(u.last_login_at)
-                      : "belum pernah"}
-                  </span>
-                  {u.created_at && (
-                    <span>Dibuat {fmtDateTime(u.created_at)}</span>
-                  )}
-                </div>
-                {resetId === u.id && (
-                  <div className="usr-reset">
-                    <input
-                      type="password"
-                      placeholder="Password baru (min. 8 karakter)"
-                      value={resetPw}
-                      onChange={(e) => setResetPw(e.target.value)}
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      className="proj-mini"
-                      disabled={busyId === u.id}
-                      onClick={() => void doReset(u)}
-                    >
-                      Simpan password baru
-                    </button>
-                    <button
-                      type="button"
-                      className="proj-mini"
-                      onClick={() => {
-                        setResetId(null);
-                        setResetPw("");
-                      }}
-                    >
-                      Batal
-                    </button>
-                  </div>
-                )}
+                        <li key={u.id} className="dcard">
+              <div className="dcard-head">
+                <span className="dcard-name">{u.username}</span>
+                <span className="proj-badge">{u.role}</span>
+                <span
+                  className={`proj-badge proj-badge-${
+                    u.status === "active" ? "active" : "archived"
+                  }`}
+                >
+                  {u.status}
+                </span>
               </div>
-              <div className="proj-actions">
+              <p className="dcard-sub">
+                <span className="proj-path">{u.project}</span>
+                <span>{u.email}</span>
+              </p>
+              <p className="dcard-sub">
+                <span>
+                  Login terakhir:{" "}
+                  {u.last_login_at
+                    ? fmtDateTime(u.last_login_at)
+                    : "belum pernah"}
+                </span>
+                {u.created_at && (
+                  <span>Dibuat {fmtDateTime(u.created_at)}</span>
+                )}
+              </p>
+              {resetId === u.id && (
+                <div className="usr-reset">
+                  <input
+                    type="password"
+                    placeholder="Password baru (min. 8 karakter)"
+                    value={resetPw}
+                    onChange={(e) => setResetPw(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="proj-mini"
+                    disabled={busyId === u.id}
+                    onClick={() => void doReset(u)}
+                  >
+                    Simpan password baru
+                  </button>
+                  <button
+                    type="button"
+                    className="proj-mini"
+                    onClick={() => {
+                      setResetId(null);
+                      setResetPw("");
+                    }}
+                  >
+                    Batal
+                  </button>
+                </div>
+              )}
+              <div className="dcard-foot">
+                <span className="dcard-foot-note" />
                 {confirmId === u.id ? (
-                  <>
-                    <span className="proj-confirm-text">Hapus user ini?</span>
+                  <span className="dcard-confirm">
+                    <span className="dcard-confirm-text">Hapus user ini?</span>
                     <button
                       type="button"
-                      className="proj-del-yes"
+                      className="dicon-btn is-danger"
+                      title="Ya, hapus"
+                      aria-label="Ya, hapus"
                       onClick={() => void remove(u)}
                     >
-                      Ya, hapus
+                      <Check size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Batal"
+                      aria-label="Batal"
                       onClick={() => setConfirmId(null)}
                     >
-                      Batal
+                      <X size={15} />
                     </button>
-                  </>
+                  </span>
                 ) : (
-                  <>
+                  <span className="dcard-actions">
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Reset password"
+                      aria-label="Reset password"
                       onClick={() => {
                         setResetId(resetId === u.id ? null : u.id);
                         setResetPw("");
                         setResetMsg(null);
                       }}
                     >
-                      Reset Password
+                      <KeyRound size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title={
+                        u.status === "active" ? "Suspend user" : "Aktifkan user"
+                      }
+                      aria-label={
+                        u.status === "active" ? "Suspend user" : "Aktifkan user"
+                      }
                       disabled={busyId === u.id}
                       onClick={() => void toggleStatus(u)}
                     >
-                      {u.status === "active" ? "Suspend" : "Aktifkan"}
+                      {u.status === "active" ? (
+                        <Ban size={15} />
+                      ) : (
+                        <RotateCcw size={15} />
+                      )}
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Ubah"
+                      aria-label="Ubah"
                       onClick={() => openEdit(u)}
                     >
-                      Ubah
+                      <Pencil size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini proj-del"
+                      className="dicon-btn is-danger"
+                      title="Hapus"
+                      aria-label="Hapus"
                       onClick={() => setConfirmId(u.id)}
                     >
-                      Hapus
+                      <Trash2 size={15} />
                     </button>
-                  </>
+                  </span>
                 )}
               </div>
             </li>

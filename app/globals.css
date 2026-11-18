@@ -4848,11 +4848,12 @@ code {
   margin-top: 12px;
 }
 
-/* Kartu provider AI — desain khusus panel AI Provider (permintaan
-   user 18 Nov: kartu lebih keren; aksi CRUD jadi tombol ikon saja,
-   berjejer di kanan bawah di dalam kartu). Terpisah dari .proj-card
-   modul lain agar tidak ikut berubah. */
-.aip-card {
+/* Sistem kartu dashboard (.dcard) — lahir di panel AI Provider
+   (permintaan user 18 Nov: kartu lebih keren; aksi CRUD jadi tombol
+   ikon saja, berjejer di kanan bawah kartu), lalu DITERAPKAN KE
+   SEMUA MODUL atas pilihan user malam yang sama. Menggantikan
+   tampilan .proj-card lama di panel-panel dashboard. */
+.dcard {
   position: relative;
   list-style: none;
   background: linear-gradient(180deg, #131318, #0e0e11);
@@ -4862,10 +4863,10 @@ code {
   overflow: hidden;
   margin-bottom: 12px;
 }
-.aip-card:last-child {
+.dcard:last-child {
   margin-bottom: 0;
 }
-.aip-card::before {
+.dcard::before {
   content: "";
   position: absolute;
   top: 0;
@@ -4874,28 +4875,28 @@ code {
   height: 2px;
   background: transparent;
 }
-.aip-card.is-defpub::before {
+.dcard.is-defpub::before {
   background: linear-gradient(90deg, #e8b93e, rgba(232, 185, 62, 0));
 }
-.aip-card.is-defadm::before {
+.dcard.is-defadm::before {
   background: linear-gradient(90deg, #a78bfa, rgba(167, 139, 250, 0));
 }
-.aip-card.is-defpub.is-defadm::before {
+.dcard.is-defpub.is-defadm::before {
   background: linear-gradient(90deg, #e8b93e, #a78bfa);
 }
-.aip-card-head {
+.dcard-head {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-.aip-card-name {
+.dcard-name {
   font-size: 15.5px;
   font-weight: 650;
   color: #f4f4f6;
   margin-right: 2px;
 }
-.aip-card-sub {
+.dcard-sub {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
@@ -4932,13 +4933,13 @@ code {
   font-size: 12px;
   color: #8a8a96;
 }
-.aip-card-notes {
+.dcard-desc {
   margin: 10px 0 0;
   font-size: 13px;
   line-height: 1.55;
   color: #c6c6cf;
 }
-.aip-card-foot {
+.dcard-foot {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -4946,24 +4947,24 @@ code {
   padding: 10px 0 12px;
   border-top: 1px solid #202026;
 }
-.aip-card-test {
+.dcard-foot-note {
   font-size: 12.5px;
   min-width: 0;
 }
-.aip-card-actions,
-.aip-card-confirm {
+.dcard-actions,
+.dcard-confirm {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   flex: none;
 }
-.aip-confirm-text {
+.dcard-confirm-text {
   font-size: 12.5px;
   color: #f0b4b4;
   margin-right: 2px;
 }
-.aip-icon-btn {
+.dicon-btn {
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -4976,24 +4977,24 @@ code {
   cursor: pointer;
   transition: all 0.12s ease;
 }
-.aip-icon-btn:hover:not(:disabled) {
+.dicon-btn:hover:not(:disabled) {
   border-color: #3d3d46;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.05);
 }
-.aip-icon-btn:disabled {
+.dicon-btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
-.aip-icon-btn.is-star:hover:not(:disabled) {
+.dicon-btn.is-star:hover:not(:disabled) {
   border-color: rgba(232, 185, 62, 0.6);
   color: #e8b93e;
 }
-.aip-icon-btn.is-crown:hover:not(:disabled) {
+.dicon-btn.is-crown:hover:not(:disabled) {
   border-color: rgba(167, 139, 250, 0.6);
   color: #a78bfa;
 }
-.aip-icon-btn.is-danger:hover:not(:disabled) {
+.dicon-btn.is-danger:hover:not(:disabled) {
   border-color: rgba(248, 113, 113, 0.55);
   color: #f87171;
   background: rgba(248, 113, 113, 0.07);
@@ -5104,4 +5105,30 @@ code {
   max-width: 780px;
   margin: 0 auto;
   padding-top: 10px;
+}
+
+/* Varian tambahan sistem kartu dashboard. */
+.dcard.is-featured::before {
+  background: linear-gradient(90deg, #e8b93e, rgba(232, 185, 62, 0));
+}
+.dicon-btn.is-on-gold {
+  color: #e8b93e;
+  border-color: rgba(232, 185, 62, 0.45);
+  background: rgba(232, 185, 62, 0.08);
+}
+.dicon-btn.sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.dcard-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid #26262c;
+  flex: none;
+}
+.dcard-foot-note .proj-links {
+  margin: 0;
 }

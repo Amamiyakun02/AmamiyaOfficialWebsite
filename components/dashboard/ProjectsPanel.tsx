@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Pencil,
+  Pin,
+  PinOff,
+  Trash2,
+  X,
+} from "lucide-react";
 
 /* Modul 1 System Dashboard — Projects (spec vault §3).
    Registry project di PostgreSQL lewat /v1/dashboard/projects
@@ -328,28 +338,32 @@ export default function ProjectsPanel() {
                 <span className="top-btns">
                   <button
                     type="button"
-                    className="top-btn"
+                    className="dicon-btn sm"
                     disabled={i === 0}
                     onClick={() => void moveFeatured(p, -1)}
                     aria-label={`Naikkan ${p.name}`}
+                    title="Naikkan"
                   >
-                    ↑
+                    <ChevronUp size={14} />
                   </button>
                   <button
                     type="button"
-                    className="top-btn"
+                    className="dicon-btn sm"
                     disabled={i === featuredItems.length - 1}
                     onClick={() => void moveFeatured(p, 1)}
                     aria-label={`Turunkan ${p.name}`}
+                    title="Turunkan"
                   >
-                    ↓
+                    <ChevronDown size={14} />
                   </button>
                   <button
                     type="button"
-                    className="top-btn top-btn-off"
+                    className="dicon-btn sm is-on-gold"
                     onClick={() => void toggleFeatured(p)}
+                    aria-label={`Lepas pin ${p.name}`}
+                    title="Lepas pin"
                   >
-                    Lepas
+                    <PinOff size={14} />
                   </button>
                 </span>
               </li>
@@ -524,118 +538,146 @@ export default function ProjectsPanel() {
       ) : (
         <ul className="proj-list">
           {items.map((p) => (
-            <li key={p.id} className="proj-card">
-              {p.demo_video_thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="proj-thumb"
-                  src={p.demo_video_thumbnail}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-              <div className="proj-main">
-                <div className="proj-row1">
-                  <span className="proj-name">{p.name}</span>
-                  <span className={`proj-badge proj-badge-${p.status}`}>
-                    {p.status}
-                  </span>
-                  {p.is_featured && (
-                    <span className="proj-badge proj-badge-top">
-                      ★ TOP
-                      {p.featured_order ? ` #${p.featured_order}` : ""}
-                    </span>
-                  )}
-                </div>
-                {p.description && (
-                  <p className="proj-desc">{p.description}</p>
+                        <li
+              key={p.id}
+              className={"dcard" + (p.is_featured ? " is-featured" : "")}
+            >
+              <div className="dcard-head">
+                {p.demo_video_thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="dcard-thumb"
+                    src={p.demo_video_thumbnail}
+                    alt=""
+                    loading="lazy"
+                  />
                 )}
-                <div className="proj-meta">
-                  {p.tech_stack && <span>{p.tech_stack}</span>}
-                  {p.local_path && (
-                    <span className="proj-path">{p.local_path}</span>
-                  )}
-                  {p.updated_at && (
-                    <span>Diubah {fmtDate(p.updated_at)}</span>
-                  )}
-                </div>
-                <div className="proj-links">
-                  {p.repo_url && (
-                    <a href={p.repo_url} target="_blank" rel="noreferrer">
-                      Repo
-                    </a>
-                  )}
-                  {p.links?.demo && (
-                    <a href={p.links.demo} target="_blank" rel="noreferrer">
-                      Demo
-                    </a>
-                  )}
-                  {p.links?.docs && (
-                    <a href={p.links.docs} target="_blank" rel="noreferrer">
-                      Docs
-                    </a>
-                  )}
-                  {p.links?.vault && <span>Vault: {p.links.vault}</span>}
-                  {p.demo_video_url && (
-                    <a href={p.demo_video_url} target="_blank" rel="noreferrer">
-                      Video demo
-                    </a>
-                  )}
-                </div>
+                <span className="dcard-name">{p.name}</span>
+                <span className={`proj-badge proj-badge-${p.status}`}>
+                  {p.status}
+                </span>
+                {p.is_featured && (
+                  <span className="proj-badge proj-badge-top">
+                    ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
+                  </span>
+                )}
               </div>
-              <div className="proj-actions">
+              {p.description && <p className="dcard-desc">{p.description}</p>}
+              <p className="dcard-sub">
+                {p.tech_stack && <span>{p.tech_stack}</span>}
+                {p.local_path && (
+                  <span className="proj-path">{p.local_path}</span>
+                )}
+                {p.updated_at && <span>Diubah {fmtDate(p.updated_at)}</span>}
+              </p>
+              <div className="dcard-foot">
+                <div className="dcard-foot-note">
+                  {(p.repo_url ||
+                    p.links?.demo ||
+                    p.links?.docs ||
+                    p.links?.vault ||
+                    p.demo_video_url) && (
+                    <div className="proj-links">
+                      {p.repo_url && (
+                        <a href={p.repo_url} target="_blank" rel="noreferrer">
+                          Repo
+                        </a>
+                      )}
+                      {p.links?.demo && (
+                        <a href={p.links.demo} target="_blank" rel="noreferrer">
+                          Demo
+                        </a>
+                      )}
+                      {p.links?.docs && (
+                        <a href={p.links.docs} target="_blank" rel="noreferrer">
+                          Docs
+                        </a>
+                      )}
+                      {p.links?.vault && <span>Vault: {p.links.vault}</span>}
+                      {p.demo_video_url && (
+                        <a
+                          href={p.demo_video_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Video demo
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {confirmId === p.id ? (
-                  <>
-                    <span className="proj-confirm-text">Hapus project ini?</span>
+                  <span className="dcard-confirm">
+                    <span className="dcard-confirm-text">
+                      Hapus project ini?
+                    </span>
                     <button
                       type="button"
-                      className="proj-del-yes"
+                      className="dicon-btn is-danger"
+                      title="Ya, hapus"
+                      aria-label="Ya, hapus"
                       onClick={() => void remove(p)}
                     >
-                      Ya, hapus
+                      <Check size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Batal"
+                      aria-label="Batal"
                       onClick={() => setConfirmId(null)}
                     >
-                      Batal
+                      <X size={15} />
                     </button>
-                  </>
+                  </span>
                 ) : (
-                  <>
+                  <span className="dcard-actions">
                     <button
                       type="button"
                       className={
-                        p.is_featured ? "proj-mini proj-pin-on" : "proj-mini"
+                        "dicon-btn is-star" +
+                        (p.is_featured ? " is-on-gold" : "")
                       }
-                      disabled={
-                        !p.is_featured && featuredItems.length >= 4
-                      }
+                      disabled={!p.is_featured && featuredItems.length >= 4}
                       title={
                         !p.is_featured && featuredItems.length >= 4
                           ? "Top Project sudah penuh (4) — lepas pin salah satu dulu"
-                          : undefined
+                          : p.is_featured
+                            ? "Lepas pin dari Top Project"
+                            : "Pin ke Top Project"
+                      }
+                      aria-label={
+                        p.is_featured
+                          ? "Lepas pin dari Top Project"
+                          : "Pin ke Top Project"
                       }
                       onClick={() => void toggleFeatured(p)}
                     >
-                      {p.is_featured ? "★ Ter-pin" : "☆ Pin"}
+                      {p.is_featured ? (
+                        <PinOff size={15} />
+                      ) : (
+                        <Pin size={15} />
+                      )}
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Ubah"
+                      aria-label="Ubah"
                       onClick={() => openEdit(p)}
                     >
-                      Ubah
+                      <Pencil size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini proj-del"
+                      className="dicon-btn is-danger"
+                      title="Hapus"
+                      aria-label="Hapus"
                       onClick={() => setConfirmId(p.id)}
                     >
-                      Hapus
+                      <Trash2 size={15} />
                     </button>
-                  </>
+                  </span>
                 )}
               </div>
             </li>

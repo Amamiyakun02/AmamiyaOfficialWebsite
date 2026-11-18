@@ -4,6 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import {
+  Check,
+  EyeOff,
+  Pencil,
+  Send,
+  Trash2,
+  X,
+} from "lucide-react";
 
 /* Modul 4 System Dashboard — Contents (spec vault §6; diskusi skema
    8 Nov 2026). Artikel markdown (project/blog/paper/research) lewat
@@ -466,83 +474,106 @@ export default function ContentsPanel() {
       ) : (
         <ul className="proj-list">
           {items.map((c) => (
-            <li key={c.id} className="proj-card">
-              <div className="proj-main">
-                <div className="proj-row1">
-                  <span className="proj-name">{c.title}</span>
-                  <span className="proj-badge">{c.type}</span>
-                  <span
-                    className={`proj-badge proj-badge-${
-                      c.status === "published" ? "active" : "idea"
-                    }`}
-                  >
-                    {c.status}
-                  </span>
-                </div>
-                <p className="proj-meta">
-                  <span className="proj-path">/contents/{c.slug}</span>
-                  {c.published_at && (
-                    <span>Terbit {fmtDateTime(c.published_at)}</span>
-                  )}
-                  {c.updated_at && (
-                    <span>Diubah {fmtDateTime(c.updated_at)}</span>
-                  )}
-                </p>
-                {c.summary && <p className="proj-desc">{c.summary}</p>}
-                {c.tags.length > 0 && (
-                  <div className="cnt-tags">
-                    {c.tags.map((t) => (
-                      <span key={t} className="cnt-tag">
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                        <li key={c.id} className="dcard">
+              <div className="dcard-head">
+                <span className="dcard-name">{c.title}</span>
+                <span className="proj-badge">{c.type}</span>
+                <span
+                  className={`proj-badge proj-badge-${
+                    c.status === "published" ? "active" : "idea"
+                  }`}
+                >
+                  {c.status}
+                </span>
               </div>
-              <div className="proj-actions">
+              <p className="dcard-sub">
+                <span className="proj-path">/contents/{c.slug}</span>
+                {c.published_at && (
+                  <span>Terbit {fmtDateTime(c.published_at)}</span>
+                )}
+                {c.updated_at && (
+                  <span>Diubah {fmtDateTime(c.updated_at)}</span>
+                )}
+              </p>
+              {c.summary && <p className="dcard-desc">{c.summary}</p>}
+              {c.tags.length > 0 && (
+                <div className="cnt-tags">
+                  {c.tags.map((t) => (
+                    <span key={t} className="cnt-tag">
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="dcard-foot">
+                <span className="dcard-foot-note" />
                 {confirmId === c.id ? (
-                  <>
-                    <span className="proj-confirm-text">Hapus konten ini?</span>
+                  <span className="dcard-confirm">
+                    <span className="dcard-confirm-text">
+                      Hapus konten ini?
+                    </span>
                     <button
                       type="button"
-                      className="proj-del-yes"
+                      className="dicon-btn is-danger"
+                      title="Ya, hapus"
+                      aria-label="Ya, hapus"
                       onClick={() => void remove(c)}
                     >
-                      Ya, hapus
+                      <Check size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Batal"
+                      aria-label="Batal"
                       onClick={() => setConfirmId(null)}
                     >
-                      Batal
+                      <X size={15} />
                     </button>
-                  </>
+                  </span>
                 ) : (
-                  <>
+                  <span className="dcard-actions">
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title={
+                        c.status === "published"
+                          ? "Tarik (jadikan draft)"
+                          : "Terbitkan"
+                      }
+                      aria-label={
+                        c.status === "published"
+                          ? "Tarik (jadikan draft)"
+                          : "Terbitkan"
+                      }
                       disabled={busyId === c.id}
                       onClick={() => void togglePublish(c)}
                     >
-                      {c.status === "published" ? "Tarik" : "Terbitkan"}
+                      {c.status === "published" ? (
+                        <EyeOff size={15} />
+                      ) : (
+                        <Send size={15} />
+                      )}
                     </button>
                     <button
                       type="button"
-                      className="proj-mini"
+                      className="dicon-btn"
+                      title="Ubah"
+                      aria-label="Ubah"
                       onClick={() => openEdit(c)}
                     >
-                      Ubah
+                      <Pencil size={15} />
                     </button>
                     <button
                       type="button"
-                      className="proj-mini proj-del"
+                      className="dicon-btn is-danger"
+                      title="Hapus"
+                      aria-label="Hapus"
                       onClick={() => setConfirmId(c.id)}
                     >
-                      Hapus
+                      <Trash2 size={15} />
                     </button>
-                  </>
+                  </span>
                 )}
               </div>
             </li>

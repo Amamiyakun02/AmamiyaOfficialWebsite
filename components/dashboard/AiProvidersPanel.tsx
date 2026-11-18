@@ -856,13 +856,13 @@ export default function AiProvidersPanel() {
               <li
                 key={p.id}
                 className={
-                  "aip-card" +
+                  "dcard" +
                   (p.is_default ? " is-defpub" : "") +
                   (p.is_default_admin ? " is-defadm" : "")
                 }
               >
-                <div className="aip-card-head">
-                  <span className="aip-card-name">{p.name}</span>
+                <div className="dcard-head">
+                  <span className="dcard-name">{p.name}</span>
                   <span className="proj-badge">{p.adapter}</span>
                   <span
                     className={`proj-badge proj-badge-${p.status === "active" ? "active" : "archived"}`}
@@ -891,7 +891,7 @@ export default function AiProvidersPanel() {
                     <span className="proj-badge">Tanpa env key</span>
                   )}
                 </div>
-                <p className="aip-card-sub">
+                <p className="dcard-sub">
                   <span className="aip-mono">{p.provider_key}</span>
                   {p.base_url && (
                     <span className="aip-mono">{p.base_url}</span>
@@ -912,9 +912,9 @@ export default function AiProvidersPanel() {
                       : ""}
                   </span>
                 </div>
-                {p.notes && <p className="aip-card-notes">{p.notes}</p>}
-                <div className="aip-card-foot">
-                  <span className="aip-card-test">
+                {p.notes && <p className="dcard-desc">{p.notes}</p>}
+                <div className="dcard-foot">
+                  <span className="dcard-foot-note">
                     {p.last_tested_at || tr ? (
                       tr ? (
                         tr.ok ? (
@@ -949,13 +949,13 @@ export default function AiProvidersPanel() {
                     )}
                   </span>
                   {confirmId === p.id ? (
-                    <span className="aip-card-confirm">
-                      <span className="aip-confirm-text">
+                    <span className="dcard-confirm">
+                      <span className="dcard-confirm-text">
                         Hapus {p.name}?
                       </span>
                       <button
                         type="button"
-                        className="aip-icon-btn is-danger"
+                        className="dicon-btn is-danger"
                         title="Ya, hapus (soft delete)"
                         aria-label="Ya, hapus"
                         onClick={() => void remove(p)}
@@ -964,7 +964,7 @@ export default function AiProvidersPanel() {
                       </button>
                       <button
                         type="button"
-                        className="aip-icon-btn"
+                        className="dicon-btn"
                         title="Batal"
                         aria-label="Batal"
                         onClick={() => setConfirmId(null)}
@@ -973,10 +973,10 @@ export default function AiProvidersPanel() {
                       </button>
                     </span>
                   ) : (
-                    <span className="aip-card-actions">
+                    <span className="dcard-actions">
                       <button
                         type="button"
-                        className="aip-icon-btn"
+                        className="dicon-btn"
                         title="Tes koneksi"
                         aria-label="Tes koneksi"
                         disabled={testingId === p.id}
@@ -991,7 +991,7 @@ export default function AiProvidersPanel() {
                       {!p.is_default && (
                         <button
                           type="button"
-                          className="aip-icon-btn is-star"
+                          className="dicon-btn is-star"
                           title="Jadikan default publik"
                           aria-label="Jadikan default publik"
                           disabled={defaultingId === p.id}
@@ -1003,7 +1003,7 @@ export default function AiProvidersPanel() {
                       {!p.is_default_admin && (
                         <button
                           type="button"
-                          className="aip-icon-btn is-crown"
+                          className="dicon-btn is-crown"
                           title="Jadikan default admin"
                           aria-label="Jadikan default admin"
                           disabled={defaultingId === p.id}
@@ -1014,7 +1014,7 @@ export default function AiProvidersPanel() {
                       )}
                       <button
                         type="button"
-                        className="aip-icon-btn"
+                        className="dicon-btn"
                         title="Ubah"
                         aria-label="Ubah"
                         onClick={() => openEdit(p)}
@@ -1023,7 +1023,7 @@ export default function AiProvidersPanel() {
                       </button>
                       <button
                         type="button"
-                        className="aip-icon-btn is-danger"
+                        className="dicon-btn is-danger"
                         title="Hapus"
                         aria-label="Hapus"
                         onClick={() => setConfirmId(p.id)}
