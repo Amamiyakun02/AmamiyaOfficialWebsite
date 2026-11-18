@@ -3482,6 +3482,8 @@ code {
   /* Dilebarkan (koreksi user 18 Nov): 340px terasa sempit di dalam
      lubang grid yang lebar. */
   width: min(440px, 88vw);
+  /* Semua elemen di dalam form rata tengah (permintaan user). */
+  text-align: center;
   margin: 14px auto 0;
   /* Dipadatkan (5 Nov): di layar laptop pendek (864 CSS px) form
      versi longgar menjorok melewati tepi bawah panggung. */
@@ -3490,7 +3492,6 @@ code {
   border: 1px solid #26262b;
   border-radius: 18px;
   backdrop-filter: blur(10px);
-  text-align: left;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3518,6 +3519,8 @@ code {
   color: #9a9aa2;
 }
 .login-field input {
+  /* Teks yang diketik di input ikut rata tengah. */
+  text-align: center;
   background: #0c0c0e;
   border: 1px solid #26262b;
   border-radius: 10px;
