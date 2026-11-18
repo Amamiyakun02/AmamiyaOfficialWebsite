@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import FormModal from "./FormModal";
 
 /* Modul 5 System Dashboard — Users (spec vault §7; diskusi skema
    8 Nov 2026). Registry user per project lewat /v1/dashboard/users
@@ -318,16 +319,32 @@ export default function UsersPanel() {
       </div>
 
       {editing && (
-        <form
-          className="proj-form"
+        <FormModal
+          title={editing === "new" ? "Tambah User" : `Ubah: ${editing.username}`}
+          onClose={() => setEditing(null)}
           onSubmit={(e) => {
             e.preventDefault();
             void save();
           }}
+          footer={
+            <>
+              {formError && <p className="proj-error">{formError}</p>}
+              <div className="proj-form-actions dash-modal-actions">
+                <button type="submit" className="proj-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan"}
+                </button>
+                <button
+                  type="button"
+                  className="proj-cancel"
+                  onClick={() => setEditing(null)}
+                  disabled={saving}
+                >
+                  Batal
+                </button>
+              </div>
+            </>
+          }
         >
-          <h3 className="proj-form-title">
-            {editing === "new" ? "Tambah User" : `Ubah: ${editing.username}`}
-          </h3>
           <div className="proj-grid">
             <label className="proj-field">
               <span>Project *</span>
@@ -404,21 +421,7 @@ export default function UsersPanel() {
               </p>
             )}
           </div>
-          {formError && <p className="proj-error">{formError}</p>}
-          <div className="proj-form-actions">
-            <button type="submit" className="proj-save" disabled={saving}>
-              {saving ? "Menyimpan…" : "Simpan"}
-            </button>
-            <button
-              type="button"
-              className="proj-cancel"
-              onClick={() => setEditing(null)}
-              disabled={saving}
-            >
-              Batal
-            </button>
-          </div>
-        </form>
+        </FormModal>
       )}
 
       {resetMsg && <p className="usr-msg">{resetMsg}</p>}

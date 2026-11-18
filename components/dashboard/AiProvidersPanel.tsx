@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
 import { apiUrl } from "@/lib/api";
+import FormModal from "./FormModal";
 
 /* Modul AI Agent — AI Providers (backend commit f3c00f4 CRUD +
    1dcf88b publish; skema registri provider di vault System
@@ -431,22 +431,6 @@ export default function AiProvidersPanel() {
   const editingProvider =
     editing && editing !== "new" ? (editing as Provider) : null;
 
-  /* Modal formulir: Escape menutup + kunci gulir kolom utama
-     selama modal terbuka. */
-  useEffect(() => {
-    if (!editing) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setEditing(null);
-    };
-    document.addEventListener("keydown", onKey);
-    const main = document.querySelector<HTMLElement>(".dash-main");
-    const prevOverflow = main?.style.overflow ?? "";
-    if (main) main.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      if (main) main.style.overflow = prevOverflow;
-    };
-  }, [editing]);
 
   return (
     <div className="proj">
@@ -586,43 +570,35 @@ export default function AiProvidersPanel() {
         </button>
       </div>
 
-      {/* Formulir tambah/edit — modal ukuran sedang (permintaan
-          user 18 Nov), menggantikan formulir sebaris. */}
+      {/* Formulir tambah/edit — modal ukuran sedang bersama
+          (FormModal), sama seperti modul dashboard lainnya. */}
       {editing && (
-        <div
-          className="aip-modal-overlay"
-          onClick={() => setEditing(null)}
+        <FormModal
+          title={editing === "new" ? "Tambah Provider" : "Ubah Provider"}
+          onClose={() => setEditing(null)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save();
+          }}
+          footer={
+            <>
+              {formError && <p className="proj-error">{formError}</p>}
+              <div className="proj-form-actions dash-modal-actions">
+                <button type="submit" className="proj-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan"}
+                </button>
+                <button
+                  type="button"
+                  className="proj-cancel"
+                  onClick={() => setEditing(null)}
+                >
+                  Batal
+                </button>
+              </div>
+            </>
+          }
         >
-          <div
-            className="aip-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label={
-              editing === "new" ? "Tambah Provider" : "Ubah Provider"
-            }
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="aip-modal-head">
-              <h3>
-                {editing === "new" ? "Tambah Provider" : "Ubah Provider"}
-              </h3>
-              <button
-                type="button"
-                className="dash-icon-btn"
-                onClick={() => setEditing(null)}
-                aria-label="Tutup"
-              >
-                <X size={17} />
-              </button>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void save();
-              }}
-            >
-              <div className="aip-modal-body">
-                <div className="proj-grid">
+          <div className="proj-grid">
             <label className="proj-field">
               <span>Nama *</span>
               <input
@@ -795,29 +771,7 @@ export default function AiProvidersPanel() {
               />
             </label>
                 </div>
-              </div>
-              <div className="aip-modal-foot">
-                {formError && <p className="proj-error">{formError}</p>}
-                <div className="proj-form-actions aip-modal-actions">
-                  <button
-                    type="submit"
-                    className="proj-save"
-                    disabled={saving}
-                  >
-                    {saving ? "Menyimpan…" : "Simpan"}
-                  </button>
-                  <button
-                    type="button"
-                    className="proj-cancel"
-                    onClick={() => setEditing(null)}
-                  >
-                    Batal
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {error && <p className="proj-error">{error}</p>}

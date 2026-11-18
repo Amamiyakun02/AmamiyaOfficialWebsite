@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import FormModal from "./FormModal";
 
 /* Modul 3 System Dashboard — Integrations (spec vault §5; diskusi
    skema 8 Nov 2026). Registry integrasi API lewat
@@ -330,18 +331,32 @@ export default function IntegrationsPanel() {
       </div>
 
       {editing && (
-        <form
-          className="proj-form"
+        <FormModal
+          title={editing === "new" ? "Tambah Integrasi" : `Ubah: ${editing.name}`}
+          onClose={() => setEditing(null)}
           onSubmit={(e) => {
             e.preventDefault();
             void save();
           }}
+          footer={
+            <>
+              {formError && <p className="proj-error">{formError}</p>}
+              <div className="proj-form-actions dash-modal-actions">
+                <button type="submit" className="proj-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan"}
+                </button>
+                <button
+                  type="button"
+                  className="proj-cancel"
+                  onClick={() => setEditing(null)}
+                  disabled={saving}
+                >
+                  Batal
+                </button>
+              </div>
+            </>
+          }
         >
-          <h3 className="proj-form-title">
-            {editing === "new"
-              ? "Tambah Integrasi"
-              : `Ubah: ${editing.name}`}
-          </h3>
           <div className="proj-grid">
             <label className="proj-field proj-span2">
               <span>Nama *</span>
@@ -434,21 +449,7 @@ export default function IntegrationsPanel() {
               />
             </label>
           </div>
-          {formError && <p className="proj-error">{formError}</p>}
-          <div className="proj-form-actions">
-            <button type="submit" className="proj-save" disabled={saving}>
-              {saving ? "Menyimpan…" : "Simpan"}
-            </button>
-            <button
-              type="button"
-              className="proj-cancel"
-              onClick={() => setEditing(null)}
-              disabled={saving}
-            >
-              Batal
-            </button>
-          </div>
-        </form>
+        </FormModal>
       )}
 
       {error && <p className="proj-error">{error}</p>}

@@ -4709,8 +4709,8 @@ code {
   margin-top: 3px;
 }
 
-/* Modal formulir AI Providers — ukuran sedang, di atas segalanya. */
-.aip-modal-overlay {
+/* Modal formulir dashboard bersama (FormModal) — ukuran sedang. */
+.dash-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -4721,7 +4721,7 @@ code {
   justify-content: center;
   padding: 24px 16px;
 }
-.aip-modal {
+.dash-modal {
   width: min(640px, 100%);
   max-height: calc(100dvh - 48px);
   display: flex;
@@ -4730,48 +4730,48 @@ code {
   border: 1px solid #2a2a30;
   border-radius: 16px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
-  animation: aip-modal-in 0.16s ease;
+  animation: dash-modal-in 0.16s ease;
 }
-@keyframes aip-modal-in {
+@keyframes dash-modal-in {
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .aip-modal {
+  .dash-modal {
     animation: none;
   }
 }
-.aip-modal form {
+.dash-modal form {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
-.aip-modal-head {
+.dash-modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px 0;
 }
-.aip-modal-head h3 {
+.dash-modal-head h3 {
   font-size: 16px;
   font-weight: 700;
   color: #f2f2f4;
 }
-.aip-modal-body {
+.dash-modal-body {
   padding: 16px 20px 20px;
   overflow-y: auto;
   min-height: 0;
 }
-.aip-modal-foot {
+.dash-modal-foot {
   border-top: 1px solid #232329;
   padding: 14px 20px 16px;
 }
-.aip-modal-actions {
+.dash-modal-actions {
   margin-top: 0;
 }
-.aip-modal-foot .proj-error {
+.dash-modal-foot .proj-error {
   margin: 0 0 10px;
 }
