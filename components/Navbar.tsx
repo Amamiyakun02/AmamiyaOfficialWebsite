@@ -111,9 +111,12 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  // Halaman login dashboard tampil TANPA navbar (permintaan user
-  // 5 Nov): entrance-nya memenuhi layar penuh seperti gambar acuan.
-  if (pathname === "/dashboard/login") return null;
+  // Seluruh area dashboard tampil TANPA navbar situs: login sejak
+  // 5 Nov (permintaan user, entrance memenuhi layar), dan sejak
+  // rombak bersidebar 18 Nov halaman dashboardnya juga — ia aplikasi
+  // platform mandiri dengan sidebar + tautan "Situs utama" sendiri.
+  if (pathname === "/dashboard" || pathname?.startsWith("/dashboard/"))
+    return null;
 
   return (
     <>

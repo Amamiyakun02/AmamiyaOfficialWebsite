@@ -3573,120 +3573,316 @@ code {
    user 5 Nov). Komponen latar menggambar di seluruh bidang bila
    scroller-nya tidak punya .hero-wrap, jadi cukup wadah gulir +
    aturan z-index kembaran .home-scroll. */
-.dash-scroll {
+/* ===== System Dashboard: kerangka aplikasi bersidebar =====
+   Rombak 18 Nov 2026 (permintaan user): dari halaman bertab atas
+   menjadi aplikasi platform — sidebar navigasi tetap di kiri,
+   konten di kolom utama yang bergulir sendiri. Tema tetap: gelap
+   situs (#08080a), hairline #26262b, aksen biru #0081fb dipakai
+   hemat (ikon aktif & fokus), tanpa gradien hiasan. */
+.dash-app {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  position: relative;
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  background: #08080a;
 }
-.dash-scroll > *:not(.ambient-bg) {
-  position: relative;
-  z-index: 1;
+.dash-app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .dash-checking {
-  text-align: center;
   color: #9a9aa2;
   font-size: 14px;
-  padding-top: 120px;
 }
-.dash-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 34px 22px 70px;
-}
-.dash-head {
+
+/* --- Sidebar --- */
+.dash-side {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 22px;
+  background: #0a0a0d;
+  border-right: 1px solid #1d1d21;
+  padding: 20px 14px 16px;
+  min-height: 0;
+  overflow-y: auto;
 }
-.dash-title {
-  font-size: 30px;
-  font-weight: 800;
+.dash-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 2px 8px;
+}
+.dash-brand-mark {
+  border-radius: 8px;
+  border: 1px solid #26262b;
+  flex: none;
+}
+.dash-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.dash-brand-name {
+  font-size: 14.5px;
+  font-weight: 700;
   color: #f2f2f4;
+  letter-spacing: -0.01em;
 }
-.dash-sub {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #9a9aa2;
+.dash-brand-sub {
+  font-size: 11.5px;
+  color: #8a8a92;
 }
-.dash-head-right {
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dash-nav-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #62626b;
+  padding: 0 10px 8px;
+}
+.dash-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #a7a7ae;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
 }
-.dash-user {
-  font-size: 13px;
-  color: #c9c9cf;
-  border: 1px solid #26262b;
-  background: rgba(16, 16, 19, 0.7);
-  border-radius: 999px;
-  padding: 7px 13px;
+.dash-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e8e8ec;
 }
-.dash-logout {
+.dash-nav-icon {
+  flex: none;
+  color: #7c7c85;
+}
+.dash-nav-item:hover .dash-nav-icon {
+  color: #a7a7ae;
+}
+.dash-nav-on {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.dash-nav-on:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.dash-nav-on .dash-nav-icon,
+.dash-nav-on:hover .dash-nav-icon {
+  color: #5ea9ff;
+}
+.dash-side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dash-site-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #a7a7ae;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.dash-site-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e8e8ec;
+}
+.dash-site-link-arrow {
+  margin-left: auto;
+  color: #62626b;
+}
+.dash-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #1d1d21;
+  padding: 13px 6px 2px;
+}
+.dash-avatar {
+  width: 29px;
+  height: 29px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #17171b;
+  border: 1px solid #2a2a30;
+  color: #e8e8ec;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.dash-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+.dash-user-meta b {
   font-size: 13px;
   font-weight: 600;
   color: #f2f2f4;
-  background: rgba(16, 16, 19, 0.7);
-  border: 1px solid #26262b;
-  border-radius: 999px;
-  padding: 8px 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-user-meta i {
+  font-style: normal;
+  font-size: 11px;
+  color: #8a8a92;
+}
+.dash-icon-btn {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a7a7ae;
   cursor: pointer;
 }
-.dash-logout:hover {
-  border-color: #3a3a41;
-  background: rgba(24, 24, 28, 0.85);
+.dash-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: #26262b;
 }
-.dash-tabs {
+
+/* --- Kolom utama --- */
+.dash-main {
+  position: relative;
+  min-height: 0;
+  overflow-y: auto;
+}
+.dash-main > *:not(.ambient-bg) {
+  position: relative;
+  z-index: 1;
+}
+.dash-content {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 30px 34px 64px;
+}
+.dash-page-head {
+  margin-bottom: 24px;
+}
+.dash-page-title {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 26px 0 18px;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f2f2f4;
 }
-.dash-tab {
-  font-size: 14px;
-  font-weight: 600;
-  color: #c9c9cf;
-  background: rgba(16, 16, 19, 0.7);
-  border: 1px solid #26262b;
-  border-radius: 999px;
-  padding: 9px 16px;
-  cursor: pointer;
+.dash-page-title-icon {
+  color: #5ea9ff;
+  flex: none;
 }
-.dash-tab:hover {
-  border-color: #3a3a41;
-  color: #fff;
-}
-.dash-tab-on {
-  background: #0081fb;
-  border-color: transparent;
-  color: #fff;
+.dash-page-desc {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #9a9aa2;
+  max-width: 68ch;
 }
 .dash-panel {
-  background: rgba(14, 14, 17, 0.8);
-  border: 1px solid #26262b;
-  border-radius: 18px;
-  padding: 26px;
-}
-.dash-panel-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f2f2f4;
-}
-.dash-panel-desc {
-  margin-top: 10px;
-  font-size: 14px;
-  line-height: 1.65;
-  color: #c9c9cf;
-  max-width: 65ch;
+  min-width: 0;
 }
 .dash-panel-note {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px dashed #26262b;
-  font-size: 13px;
+  border: 1px dashed #2a2a30;
+  border-radius: 12px;
+  padding: 22px;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: #8a8a92;
+  background: rgba(14, 14, 17, 0.55);
+}
+
+/* Fokus yang terlihat untuk semua kontrol di dalam dashboard. */
+.dash-app button:focus-visible,
+.dash-app a:focus-visible,
+.dash-app input:focus-visible,
+.dash-app select:focus-visible,
+.dash-app textarea:focus-visible {
+  outline: 2px solid rgba(0, 129, 251, 0.65);
+  outline-offset: 1px;
+}
+
+/* Layar sempit: sidebar menjadi bilah atas — merek + baris
+   pengguna menyatu, navigasi modul menggelinding horizontal. */
+@media (max-width: 920px) {
+  .dash-app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .dash-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 12px 14px;
+    border-right: none;
+    border-bottom: 1px solid #1d1d21;
+    overflow: visible;
+  }
+  .dash-brand {
+    padding: 0;
+  }
+  .dash-nav {
+    order: 3;
+    flex-direction: row;
+    gap: 4px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .dash-nav-label {
+    display: none;
+  }
+  .dash-nav-item {
+    flex: none;
+    padding: 7px 11px;
+  }
+  .dash-side-foot {
+    margin: 0 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .dash-site-link {
+    display: none;
+  }
+  .dash-user-row {
+    border-top: none;
+    padding: 0;
+  }
+  .dash-user-meta {
+    display: none;
+  }
+  .dash-content {
+    padding: 22px 16px 52px;
+  }
 }
 
 /* ===== Dashboard Modul 1: Projects ===== */
@@ -3730,7 +3926,7 @@ code {
   background: #0081fb;
   color: #fff;
   border: none;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 9px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -3792,7 +3988,7 @@ code {
   background: #0081fb;
   color: #fff;
   border: none;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 9px 18px;
   font-size: 14px;
   font-weight: 600;
@@ -3807,7 +4003,7 @@ code {
   background: rgba(16, 16, 19, 0.7);
   color: #c9c9cf;
   border: 1px solid #26262b;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
   cursor: pointer;
@@ -3948,7 +4144,7 @@ code {
   background: rgba(255, 90, 90, 0.14);
   color: #ff8585;
   border: 1px solid rgba(255, 90, 90, 0.5);
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 600;
@@ -4031,7 +4227,7 @@ code {
   background: transparent;
   color: #c9c9cf;
   border: 1px solid #3a3a41;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 4px 11px;
   font-size: 12.5px;
   font-weight: 600;
@@ -4162,7 +4358,7 @@ code {
   color: #c9c9cf;
   background: rgba(16, 16, 19, 0.7);
   border: 1px solid #26262b;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 7px 15px;
   font-size: 13.5px;
   cursor: pointer;
@@ -4172,9 +4368,9 @@ code {
   color: #fff;
 }
 .logs-subtab-on {
-  background: #0081fb;
-  border-color: #0081fb;
-  color: #fff;
+  background: rgba(0, 129, 251, 0.14);
+  border-color: rgba(0, 129, 251, 0.45);
+  color: #7dbcff;
 }
 .logs-count {
   font-size: 13px;
