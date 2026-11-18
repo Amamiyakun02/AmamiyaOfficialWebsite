@@ -5236,6 +5236,37 @@ code {
   gap: 12px;
   margin-bottom: 12px;
 }
+/* Statistik mini dari endpoint overview (data per giliran):
+   request/token hari ini, sesi aktif, giliran gagal, durasi. */
+.ov-ministats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.ov-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+}
+.ov-mini-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b8b93;
+}
+.ov-mini-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f2f2f4;
+  line-height: 1.15;
+}
+.ov-dot.is-error {
+  background: #d9a13b;
+}
 .ov-kpi {
   display: flex;
   flex-direction: column;

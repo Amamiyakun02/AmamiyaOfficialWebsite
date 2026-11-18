@@ -12,21 +12,22 @@ import {
   PlugZap,
   RotateCcw,
   Send,
+  Timer,
+  TriangleAlert,
   Users,
 } from "lucide-react";
 
 /* Modul Overview — halaman utama dashboard (permintaan user
    18 Nov): ringkasan statistik sesuai fitur yang sudah dibangun.
-   Semua angka diagregasi di sisi klien dari endpoint yang SUDAH
-   ada — tidak ada endpoint backend baru:
-   - Sesi/request/token/biaya: GET /v1/dashboard/ai-sessions
-     (tabel audit ai_sessions: prompt_count per sesi = jumlah
-     request, total_tokens & total_cost kumulatif per sesi).
-   - Status instance + model berjalan: GET /v1/opencode/status.
-   - Model default per role: GET /v1/dashboard/ai-providers.
-   - Ringkasan modul: list projects/integrations/users/contents.
-   Setiap sumber dimuat terpisah (allSettled): satu sumber gagal
-   tidak menjatuhkan seluruh halaman, kartunya saja yang kosong. */
+   Sumber UTAMA: GET /v1/dashboard/overview (backend commit
+   00acc3f, kontrak di vault "Dashboard Overview - Kebutuhan Data
+   Backend"): total sepanjang masa dari ai_sessions; harian 14
+   hari (WIB), rincian token input/output/cache, giliran gagal &
+   latensi dari pencatatan per giliran ai_turns. Kedua sumber itu
+   SENGAJA tidak dijumlahkan silang.
+   FALLBACK masa transisi (spec §5): bila endpoint gagal, panel
+   kembali ke agregasi klien dari endpoint lama (ai-sessions dkk)
+   dan widget yang datanya tidak ada di jalur lama disembunyikan. */
 
 type AiSession = {
   id: number;
@@ -56,6 +57,50 @@ type Provider = {
 
 type InstStatus = { status?: string; default_model?: string };
 
+type OverviewData = {
+  generated_at?: string;
+  ai: {
+    sessions_total: number;
+    sessions_public: number;
+    sessions_admin: number;
+    requests_total: number;
+    tokens_total: number;
+    tokens_input: number;
+    tokens_output: number;
+    tokens_cache_read: number;
+    cost_total_usd: number;
+    requests_today: number;
+    tokens_today: number;
+    sessions_active_today: number;
+    turns_failed_total: number;
+    avg_turn_duration_ms: number;
+    by_model: {
+      model: string;
+      sessions: number;
+      requests: number;
+      tokens: number;
+      cost_usd: number;
+    }[];
+    by_tool: { tool: string; count: number }[];
+    daily: {
+      date: string;
+      requests: number;
+      tokens: number;
+      cost_usd: number;
+      sessions_active: number;
+    }[];
+    recent_sessions: AiSession[];
+  };
+  instances: { public?: InstStatus; admin?: InstStatus };
+  modules: {
+    projects: { total: number; featured: number };
+    integrations: { total: number; active: number };
+    users: { total: number; active: number };
+    contents: { total: number; published: number };
+    providers: { total: number };
+  };
+};
+
 type Counts = {
   projects: { total: number; featured: number } | null;
   integrations: { total: number; active: number } | null;
@@ -78,6 +123,12 @@ function fmtTokens(n: number): string {
 
 function fmtCost(v: number): string {
   return `$${v < 1 ? v.toFixed(4) : v.toFixed(2)}`;
+}
+
+function fmtDuration(ms: number): string {
+  if (!ms) return "—";
+  if (ms < 1000) return `${Math.round(ms)} ms`;
+  return `${(ms / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} dtk`;
 }
 
 function relTime(iso: string | null): string {
@@ -114,6 +165,9 @@ export default function OverviewPanel({
 }: {
   onNavigate: (tab: string) => void;
 }) {
+  const [ov, setOv] = useState<OverviewData | null>(null);
+  const [mode, setMode] = useState<"endpoint" | "fallback" | null>(null);
+  // Keadaan jalur fallback (agregasi klien).
   const [sessions, setSessions] = useState<AiSession[] | null>(null);
   const [providers, setProviders] = useState<Provider[] | null>(null);
   const [inst, setInst] = useState<{ public?: InstStatus; admin?: InstStatus } | null>(null);
@@ -127,9 +181,7 @@ export default function OverviewPanel({
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const token = localStorage.getItem("dashboard_token") || "";
+  const loadFallback = useCallback(async (token: string) => {
     const auth = { headers: { "X-Admin-Token": token } };
     const get = async (path: string, withAuth = true) => {
       const res = await fetch(apiUrl(path), withAuth ? auth : undefined);
@@ -198,48 +250,80 @@ export default function OverviewPanel({
         },
       }));
     }
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const token = localStorage.getItem("dashboard_token") || "";
+    try {
+      const res = await fetch(apiUrl("/v1/dashboard/overview"), {
+        headers: { "X-Admin-Token": token },
+      });
+      if (!res.ok) throw new Error("overview");
+      setOv((await res.json()) as OverviewData);
+      setMode("endpoint");
+    } catch {
+      await loadFallback(token);
+      setMode("fallback");
+    }
     setUpdatedAt(new Date());
     setLoading(false);
-  }, []);
+  }, [loadFallback]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // ── Agregasi sesi AI ──
+  // ── Nilai tampilan: endpoint lebih dulu, fallback agregasi ──
+  const ai = ov?.ai;
   const ses = sessions || [];
-  const totalRequests = ses.reduce((a, s) => a + (s.prompt_count || 0), 0);
-  const totalTokens = ses.reduce((a, s) => a + (s.total_tokens || 0), 0);
-  const totalCost = ses.reduce((a, s) => a + (s.total_cost || 0), 0);
-  const pubCount = ses.filter((s) => s.role !== "admin").length;
-  const admCount = ses.length - pubCount;
-  const today = new Date();
-  const activeToday = ses.filter((s) => sameDay(s.updated_at, today)).length;
+  const fbRequests = ses.reduce((a, s) => a + (s.prompt_count || 0), 0);
+  const fbTokens = ses.reduce((a, s) => a + (s.total_tokens || 0), 0);
+  const fbCost = ses.reduce((a, s) => a + (s.total_cost || 0), 0);
 
-  const byModel = (() => {
-    const map = new Map<
-      string,
-      { model: string; sessions: number; requests: number; tokens: number }
-    >();
-    for (const s of ses) {
-      const key = s.model || "(tidak tercatat)";
-      const cur = map.get(key) || { model: key, sessions: 0, requests: 0, tokens: 0 };
-      cur.sessions += 1;
-      cur.requests += s.prompt_count || 0;
-      cur.tokens += s.total_tokens || 0;
-      map.set(key, cur);
-    }
-    return [...map.values()].sort((a, b) => b.tokens - a.tokens);
-  })();
+  const kpiSessions = ai ? ai.sessions_total : sessions ? ses.length : null;
+  const kpiPub = ai ? ai.sessions_public : sessions ? ses.filter((s) => s.role !== "admin").length : null;
+  const kpiAdm = ai ? ai.sessions_admin : sessions ? ses.filter((s) => s.role === "admin").length : null;
+  const kpiRequests = ai ? ai.requests_total : sessions ? fbRequests : null;
+  const kpiTokens = ai ? ai.tokens_total : sessions ? fbTokens : null;
+  const kpiCost = ai ? ai.cost_total_usd : sessions ? fbCost : null;
 
-  const byTool = (() => {
-    const map = new Map<string, number>();
-    for (const s of ses)
-      for (const t of s.tools_used || []) map.set(t, (map.get(t) || 0) + 1);
-    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  })();
+  const byModel = ai
+    ? ai.by_model
+    : (() => {
+        const map = new Map<
+          string,
+          { model: string; sessions: number; requests: number; tokens: number; cost_usd: number }
+        >();
+        for (const s of ses) {
+          const key = s.model || "(tidak tercatat)";
+          const cur = map.get(key) || { model: key, sessions: 0, requests: 0, tokens: 0, cost_usd: 0 };
+          cur.sessions += 1;
+          cur.requests += s.prompt_count || 0;
+          cur.tokens += s.total_tokens || 0;
+          cur.cost_usd += s.total_cost || 0;
+          map.set(key, cur);
+        }
+        return [...map.values()].sort((a, b) => b.tokens - a.tokens);
+      })();
 
-  const last7 = (() => {
+  const byTool: { tool: string; count: number }[] = ai
+    ? ai.by_tool
+    : (() => {
+        const map = new Map<string, number>();
+        for (const s of ses)
+          for (const t of s.tools_used || []) map.set(t, (map.get(t) || 0) + 1);
+        return [...map.entries()]
+          .map(([tool, count]) => ({ tool, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+      })();
+
+  // Grafik harian: endpoint = request per hari SUNGGUHAN (ai_turns,
+  // 7 hari terakhir dari daily[14]); fallback = sesi aktif per hari.
+  const dailyReq = ai ? ai.daily.slice(-7) : [];
+  const maxReq = Math.max(1, ...dailyReq.map((d) => d.requests));
+  const fbDays = (() => {
     const days: { label: string; count: number }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -251,32 +335,62 @@ export default function OverviewPanel({
     }
     return days;
   })();
-  const maxDay = Math.max(1, ...last7.map((d) => d.count));
+  const maxDay = Math.max(1, ...fbDays.map((d) => d.count));
+
+  const recent: AiSession[] | null = ai
+    ? ai.recent_sessions
+    : sessions;
 
   const defPub = providers?.find((p) => p.is_default) || null;
   const defAdm = providers?.find((p) => p.is_default_admin) || null;
+  const instOf = (role: "public" | "admin"): InstStatus | undefined =>
+    ai ? ov?.instances?.[role] : inst?.[role];
 
-  const instRow = (
-    label: string,
-    st: InstStatus | undefined,
-    prov: Provider | null,
-  ) => (
-    <div className="ov-inst-row">
-      <span
-        className={`ov-dot${st?.status === "ok" ? " is-ok" : " is-down"}`}
-        aria-hidden="true"
-      />
-      <div className="ov-inst-meta">
-        <b>{label}</b>
-        <span>
-          {st?.status === "ok" ? "Terhubung" : "Tidak terjangkau"}
-          {" · "}
-          {st?.default_model || prov?.default_model || "model belum diketahui"}
-          {prov ? ` · ${prov.name}` : ""}
-        </span>
+  const tokenSplit = ai
+    ? [
+        { label: "Input", value: ai.tokens_input },
+        { label: "Output", value: ai.tokens_output },
+        { label: "Cache read", value: ai.tokens_cache_read },
+      ]
+    : [];
+  const tokenSplitTotal = tokenSplit.reduce((a, t) => a + t.value, 0);
+
+  const instRow = (label: string, role: "public" | "admin", prov: Provider | null) => {
+    const st = instOf(role);
+    const statusText =
+      st?.status === "ok"
+        ? "Terhubung"
+        : st?.status === "error"
+          ? "Error"
+          : "Tidak terjangkau";
+    return (
+      <div className="ov-inst-row">
+        <span
+          className={`ov-dot${st?.status === "ok" ? " is-ok" : st?.status === "error" ? " is-error" : " is-down"}`}
+          aria-hidden="true"
+        />
+        <div className="ov-inst-meta">
+          <b>{label}</b>
+          <span>
+            {statusText}
+            {" · "}
+            {st?.default_model || prov?.default_model || "model belum diketahui"}
+            {!ai && prov ? ` · ${prov.name}` : ""}
+          </span>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const modCounts = ai
+    ? {
+        projects: ov!.modules.projects,
+        integrations: ov!.modules.integrations,
+        users: ov!.modules.users,
+        contents: ov!.modules.contents,
+        providers: ov!.modules.providers,
+      }
+    : counts;
 
   const modules: {
     id: string;
@@ -289,41 +403,41 @@ export default function OverviewPanel({
       id: "projects",
       label: "Projects",
       icon: FolderGit2,
-      value: counts.projects ? fmtNum(counts.projects.total) : "—",
-      sub: counts.projects
-        ? `${counts.projects.featured}/4 di Top Project`
+      value: modCounts.projects ? fmtNum(modCounts.projects.total) : "—",
+      sub: modCounts.projects
+        ? `${modCounts.projects.featured}/4 di Top Project`
         : "belum termuat",
     },
     {
       id: "integrations",
       label: "Integrations",
       icon: Blocks,
-      value: counts.integrations ? fmtNum(counts.integrations.total) : "—",
-      sub: counts.integrations
-        ? `${counts.integrations.active} aktif`
+      value: modCounts.integrations ? fmtNum(modCounts.integrations.total) : "—",
+      sub: modCounts.integrations
+        ? `${modCounts.integrations.active} aktif`
         : "belum termuat",
     },
     {
       id: "contents",
       label: "Contents",
       icon: FileText,
-      value: counts.contents ? fmtNum(counts.contents.total) : "—",
-      sub: counts.contents
-        ? `${counts.contents.published} published`
+      value: modCounts.contents ? fmtNum(modCounts.contents.total) : "—",
+      sub: modCounts.contents
+        ? `${modCounts.contents.published} published`
         : "belum termuat",
     },
     {
       id: "users",
       label: "Users",
       icon: Users,
-      value: counts.users ? fmtNum(counts.users.total) : "—",
-      sub: counts.users ? `${counts.users.active} aktif` : "belum termuat",
+      value: modCounts.users ? fmtNum(modCounts.users.total) : "—",
+      sub: modCounts.users ? `${modCounts.users.active} aktif` : "belum termuat",
     },
     {
       id: "providers",
       label: "AI Provider",
       icon: PlugZap,
-      value: counts.providers ? fmtNum(counts.providers.total) : "—",
+      value: modCounts.providers ? fmtNum(modCounts.providers.total) : "—",
       sub: "provider terdaftar",
     },
   ];
@@ -337,6 +451,9 @@ export default function OverviewPanel({
             : updatedAt
               ? `Diperbarui ${updatedAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`
               : ""}
+          {mode === "fallback" && !loading
+            ? " · mode transisi (agregasi klien — endpoint overview belum tersedia)"
+            : ""}
         </span>
         <button
           type="button"
@@ -353,45 +470,74 @@ export default function OverviewPanel({
       <div className="ov-kpis">
         <div className="ov-card ov-kpi">
           <span className="ov-kpi-icon"><MessagesSquare size={17} /></span>
-          <b className="ov-kpi-value">{sessions ? fmtNum(ses.length) : "—"}</b>
+          <b className="ov-kpi-value">{kpiSessions !== null ? fmtNum(kpiSessions) : "—"}</b>
           <span className="ov-kpi-label">Sesi AI tercatat</span>
           <span className="ov-kpi-sub">
-            {sessions ? `${pubCount} publik · ${admCount} admin` : "belum termuat"}
+            {kpiPub !== null ? `${kpiPub} publik · ${kpiAdm} admin` : "belum termuat"}
           </span>
         </div>
         <div className="ov-card ov-kpi">
           <span className="ov-kpi-icon"><Send size={17} /></span>
-          <b className="ov-kpi-value">{sessions ? fmtNum(totalRequests) : "—"}</b>
+          <b className="ov-kpi-value">{kpiRequests !== null ? fmtNum(kpiRequests) : "—"}</b>
           <span className="ov-kpi-label">Total request</span>
           <span className="ov-kpi-sub">
-            {sessions ? `${activeToday} sesi aktif hari ini` : "belum termuat"}
+            {ai
+              ? `${fmtNum(ai.requests_today)} request hari ini`
+              : kpiSessions !== null
+                ? "dari semua sesi tercatat"
+                : "belum termuat"}
           </span>
         </div>
         <div className="ov-card ov-kpi">
           <span className="ov-kpi-icon"><Coins size={17} /></span>
-          <b className="ov-kpi-value">{sessions ? fmtTokens(totalTokens) : "—"}</b>
+          <b className="ov-kpi-value">{kpiTokens !== null ? fmtTokens(kpiTokens) : "—"}</b>
           <span className="ov-kpi-label">Token terpakai</span>
           <span className="ov-kpi-sub">
-            {sessions
-              ? totalRequests > 0
-                ? `rata-rata ${fmtTokens(Math.round(totalTokens / totalRequests))}/request`
-                : "belum ada request"
-              : "belum termuat"}
+            {ai
+              ? `hari ini ${fmtTokens(ai.tokens_today)}`
+              : kpiRequests
+                ? `rata-rata ${fmtTokens(Math.round((kpiTokens || 0) / kpiRequests))}/request`
+                : "belum ada request"}
           </span>
         </div>
         <div className="ov-card ov-kpi">
           <span className="ov-kpi-icon"><CircleDollarSign size={17} /></span>
-          <b className="ov-kpi-value">{sessions ? fmtCost(totalCost) : "—"}</b>
+          <b className="ov-kpi-value">{kpiCost !== null ? fmtCost(kpiCost) : "—"}</b>
           <span className="ov-kpi-label">Estimasi biaya</span>
           <span className="ov-kpi-sub">kumulatif semua sesi</span>
         </div>
       </div>
 
+      {ai && (
+        <div className="ov-ministats">
+          <div className="ov-card ov-mini">
+            <span className="ov-mini-label"><Send size={13} /> Request hari ini</span>
+            <b className="ov-mini-value">{fmtNum(ai.requests_today)}</b>
+          </div>
+          <div className="ov-card ov-mini">
+            <span className="ov-mini-label"><Coins size={13} /> Token hari ini</span>
+            <b className="ov-mini-value">{fmtTokens(ai.tokens_today)}</b>
+          </div>
+          <div className="ov-card ov-mini">
+            <span className="ov-mini-label"><MessagesSquare size={13} /> Sesi aktif hari ini</span>
+            <b className="ov-mini-value">{fmtNum(ai.sessions_active_today)}</b>
+          </div>
+          <div className="ov-card ov-mini">
+            <span className="ov-mini-label"><TriangleAlert size={13} /> Giliran gagal</span>
+            <b className="ov-mini-value">{fmtNum(ai.turns_failed_total)}</b>
+          </div>
+          <div className="ov-card ov-mini">
+            <span className="ov-mini-label"><Timer size={13} /> Rata-rata durasi</span>
+            <b className="ov-mini-value">{fmtDuration(ai.avg_turn_duration_ms)}</b>
+          </div>
+        </div>
+      )}
+
       <div className="ov-grid2">
         <div className="ov-card">
           <h3 className="ov-card-title">Agent &amp; model aktif</h3>
-          {instRow("Agent publik (Assistant)", inst?.public, defPub)}
-          {instRow("Agent administrator", inst?.admin, defAdm)}
+          {instRow("Agent publik (Assistant)", "public", defPub)}
+          {instRow("Agent administrator", "admin", defAdm)}
           <p className="ov-note">
             Model default diatur di tab AI Provider lalu di-Publish ke
             config opencode.
@@ -409,13 +555,14 @@ export default function OverviewPanel({
                   <span className="ov-model-name">{m.model}</span>
                   <span className="ov-model-stat">
                     {fmtTokens(m.tokens)} token · {m.requests} req · {m.sessions} sesi
+                    {m.cost_usd ? ` · ${fmtCost(m.cost_usd)}` : ""}
                   </span>
                 </div>
                 <div className="ov-bar-track">
                   <div
                     className="ov-bar-fill"
                     style={{
-                      width: `${totalTokens > 0 ? Math.max(2, (m.tokens / totalTokens) * 100) : 0}%`,
+                      width: `${kpiTokens ? Math.max(2, (m.tokens / kpiTokens) * 100) : 0}%`,
                     }}
                   />
                 </div>
@@ -427,19 +574,42 @@ export default function OverviewPanel({
 
       <div className="ov-grid2">
         <div className="ov-card">
-          <h3 className="ov-card-title">Sesi aktif 7 hari terakhir</h3>
-          <div className="ov-bars" role="img" aria-label="Grafik sesi aktif per hari">
-            {last7.map((d, i) => (
-              <div key={i} className="ov-bar-col">
-                <span className="ov-bar-value">{d.count}</span>
+          <h3 className="ov-card-title">
+            {ai ? "Request per hari (7 hari terakhir)" : "Sesi aktif 7 hari terakhir"}
+          </h3>
+          {ai ? (
+            <div className="ov-bars" role="img" aria-label="Grafik request per hari">
+              {dailyReq.map((d) => (
                 <div
-                  className="ov-bar"
-                  style={{ height: `${Math.max(4, (d.count / maxDay) * 64)}px` }}
-                />
-                <span className="ov-bar-label">{d.label}</span>
-              </div>
-            ))}
-          </div>
+                  key={d.date}
+                  className="ov-bar-col"
+                  title={`${d.date}: ${d.requests} request · ${fmtTokens(d.tokens)} token · ${fmtCost(d.cost_usd)}`}
+                >
+                  <span className="ov-bar-value">{d.requests}</span>
+                  <div
+                    className="ov-bar"
+                    style={{ height: `${Math.max(4, (d.requests / maxReq) * 64)}px` }}
+                  />
+                  <span className="ov-bar-label">
+                    {new Date(`${d.date}T00:00:00`).toLocaleDateString("id-ID", { weekday: "short" })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="ov-bars" role="img" aria-label="Grafik sesi aktif per hari">
+              {fbDays.map((d, i) => (
+                <div key={i} className="ov-bar-col">
+                  <span className="ov-bar-value">{d.count}</span>
+                  <div
+                    className="ov-bar"
+                    style={{ height: `${Math.max(4, (d.count / maxDay) * 64)}px` }}
+                  />
+                  <span className="ov-bar-label">{d.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="ov-card">
@@ -448,15 +618,60 @@ export default function OverviewPanel({
             <p className="ov-empty">Belum ada pemakaian tool tercatat.</p>
           ) : (
             <div className="ov-chips">
-              {byTool.map(([name, count]) => (
-                <span key={name} className="ov-chip">
-                  {name} <b>{count}×</b>
+              {byTool.map((t) => (
+                <span key={t.tool} className="ov-chip">
+                  {t.tool} <b>{t.count}×</b>
                 </span>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {ai && (
+        <div className="ov-grid2">
+          <div className="ov-card">
+            <h3 className="ov-card-title">Rincian token per jenis</h3>
+            {tokenSplitTotal === 0 ? (
+              <p className="ov-empty">
+                Belum ada pencatatan per giliran — rincian ini terisi
+                sejak pencatatan ai_turns aktif (18 Nov 2026 malam).
+              </p>
+            ) : (
+              tokenSplit.map((t) => (
+                <div key={t.label} className="ov-model-row">
+                  <div className="ov-model-head">
+                    <span className="ov-model-name">{t.label}</span>
+                    <span className="ov-model-stat">
+                      {fmtTokens(t.value)} token ·{" "}
+                      {((t.value / tokenSplitTotal) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%
+                    </span>
+                  </div>
+                  <div className="ov-bar-track">
+                    <div
+                      className="ov-bar-fill"
+                      style={{ width: `${Math.max(2, (t.value / tokenSplitTotal) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="ov-card">
+            <h3 className="ov-card-title">Tentang data ini</h3>
+            <p className="ov-note">
+              Total sesi, request, token &amp; biaya adalah akumulasi
+              sepanjang masa dari catatan audit sesi. Angka harian,
+              rincian token per jenis, giliran gagal, dan durasi
+              berasal dari pencatatan per giliran yang aktif sejak
+              18 Nov 2026 malam — hari-hari sebelumnya bernilai 0 pada
+              grafik harian, dan kedua sumber ini memang tidak
+              dijumlahkan silang.
+            </p>
+          </div>
+        </div>
+      )}
 
       <h3 className="ov-section-title">Modul</h3>
       <div className="ov-modules">
@@ -482,15 +697,15 @@ export default function OverviewPanel({
 
       <h3 className="ov-section-title">Sesi terbaru</h3>
       <div className="ov-card ov-sessions">
-        {sessions === null ? (
+        {recent === null ? (
           <p className="ov-empty">Memuat…</p>
-        ) : ses.length === 0 ? (
+        ) : recent.length === 0 ? (
           <p className="ov-empty">
             Belum ada sesi tercatat. Sesi Assistant publik dan AI Agent
             admin akan muncul di sini setelah giliran chat pertama selesai.
           </p>
         ) : (
-          ses.slice(0, 6).map((s) => (
+          recent.slice(0, 6).map((s) => (
             <div key={s.id} className="ov-session-row">
               <span
                 className={`ov-role${s.role === "admin" ? " is-admin" : ""}`}
