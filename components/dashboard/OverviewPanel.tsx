@@ -535,9 +535,9 @@ export default function OverviewPanel({
 
       <div className="ov-grid2">
         <div className="ov-card">
-          <h3 className="ov-card-title">Agent &amp; model aktif</h3>
-          {instRow("Agent publik (Assistant)", "public", defPub)}
-          {instRow("Agent administrator", "admin", defAdm)}
+          <h3 className="ov-card-title">Agent &amp; Model Aktif</h3>
+          {instRow("Agent Publik (Assistant)", "public", defPub)}
+          {instRow("Agent Administrator", "admin", defAdm)}
           <p className="ov-note">
             Model default diatur di tab AI Provider lalu di-Publish ke
             config opencode.
