@@ -2009,6 +2009,11 @@ code {
   color: #f87171;
   font-size: 12.5px;
 }
+.hitl-hint {
+  margin-bottom: 9px;
+  color: #9a9aa2;
+  font-size: 12px;
+}
 .hitl-waiting {
   display: flex;
   align-items: center;
