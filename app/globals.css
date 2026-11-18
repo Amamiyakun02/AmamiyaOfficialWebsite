@@ -1841,6 +1841,182 @@ code {
   0%, 80%, 100% { opacity: 0.25; }
   40% { opacity: 1; }
 }
+
+/* Kartu HITL Assistant (18 Nov 2026): pertanyaan & persetujuan agent
+   di dalam aliran chat — bahasa visual mengikuti gelembung AI. */
+.hitl-card {
+  background: #141416;
+  border: 1px solid #2c2c33;
+  border-left: 3px solid #0081fb;
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  min-width: min(430px, 72vw);
+}
+.hitl-card.is-answered {
+  border-left-color: #34d399;
+  opacity: 0.85;
+}
+.hitl-card.is-cancelled {
+  border-left-color: #3a3a41;
+  color: #8b8b94;
+  font-size: 13.5px;
+  padding: 10px 14px;
+}
+.hitl-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: #f2f2f4;
+  margin-bottom: 10px;
+}
+.hitl-head svg {
+  color: #5ea9ff;
+  flex: none;
+}
+.hitl-field {
+  margin-bottom: 14px;
+}
+.hitl-field-title {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #e6e6e9;
+  margin-bottom: 3px;
+}
+.hitl-field-desc {
+  font-size: 12.5px;
+  color: #9a9aa2;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.hitl-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.hitl-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
+  padding: 9px 12px;
+  border: 1px solid #2c2c33;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e6e6e9;
+  cursor: pointer;
+  font: inherit;
+}
+.hitl-option:hover:not(:disabled) {
+  border-color: #4a4a55;
+}
+.hitl-option.is-selected {
+  border-color: #0081fb;
+  background: rgba(0, 129, 251, 0.14);
+}
+.hitl-option:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+.hitl-option-label {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.hitl-option-desc {
+  font-size: 12px;
+  color: #9a9aa2;
+}
+.hitl-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid #2c2c33;
+  background: rgba(13, 13, 16, 0.85);
+  color: #f2f2f4;
+  font: inherit;
+  font-size: 14px;
+}
+.hitl-input:focus {
+  outline: none;
+  border-color: #0081fb;
+}
+.hitl-input:disabled {
+  opacity: 0.7;
+}
+.hitl-action {
+  font-weight: 600;
+  color: #e6e6e9;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+.hitl-resources {
+  margin: 0 0 6px;
+  padding-left: 18px;
+  color: #9a9aa2;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.hitl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.hitl-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #2c2c33;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e6e6e9;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hitl-btn:hover:not(:disabled) {
+  border-color: #4a4a55;
+}
+.hitl-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.hitl-btn-primary {
+  background: #0081fb;
+  border-color: #0081fb;
+  color: #fff;
+}
+.hitl-btn-primary:hover:not(:disabled) {
+  background: #0064e0;
+  border-color: #0064e0;
+}
+.hitl-btn-danger {
+  color: #f87171;
+}
+.hitl-done {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #34d399;
+  font-size: 13px;
+  font-weight: 600;
+}
+.hitl-error {
+  margin-top: 9px;
+  color: #f87171;
+  font-size: 12.5px;
+}
+.hitl-waiting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 6px 40px;
+  color: #9a9aa2;
+  font-size: 13px;
+}
 .chat-suggest {
   display: flex;
   flex-wrap: wrap;

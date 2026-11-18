@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // WAJIB false (18 Nov 2026): kompresi bawaan server Next menahan
+  // (buffer) respons streaming SSE dari proksi /v1/* selama klien
+  // menegosiasikan gzip — semua browser melakukannya — sehingga
+  // aliran chat Assistant (terutama jeda tunggu HITL yang hanya
+  // berisi heartbeat) tidak pernah tiba sampai respons berakhir.
+  // Terbukti: curl Accept-Encoding gzip lewat :3200 diam total,
+  // identity mengalir normal. Di Vercel kompresi HTML ditangani
+  // edge platform, jadi mematikan ini tidak merugikan produksi.
+  compress: false,
   // Situs kini SATU halaman per section — alamat lama dari struktur
   // multi-halaman (tahap 1) diarahkan ke jangkar section yang setara.
   // API backend Vienna Agent diteruskan ke backend lokal (default

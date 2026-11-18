@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, SendHorizontal, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  SendHorizontal,
+  Trash2,
+  MessageCircle,
+  ShieldAlert,
+  Check,
+  Hourglass,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { apiUrl } from "@/lib/api";
 
@@ -21,6 +29,10 @@ import { apiUrl } from "@/lib/api";
    - aliran SSE: {meta: {session_id}} di awal, {text} berkali-kali,
      {meta: {tool}} saat agent memanggil tool, ditutup
      {done, session_id, tools_used, model, usage}; gagal = {error}.
+   - HITL (body hitl: true): meta {hitl_form} / {hitl_permission}
+     dirender sebagai kartu yang dijawab lewat endpoint reply
+     backend (agent lanjut di aliran yang sama); kartu tertunda
+     dipulihkan dari GET forms/permissions sesudah reload.
    - teks yang diterima diungkap bertahap seperti mengetik oleh loop
      rAF (startReveal); pesan AI selesai dirender markdown betulan
      (react-markdown).
@@ -62,6 +74,45 @@ type Message = {
   text: string;
   timestamp: string;
   meta?: MessageMeta;
+};
+
+/* ---- HITL (18 Nov 2026): pertanyaan & persetujuan dari agent ----
+   Backend meneruskan form.created sebagai meta.hitl_form dan
+   permission.asked sebagai meta.hitl_permission di aliran stream
+   yang sama (body chat membawa hitl: true). Jawaban dikirim ke
+   endpoint reply backend; agent melanjutkan TANPA request chat
+   baru. Bentuk objek mengikuti serve apa adanya. */
+type HitlOption = { value: string; label: string; description?: string };
+type HitlField = {
+  key: string;
+  title: string;
+  description?: string;
+  type?: string;
+  required?: boolean;
+  options?: HitlOption[];
+};
+type HitlFormData = {
+  id: string;
+  sessionID?: string;
+  title?: string;
+  fields: HitlField[];
+};
+type HitlPermissionData = {
+  id: string;
+  sessionID?: string;
+  action: string;
+  resources?: string[];
+};
+type HitlCardStatus = "pending" | "sending" | "answered" | "cancelled";
+type HitlCard = {
+  kind: "form" | "permission";
+  id: string;
+  sessionId: string;
+  form?: HitlFormData;
+  permission?: HitlPermissionData;
+  status: HitlCardStatus;
+  decision?: string;
+  error?: string;
 };
 
 const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4));
@@ -201,6 +252,147 @@ export default function AssistantChat() {
     }
   }, []);
 
+  /* ---- HITL: kartu pertanyaan/persetujuan + jawabannya ---- */
+  const [hitlCards, setHitlCards] = useState<HitlCard[]>([]);
+  const [hitlAnswers, setHitlAnswers] = useState<
+    Record<string, Record<string, string>>
+  >({});
+
+  const patchCard = useCallback((id: string, patch: Partial<HitlCard>) => {
+    setHitlCards((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    );
+  }, []);
+
+  // Pemulihan sesudah reload: gambar ulang kartu yang masih tertunda
+  // di sesi tersimpan (agent bisa saja masih menunggu jawabannya).
+  useEffect(() => {
+    if (!hydrated) return;
+    let sid: string | null = null;
+    try {
+      sid = localStorage.getItem(SESSION_KEY);
+    } catch {
+      /* abaikan */
+    }
+    if (!sid) return;
+    let cancelled = false;
+    const getJson = (path: string) =>
+      fetch(apiUrl(path))
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+    void (async () => {
+      const [fr, pr] = await Promise.all([
+        getJson(`/v1/opencode/sessions/${sid}/forms`),
+        getJson(`/v1/opencode/sessions/${sid}/permissions`),
+      ]);
+      if (cancelled) return;
+      const cards: HitlCard[] = [];
+      for (const f of (fr?.forms ?? []) as HitlFormData[]) {
+        if (f?.id) {
+          cards.push({
+            kind: "form",
+            id: f.id,
+            sessionId: f.sessionID || sid!,
+            form: f,
+            status: "pending",
+          });
+        }
+      }
+      for (const p of (pr?.permissions ?? []) as HitlPermissionData[]) {
+        if (p?.id) {
+          cards.push({
+            kind: "permission",
+            id: p.id,
+            sessionId: p.sessionID || sid!,
+            permission: p,
+            status: "pending",
+          });
+        }
+      }
+      if (cards.length > 0) {
+        setHitlCards((prev) => [
+          ...prev,
+          ...cards.filter((c) => !prev.some((x) => x.id === c.id)),
+        ]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated]);
+
+  const replyForm = useCallback(
+    async (card: HitlCard) => {
+      patchCard(card.id, { status: "sending", error: undefined });
+      try {
+        const res = await fetch(
+          apiUrl(
+            `/v1/opencode/sessions/${card.sessionId}/forms/${card.id}/reply`,
+          ),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answer: hitlAnswers[card.id] ?? {} }),
+          },
+        );
+        if (!res.ok) throw new Error(`server menjawab ${res.status}`);
+        patchCard(card.id, { status: "answered" });
+      } catch {
+        patchCard(card.id, {
+          status: "pending",
+          error: "Gagal mengirim jawaban — coba lagi.",
+        });
+      }
+    },
+    [hitlAnswers, patchCard],
+  );
+
+  const cancelForm = useCallback(
+    async (card: HitlCard) => {
+      patchCard(card.id, { status: "sending", error: undefined });
+      try {
+        const res = await fetch(
+          apiUrl(`/v1/opencode/sessions/${card.sessionId}/forms/${card.id}`),
+          { method: "DELETE" },
+        );
+        if (!res.ok) throw new Error(`server menjawab ${res.status}`);
+        setHitlCards((prev) => prev.filter((c) => c.id !== card.id));
+      } catch {
+        patchCard(card.id, {
+          status: "pending",
+          error: "Gagal membatalkan — coba lagi.",
+        });
+      }
+    },
+    [patchCard],
+  );
+
+  const replyPermission = useCallback(
+    async (card: HitlCard, decision: "once" | "always" | "reject") => {
+      patchCard(card.id, { status: "sending", error: undefined });
+      try {
+        const res = await fetch(
+          apiUrl(
+            `/v1/opencode/sessions/${card.sessionId}/permissions/${card.id}/reply`,
+          ),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ decision }),
+          },
+        );
+        if (!res.ok) throw new Error(`server menjawab ${res.status}`);
+        patchCard(card.id, { status: "answered", decision });
+      } catch {
+        patchCard(card.id, {
+          status: "pending",
+          error: "Gagal mengirim keputusan — coba lagi.",
+        });
+      }
+    },
+    [patchCard],
+  );
+
   const send = useCallback(
     async (rawText: string) => {
       const text = rawText.trim();
@@ -226,6 +418,13 @@ export default function AssistantChat() {
 
       const finishWith = (finalText: string) => {
         setStreamId(null);
+        // Giliran berakhir: kartu HITL yang belum terjawab kehilangan
+        // alirannya — tandai tidak berlaku agar tidak dijawab percuma.
+        setHitlCards((prev) =>
+          prev.map((c) =>
+            c.status === "pending" ? { ...c, status: "cancelled" as const } : c,
+          ),
+        );
         const latencyMs = Math.round(performance.now() - startTime);
         const tk = resolveTokens(streamUsage, text + finalText);
         setMessages((prev) => {
@@ -305,6 +504,9 @@ export default function AssistantChat() {
           body: JSON.stringify({
             prompt: text,
             session_id: localStorage.getItem(SESSION_KEY) || undefined,
+            // HITL aktif: pertanyaan/persetujuan agent diteruskan
+            // sebagai kartu yang bisa dijawab di UI ini.
+            hitl: true,
           }),
         });
         if (!response.ok) {
@@ -375,13 +577,59 @@ export default function AssistantChat() {
             if (parsed.meta && typeof parsed.meta === "object") {
               // Event meta pertama membawa session_id sesi ini;
               // meta {tool} hanya penanda aktivitas — tidak ditampilkan.
-              const sid = (parsed.meta as { session_id?: unknown }).session_id;
+              const meta = parsed.meta as Record<string, unknown>;
+              const sid = meta.session_id;
               if (typeof sid === "string" && sid) {
                 try {
                   localStorage.setItem(SESSION_KEY, sid);
                 } catch {
                   /* abaikan */
                 }
+              }
+              // HITL: agent bertanya / meminta persetujuan. Aliran
+              // tetap terbuka (heartbeat backend) — kartu dirender
+              // dan dijawab lewat endpoint reply, bukan chat baru.
+              const form = meta.hitl_form as HitlFormData | undefined;
+              if (form && typeof form.id === "string") {
+                const card: HitlCard = {
+                  kind: "form",
+                  id: form.id,
+                  sessionId:
+                    form.sessionID ||
+                    (typeof sid === "string" ? sid : null) ||
+                    localStorage.getItem(SESSION_KEY) ||
+                    "",
+                  form,
+                  status: "pending",
+                };
+                setHitlCards((prev) => [
+                  ...prev.filter((c) => c.id !== card.id),
+                  card,
+                ]);
+              }
+              if (typeof meta.hitl_form_cancelled === "string") {
+                const cid = meta.hitl_form_cancelled;
+                setHitlCards((prev) => prev.filter((c) => c.id !== cid));
+              }
+              const perm = meta.hitl_permission as
+                | HitlPermissionData
+                | undefined;
+              if (perm && typeof perm.id === "string") {
+                const card: HitlCard = {
+                  kind: "permission",
+                  id: perm.id,
+                  sessionId:
+                    perm.sessionID ||
+                    (typeof sid === "string" ? sid : null) ||
+                    localStorage.getItem(SESSION_KEY) ||
+                    "",
+                  permission: perm,
+                  status: "pending",
+                };
+                setHitlCards((prev) => [
+                  ...prev.filter((c) => c.id !== card.id),
+                  card,
+                ]);
               }
               continue;
             }
@@ -448,6 +696,8 @@ export default function AssistantChat() {
     } catch {
       /* abaikan */
     }
+    setHitlCards([]);
+    setHitlAnswers({});
     const fresh = [welcomeMessage()];
     setMessages(fresh);
     persist(fresh);
@@ -515,6 +765,213 @@ export default function AssistantChat() {
                 <span className="dot" />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Kartu HITL: pertanyaan (form) & persetujuan (permission)
+            dari agent, dijawab di aliran yang sama. */}
+        {hitlCards.map((card) => (
+          <div key={card.id} className="msg msg-ai">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+            <div className="msg-col">
+              {card.status === "cancelled" ? (
+                <div className="hitl-card is-cancelled">
+                  {card.kind === "form"
+                    ? "Pertanyaan ini sudah tidak berlaku."
+                    : "Permintaan persetujuan ini sudah tidak berlaku."}
+                </div>
+              ) : card.kind === "form" && card.form ? (
+                <div
+                  className={
+                    card.status === "answered"
+                      ? "hitl-card is-answered"
+                      : "hitl-card"
+                  }
+                >
+                  <div className="hitl-head">
+                    <MessageCircle size={15} />
+                    <span>{card.form.title || "Pertanyaan dari agent"}</span>
+                  </div>
+                  {card.form.fields.map((f) => {
+                    const locked = card.status !== "pending";
+                    const value = hitlAnswers[card.id]?.[f.key] ?? "";
+                    return (
+                      <div key={f.key} className="hitl-field">
+                        <div className="hitl-field-title">{f.title}</div>
+                        {f.description && (
+                          <div className="hitl-field-desc">{f.description}</div>
+                        )}
+                        {f.options && f.options.length > 0 ? (
+                          <div className="hitl-options">
+                            {f.options.map((o) => (
+                              <button
+                                key={o.value}
+                                type="button"
+                                disabled={locked}
+                                className={
+                                  value === o.value
+                                    ? "hitl-option is-selected"
+                                    : "hitl-option"
+                                }
+                                onClick={() =>
+                                  setHitlAnswers((prev) => ({
+                                    ...prev,
+                                    [card.id]: {
+                                      ...(prev[card.id] ?? {}),
+                                      [f.key]: o.value,
+                                    },
+                                  }))
+                                }
+                              >
+                                <span className="hitl-option-label">{o.label}</span>
+                                {o.description && (
+                                  <span className="hitl-option-desc">
+                                    {o.description}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        ) : f.type === "textarea" ? (
+                          <textarea
+                            className="hitl-input"
+                            rows={3}
+                            disabled={locked}
+                            value={value}
+                            onChange={(e) =>
+                              setHitlAnswers((prev) => ({
+                                ...prev,
+                                [card.id]: {
+                                  ...(prev[card.id] ?? {}),
+                                  [f.key]: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        ) : (
+                          <input
+                            className="hitl-input"
+                            disabled={locked}
+                            value={value}
+                            onChange={(e) =>
+                              setHitlAnswers((prev) => ({
+                                ...prev,
+                                [card.id]: {
+                                  ...(prev[card.id] ?? {}),
+                                  [f.key]: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                  {card.status === "answered" ? (
+                    <div className="hitl-done">
+                      <Check size={14} /> Sudah dijawab — agent melanjutkan
+                      pekerjaannya.
+                    </div>
+                  ) : (
+                    <div className="hitl-actions">
+                      <button
+                        type="button"
+                        className="hitl-btn hitl-btn-primary"
+                        disabled={
+                          card.status === "sending" ||
+                          !card.form.fields.every(
+                            (f) =>
+                              f.required === false ||
+                              (hitlAnswers[card.id]?.[f.key] ?? "").trim()
+                                .length > 0,
+                          )
+                        }
+                        onClick={() => void replyForm(card)}
+                      >
+                        Kirim Jawaban
+                      </button>
+                      <button
+                        type="button"
+                        className="hitl-btn"
+                        disabled={card.status === "sending"}
+                        onClick={() => void cancelForm(card)}
+                      >
+                        Batalkan
+                      </button>
+                    </div>
+                  )}
+                  {card.error && <div className="hitl-error">{card.error}</div>}
+                </div>
+              ) : card.kind === "permission" && card.permission ? (
+                <div
+                  className={
+                    card.status === "answered"
+                      ? "hitl-card is-answered"
+                      : "hitl-card"
+                  }
+                >
+                  <div className="hitl-head">
+                    <ShieldAlert size={15} />
+                    <span>Persetujuan aksi</span>
+                  </div>
+                  <div className="hitl-action">{card.permission.action}</div>
+                  {card.permission.resources &&
+                    card.permission.resources.length > 0 && (
+                      <ul className="hitl-resources">
+                        {card.permission.resources.map((r) => (
+                          <li key={r}>{r}</li>
+                        ))}
+                      </ul>
+                    )}
+                  {card.status === "answered" ? (
+                    <div className="hitl-done">
+                      <Check size={14} /> Keputusan terkirim:{" "}
+                      {card.decision === "once"
+                        ? "diizinkan sekali"
+                        : card.decision === "always"
+                          ? "selalu diizinkan"
+                          : "ditolak"}
+                      .
+                    </div>
+                  ) : (
+                    <div className="hitl-actions">
+                      <button
+                        type="button"
+                        className="hitl-btn hitl-btn-primary"
+                        disabled={card.status === "sending"}
+                        onClick={() => void replyPermission(card, "once")}
+                      >
+                        Izinkan sekali
+                      </button>
+                      <button
+                        type="button"
+                        className="hitl-btn"
+                        disabled={card.status === "sending"}
+                        onClick={() => void replyPermission(card, "always")}
+                      >
+                        Selalu izinkan
+                      </button>
+                      <button
+                        type="button"
+                        className="hitl-btn hitl-btn-danger"
+                        disabled={card.status === "sending"}
+                        onClick={() => void replyPermission(card, "reject")}
+                      >
+                        Tolak
+                      </button>
+                    </div>
+                  )}
+                  {card.error && <div className="hitl-error">{card.error}</div>}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ))}
+
+        {busy && hitlCards.some((c) => c.status === "pending") && (
+          <div className="hitl-waiting">
+            <Hourglass size={14} /> Agent menunggu jawabanmu…
           </div>
         )}
       </div>
