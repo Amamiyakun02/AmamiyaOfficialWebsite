@@ -10,6 +10,7 @@ import {
   FileText,
   FolderGit2,
   House,
+  LayoutDashboard,
   LogOut,
   PlugZap,
   ScrollText,
@@ -27,7 +28,8 @@ import { apiUrl } from "@/lib/api";
      konten mengalir di kolom utama berlatar AmbientBackground yang
      sama dengan tema situs. Di layar sempit sidebar menyusut jadi
      bilah atas dengan navigasi horizontal.
-   - Isi: 7 modul sesuai spec vault (Projects, Logs, Integrations,
+   - Isi: Overview (halaman utama statistik, tab bawaan saat masuk)
+     + 7 modul sesuai spec vault (Projects, Logs, Integrations,
      Contents, Users, AI Provider, AI Agent). Tab AI Provider berisi
      panel registri provider + Publish config opencode (dua target:
      agent publik & agent administrator); tab AI Agent berisi
@@ -35,6 +37,10 @@ import { apiUrl } from "@/lib/api";
      tergerbang token dashboard, HITL penuh). */
 
 const AmbientBackground = dynamic(() => import("./AmbientBackground"), {
+  ssr: false,
+});
+
+const OverviewPanel = dynamic(() => import("./dashboard/OverviewPanel"), {
   ssr: false,
 });
 
@@ -77,6 +83,12 @@ type Tab = {
 };
 
 const TABS: Tab[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    desc: "Halaman utama dashboard: statistik sesi AI, request, token & biaya, status agent dan model aktif, plus ringkasan semua modul dalam satu pandangan.",
+    icon: LayoutDashboard,
+  },
   {
     id: "projects",
     label: "Projects",
@@ -125,7 +137,7 @@ export default function DashboardShell() {
   const router = useRouter();
   const [state, setState] = useState<"checking" | "ok">("checking");
   const [user, setUser] = useState<string>("");
-  const [active, setActive] = useState<string>("projects");
+  const [active, setActive] = useState<string>("overview");
 
   useEffect(() => {
     const token = localStorage.getItem("dashboard_token");
@@ -260,7 +272,9 @@ export default function DashboardShell() {
           <section
             className={tab.id === "agent" ? "dash-panel is-agent" : "dash-panel"}
           >
-            {tab.id === "projects" ? (
+            {tab.id === "overview" ? (
+              <OverviewPanel onNavigate={setActive} />
+            ) : tab.id === "projects" ? (
               <ProjectsPanel />
             ) : tab.id === "logs" ? (
               <LogsPanel />
