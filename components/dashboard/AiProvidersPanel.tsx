@@ -4,12 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 
-/* Modul AI Agent — AI Providers (backend commit f3c00f4 CRUD +
-   1dcf88b publish; skema registri provider di vault System
-   Dashboard). Registry provider AI untuk agent opencode:
-   admin mengisi provider di sini → tersimpan di database → satu
-   provider ditetapkan default → Publish menulis ulang config
-   opencode dari database dan model agent publik berganti.
+/* Modul AI Provider — registri provider AI (backend commit
+   f3c00f4 CRUD + 1dcf88b publish; skema registri provider di
+   vault System Dashboard). Admin mengisi provider di sini →
+   tersimpan di database → provider ditetapkan sebagai default
+   PUBLIK dan/atau default ADMINISTRATOR → Publish per role
+   menulis ulang config opencode role itu dari database dan
+   model agent role itu berganti. Kontrak dua publish:
+   POST /publish dengan body {role: "public"|"admin"} dan field
+   is_default_admin di objek Provider (backend menyusul sesuai
+   prompt serah-terima 18 Nov; UI diverifikasi dengan mock).
    Kredensial TIDAK PERNAH berupa nilai API key di UI ini — hanya
    NAMA variabel .env + penanda keberadaannya (auth_env_present);
    nilai key tetap di .env server dan tidak masuk database. */
@@ -28,6 +32,7 @@ type Provider = {
   models: AiModel[];
   default_model: string | null;
   is_default: boolean;
+  is_default_admin: boolean;
   status: string;
   notes: string | null;
   last_tested_at: string | null;
@@ -45,6 +50,7 @@ type FormState = {
   models: AiModel[];
   default_model: string;
   is_default: boolean;
+  is_default_admin: boolean;
   status: string;
   notes: string;
 };
@@ -59,6 +65,7 @@ const EMPTY_FORM: FormState = {
   models: [{ id: "", name: "" }],
   default_model: "",
   is_default: false,
+  is_default_admin: false,
   status: "active",
   notes: "",
 };
@@ -77,6 +84,7 @@ function toForm(p: Provider): FormState {
         : [{ id: "", name: "" }],
     default_model: p.default_model ?? "",
     is_default: p.is_default,
+    is_default_admin: p.is_default_admin ?? false,
     status: p.status,
     notes: p.notes ?? "",
   };
@@ -124,6 +132,7 @@ type TestResult = {
 
 type PublishResult = {
   ok: boolean;
+  role?: string;
   model: string | null;
   provider_default: string | null;
   providers_diterbitkan: string[];
@@ -148,8 +157,12 @@ export default function AiProvidersPanel() {
     {},
   );
   const [defaultingId, setDefaultingId] = useState<number | null>(null);
-  const [publishArm, setPublishArm] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [publishArmRole, setPublishArmRole] = useState<
+    "public" | "admin" | null
+  >(null);
+  const [publishingRole, setPublishingRole] = useState<
+    "public" | "admin" | null
+  >(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [publishResult, setPublishResult] = useState<PublishResult | null>(
     null,
@@ -192,12 +205,15 @@ export default function AiProvidersPanel() {
   useEffect(() => {
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => void load(), 250);
+
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
     };
   }, [load, tick]);
 
   const defaultProvider = items.find((p) => p.is_default) ?? null;
+  const adminDefaultProvider =
+    items.find((p) => p.is_default_admin) ?? null;
   const missingKey = items.filter((p) => p.auth_env_var && !p.auth_env_present);
 
   function openNew() {
@@ -228,6 +244,7 @@ export default function AiProvidersPanel() {
         .filter((m) => m.id),
       default_model: f.default_model.trim() || null,
       is_default: f.is_default,
+      is_default_admin: f.is_default_admin,
       status: f.status,
       notes: blank(f.notes),
     };
@@ -320,12 +337,13 @@ export default function AiProvidersPanel() {
     }
   }
 
-  async function makeDefault(p: Provider) {
+  async function makeDefault(p: Provider, role: "public" | "admin") {
     setDefaultingId(p.id);
     setError(null);
     try {
       const payload = providerPayload(toForm(p));
-      payload.is_default = true;
+      if (role === "admin") payload.is_default_admin = true;
+      else payload.is_default = true;
       const res = await fetch(apiUrl(`/v1/dashboard/ai-providers/${p.id}`), {
         method: "PUT",
         headers: {
@@ -367,8 +385,8 @@ export default function AiProvidersPanel() {
     }
   }
 
-  async function publish() {
-    setPublishing(true);
+  async function publish(role: "public" | "admin") {
+    setPublishingRole(role);
     setPublishError(null);
     try {
       const res = await fetch(apiUrl("/v1/dashboard/ai-providers/publish"), {
@@ -377,19 +395,19 @@ export default function AiProvidersPanel() {
           "Content-Type": "application/json",
           "X-Admin-Token": token(),
         },
-        body: "{}",
+        body: JSON.stringify({ role }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(detailText(data, `Publish gagal (${res.status}).`));
       }
-      setPublishResult(data as PublishResult);
-      setPublishArm(false);
+      setPublishResult({ ...(data as PublishResult), role });
+      setPublishArmRole(null);
       setTick((t) => t + 1);
     } catch (e) {
       setPublishError(e instanceof Error ? e.message : "Publish gagal.");
     } finally {
-      setPublishing(false);
+      setPublishingRole(null);
     }
   }
 
@@ -432,119 +450,140 @@ export default function AiProvidersPanel() {
     editing && editing !== "new" ? (editing as Provider) : null;
 
 
-  return (
-    <div className="proj">
-      {/* Strip status + Publish */}
-      <div className="aip-strip">
-        <div className="aip-strip-head">
-          <div>
-            <div className="aip-strip-label">Model agent publik saat ini</div>
-            <div className="aip-current">
-              {defaultProvider
-                ? `${defaultProvider.provider_key}/${defaultProvider.default_model ?? "—"}`
-                : "Belum ada provider default"}
-            </div>
+  // Satu strip status+publish untuk satu role agent. Dua config
+  // publish (permintaan user 18 Nov): publik (anonim) & administrator.
+  const renderStrip = (
+    role: "public" | "admin",
+    label: string,
+    provider: Provider | null,
+  ) => (
+    <div
+      className={role === "admin" ? "aip-strip aip-strip-admin" : "aip-strip"}
+    >
+      <div className="aip-strip-head">
+        <div>
+          <div className="aip-strip-label">{label}</div>
+          <div className="aip-current">
+            {provider
+              ? `${provider.provider_key}/${provider.default_model ?? "—"}`
+              : "Belum ada provider default"}
           </div>
-          {!publishArm && (
-            <button
-              type="button"
-              className="proj-add"
-              onClick={() => {
-                setPublishArm(true);
-                setPublishError(null);
-              }}
-            >
-              Publish ke OpenCode
-            </button>
-          )}
         </div>
-
-        {missingKey.length > 0 && (
-          <p className="aip-missing">
-            ⚠ Key belum terisi di .env untuk:{" "}
-            {missingKey
-              .map((p) => `${p.name} (${p.auth_env_var})`)
-              .join(", ")}
-            .
-          </p>
-        )}
-
-        {publishArm && (
-          <div className="aip-confirm">
-            <p>
-              Publish menulis ulang config opencode dari database dan
-              mengganti model agent publik ke provider default saat ini
-              {defaultProvider
-                ? ` (${defaultProvider.provider_key}/${defaultProvider.default_model ?? "—"})`
-                : ""}
-              . Lanjutkan?
-            </p>
-            <div className="aip-confirm-actions">
-              <button
-                type="button"
-                className="proj-save"
-                disabled={publishing}
-                onClick={() => void publish()}
-              >
-                {publishing ? "Menerbitkan…" : "Ya, Publish"}
-              </button>
-              <button
-                type="button"
-                className="proj-cancel"
-                disabled={publishing}
-                onClick={() => setPublishArm(false)}
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        )}
-
-        {publishError && <p className="proj-error">{publishError}</p>}
-
-        {publishResult && (
-          <div className="aip-result">
-            <div className="aip-result-head">
-              <b>Publish berhasil.</b>
-              <button
-                type="button"
-                className="proj-mini"
-                onClick={() => setPublishResult(null)}
-              >
-                Tutup
-              </button>
-            </div>
-            <p className="aip-result-row">
-              Model terpasang:{" "}
-              <span className="aip-mono">{publishResult.model ?? "—"}</span>
-            </p>
-            {publishResult.providers_diterbitkan.length > 0 && (
-              <p className="aip-result-row">
-                Provider diterbitkan:{" "}
-                {publishResult.providers_diterbitkan.join(", ")}
-              </p>
-            )}
-            {publishResult.files.length > 0 && (
-              <p className="aip-result-row">
-                File ditulis:{" "}
-                <span className="aip-mono">
-                  {publishResult.files.join(", ")}
-                </span>
-              </p>
-            )}
-            {publishResult.dilewati.length > 0 && (
-              <p className="aip-result-row">
-                Dilewati: {publishResult.dilewati.join(", ")}
-              </p>
-            )}
-            {publishResult.catatan && (
-              <p className="aip-result-row">
-                Catatan: {publishResult.catatan}
-              </p>
-            )}
-          </div>
+        {publishArmRole !== role && (
+          <button
+            type="button"
+            className="proj-add"
+            onClick={() => {
+              setPublishArmRole(role);
+              setPublishError(null);
+            }}
+          >
+            Publish ke OpenCode
+          </button>
         )}
       </div>
+      {publishArmRole === role && (
+        <div className="aip-confirm">
+          <p>
+            Publish menulis ulang config opencode{" "}
+            {role === "admin" ? "administrator" : "publik (anonim)"} dari
+            database dan mengganti model agent{" "}
+            {role === "admin" ? "administrator" : "publik"} ke provider
+            default role ini
+            {provider
+              ? ` (${provider.provider_key}/${provider.default_model ?? "—"})`
+              : ""}
+            . Lanjutkan?
+          </p>
+          <div className="aip-confirm-actions">
+            <button
+              type="button"
+              className="proj-save"
+              disabled={publishingRole !== null}
+              onClick={() => void publish(role)}
+            >
+              {publishingRole === role ? "Menerbitkan…" : "Ya, Publish"}
+            </button>
+            <button
+              type="button"
+              className="proj-cancel"
+              disabled={publishingRole !== null}
+              onClick={() => setPublishArmRole(null)}
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="proj">
+      {/* Dua strip status + Publish: agent publik & administrator */}
+      <div className="aip-strips">
+        {renderStrip(
+          "public",
+          "Model agent publik (anonim) saat ini",
+          defaultProvider,
+        )}
+        {renderStrip(
+          "admin",
+          "Model agent administrator saat ini",
+          adminDefaultProvider,
+        )}
+      </div>
+
+      {missingKey.length > 0 && (
+        <p className="aip-missing">
+          ⚠ Key belum terisi di .env untuk:{" "}
+          {missingKey.map((p) => `${p.name} (${p.auth_env_var})`).join(", ")}.
+        </p>
+      )}
+
+      {publishError && <p className="proj-error">{publishError}</p>}
+
+      {publishResult && (
+        <div className="aip-result">
+          <div className="aip-result-head">
+            <b>
+              Publish {publishResult.role === "admin" ? "administrator" : "publik"}{" "}
+              berhasil.
+            </b>
+            <button
+              type="button"
+              className="proj-mini"
+              onClick={() => setPublishResult(null)}
+            >
+              Tutup
+            </button>
+          </div>
+          <p className="aip-result-row">
+            Model terpasang:{" "}
+            <span className="aip-mono">{publishResult.model ?? "—"}</span>
+          </p>
+          {publishResult.providers_diterbitkan.length > 0 && (
+            <p className="aip-result-row">
+              Provider diterbitkan:{" "}
+              {publishResult.providers_diterbitkan.join(", ")}
+            </p>
+          )}
+          {publishResult.files.length > 0 && (
+            <p className="aip-result-row">
+              File ditulis:{" "}
+              <span className="aip-mono">{publishResult.files.join(", ")}</span>
+            </p>
+          )}
+          {publishResult.dilewati.length > 0 && (
+            <p className="aip-result-row">
+              Dilewati: {publishResult.dilewati.join(", ")}
+            </p>
+          )}
+          {publishResult.catatan && (
+            <p className="aip-result-row">Catatan: {publishResult.catatan}</p>
+          )}
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="proj-toolbar">
@@ -762,6 +801,22 @@ export default function AiProvidersPanel() {
                 provider ini sesudah Publish.
               </span>
             </label>
+            <label className="aip-check proj-span2">
+              <input
+                type="checkbox"
+                checked={form.is_default_admin}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    is_default_admin: e.target.checked,
+                  }))
+                }
+              />
+              <span>
+                Jadikan default administrator — model agent administrator
+                memakai provider ini sesudah Publish administrator.
+              </span>
+            </label>
             <label className="proj-field proj-span2">
               <span>Catatan</span>
               <textarea
@@ -800,7 +855,12 @@ export default function AiProvidersPanel() {
                     </span>
                     {p.is_default && (
                       <span className="proj-badge proj-badge-top">
-                        ★ Default
+                        ★ Default publik
+                      </span>
+                    )}
+                    {p.is_default_admin && (
+                      <span className="proj-badge aip-badge-admin">
+                        ★ Default admin
                       </span>
                     )}
                     {p.auth_env_var ? (
@@ -906,11 +966,23 @@ export default function AiProvidersPanel() {
                           type="button"
                           className="proj-mini"
                           disabled={defaultingId === p.id}
-                          onClick={() => void makeDefault(p)}
+                          onClick={() => void makeDefault(p, "public")}
                         >
                           {defaultingId === p.id
                             ? "Menetapkan…"
-                            : "Jadikan default"}
+                            : "Default publik"}
+                        </button>
+                      )}
+                      {!p.is_default_admin && (
+                        <button
+                          type="button"
+                          className="proj-mini"
+                          disabled={defaultingId === p.id}
+                          onClick={() => void makeDefault(p, "admin")}
+                        >
+                          {defaultingId === p.id
+                            ? "Menetapkan…"
+                            : "Default admin"}
                         </button>
                       )}
                       <button
