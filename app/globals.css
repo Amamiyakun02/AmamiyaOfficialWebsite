@@ -4708,3 +4708,70 @@ code {
 .aip-check input {
   margin-top: 3px;
 }
+
+/* Modal formulir AI Providers — ukuran sedang, di atas segalanya. */
+.aip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 4, 6, 0.66);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.aip-modal {
+  width: min(640px, 100%);
+  max-height: calc(100dvh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: #101013;
+  border: 1px solid #2a2a30;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  animation: aip-modal-in 0.16s ease;
+}
+@keyframes aip-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aip-modal {
+    animation: none;
+  }
+}
+.aip-modal form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.aip-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 0;
+}
+.aip-modal-head h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f2f2f4;
+}
+.aip-modal-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.aip-modal-foot {
+  border-top: 1px solid #232329;
+  padding: 14px 20px 16px;
+}
+.aip-modal-actions {
+  margin-top: 0;
+}
+.aip-modal-foot .proj-error {
+  margin: 0 0 10px;
+}

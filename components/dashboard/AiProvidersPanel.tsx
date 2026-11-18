@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { apiUrl } from "@/lib/api";
 
 /* Modul AI Agent — AI Providers (backend commit f3c00f4 CRUD +
@@ -430,6 +431,23 @@ export default function AiProvidersPanel() {
   const editingProvider =
     editing && editing !== "new" ? (editing as Provider) : null;
 
+  /* Modal formulir: Escape menutup + kunci gulir kolom utama
+     selama modal terbuka. */
+  useEffect(() => {
+    if (!editing) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setEditing(null);
+    };
+    document.addEventListener("keydown", onKey);
+    const main = document.querySelector<HTMLElement>(".dash-main");
+    const prevOverflow = main?.style.overflow ?? "";
+    if (main) main.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      if (main) main.style.overflow = prevOverflow;
+    };
+  }, [editing]);
+
   return (
     <div className="proj">
       {/* Strip status + Publish */}
@@ -568,19 +586,43 @@ export default function AiProvidersPanel() {
         </button>
       </div>
 
-      {/* Formulir tambah/edit */}
+      {/* Formulir tambah/edit — modal ukuran sedang (permintaan
+          user 18 Nov), menggantikan formulir sebaris. */}
       {editing && (
-        <form
-          className="proj-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void save();
-          }}
+        <div
+          className="aip-modal-overlay"
+          onClick={() => setEditing(null)}
         >
-          <h3 className="proj-form-title">
-            {editing === "new" ? "Tambah Provider" : "Ubah Provider"}
-          </h3>
-          <div className="proj-grid">
+          <div
+            className="aip-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              editing === "new" ? "Tambah Provider" : "Ubah Provider"
+            }
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="aip-modal-head">
+              <h3>
+                {editing === "new" ? "Tambah Provider" : "Ubah Provider"}
+              </h3>
+              <button
+                type="button"
+                className="dash-icon-btn"
+                onClick={() => setEditing(null)}
+                aria-label="Tutup"
+              >
+                <X size={17} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void save();
+              }}
+            >
+              <div className="aip-modal-body">
+                <div className="proj-grid">
             <label className="proj-field">
               <span>Nama *</span>
               <input
@@ -752,21 +794,30 @@ export default function AiProvidersPanel() {
                 onChange={(e) => set("notes")(e.target.value)}
               />
             </label>
+                </div>
+              </div>
+              <div className="aip-modal-foot">
+                {formError && <p className="proj-error">{formError}</p>}
+                <div className="proj-form-actions aip-modal-actions">
+                  <button
+                    type="submit"
+                    className="proj-save"
+                    disabled={saving}
+                  >
+                    {saving ? "Menyimpan…" : "Simpan"}
+                  </button>
+                  <button
+                    type="button"
+                    className="proj-cancel"
+                    onClick={() => setEditing(null)}
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-          {formError && <p className="proj-error">{formError}</p>}
-          <div className="proj-form-actions">
-            <button type="submit" className="proj-save" disabled={saving}>
-              {saving ? "Menyimpan…" : "Simpan"}
-            </button>
-            <button
-              type="button"
-              className="proj-cancel"
-              onClick={() => setEditing(null)}
-            >
-              Batal
-            </button>
-          </div>
-        </form>
+        </div>
       )}
 
       {error && <p className="proj-error">{error}</p>}
