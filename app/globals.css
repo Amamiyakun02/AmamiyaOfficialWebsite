@@ -3796,8 +3796,10 @@ code {
 .dash-page-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 21px;
+  gap: 12px;
+  /* Diperbesar sedikit (permintaan user 18 Nov; deskripsi di
+     bawah judul sekaligus dihilangkan). */
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #f2f2f4;
@@ -3805,13 +3807,6 @@ code {
 .dash-page-title-icon {
   color: #5ea9ff;
   flex: none;
-}
-.dash-page-desc {
-  margin-top: 8px;
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: #9a9aa2;
-  max-width: 68ch;
 }
 .dash-panel {
   min-width: 0;

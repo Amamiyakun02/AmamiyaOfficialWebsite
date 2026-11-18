@@ -78,7 +78,6 @@ const AdminAgentPanel = dynamic(
 type Tab = {
   id: string;
   label: string;
-  desc: string;
   icon: ComponentType<{ size?: number; className?: string }>;
 };
 
@@ -86,49 +85,41 @@ const TABS: Tab[] = [
   {
     id: "overview",
     label: "Overview",
-    desc: "Halaman utama dashboard: statistik sesi AI, request, token & biaya, status agent dan model aktif, plus ringkasan semua modul dalam satu pandangan.",
     icon: LayoutDashboard,
   },
   {
     id: "projects",
     label: "Projects",
-    desc: "Daftar proyek yang dikelola: tambah, ubah, arsipkan, dan atur mana yang tampil di portofolio.",
     icon: FolderGit2,
   },
   {
     id: "logs",
     label: "Logs",
-    desc: "Log perkembangan dari vault dan log backend Vienna Agent, plus pantau kesehatan sistem dalam satu tempat.",
     icon: ScrollText,
   },
   {
     id: "integrations",
     label: "Integrations",
-    desc: "Integrasi API pihak ketiga. Kredensial dirujuk lewat nama environment variable — nilai secret tidak pernah disimpan di database maupun ditampilkan.",
     icon: Blocks,
   },
   {
     id: "contents",
     label: "Contents",
-    desc: "Artikel dan tulisan portofolio (project, blog, paper, research) dalam markdown. Yang berstatus published bisa dibaca publik lewat API; draft hanya terlihat di sini.",
     icon: FileText,
   },
   {
     id: "users",
     label: "Users",
-    desc: "Manajemen pengguna aplikasi konsumen backend (pertama: Vienna Assistant Mobile) — buat akun, reset password, suspend. Password tidak pernah disimpan teks polos.",
     icon: Users,
   },
   {
     id: "providers",
     label: "AI Provider",
-    desc: "Konfigurasi provider AI untuk agent publik & administrator (opencode): kelola provider & model, tetapkan default untuk masing-masing agent, lalu Publish agar config opencode ditulis ulang dari database. Kredensial hanya dirujuk lewat nama variabel .env — nilai API key tidak pernah masuk sini.",
     icon: PlugZap,
   },
   {
     id: "agent",
     label: "AI Agent",
-    desc: "Antarmuka agent ADMINISTRATOR: chat dengan agent opencode role admin (akses setara server) yang tergerbang login dashboard. Setiap aksi berisiko meminta persetujuanmu lewat kartu HITL sebelum dijalankan — agent tidak bergerak tanpa izin.",
     icon: Bot,
   },
 ];
@@ -280,10 +271,9 @@ export default function DashboardShell() {
           {tab.id !== "agent" && (
             <header className="dash-page-head">
               <h1 className="dash-page-title">
-                <TabIcon size={20} className="dash-page-title-icon" />
+                <TabIcon size={25} className="dash-page-title-icon" />
                 {tab.label}
               </h1>
-              <p className="dash-page-desc">{tab.desc}</p>
             </header>
           )}
 
