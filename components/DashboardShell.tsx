@@ -238,16 +238,28 @@ export default function DashboardShell() {
 
       <div className="dash-main">
         <AmbientBackground />
-        <div className="dash-content">
-          <header className="dash-page-head">
-            <h1 className="dash-page-title">
-              <TabIcon size={20} className="dash-page-title-icon" />
-              {tab.label}
-            </h1>
-            <p className="dash-page-desc">{tab.desc}</p>
-          </header>
+        <div
+          className={
+            tab.id === "agent" ? "dash-content is-agent" : "dash-content"
+          }
+        >
+          {/* Tab AI Agent memakai kepala chat-nya sendiri (judul
+              sesi + tombol sesi baru), jadi kepala halaman shell
+              (judul + deskripsi) disembunyikan khusus tab ini —
+              permintaan user 18 Nov. */}
+          {tab.id !== "agent" && (
+            <header className="dash-page-head">
+              <h1 className="dash-page-title">
+                <TabIcon size={20} className="dash-page-title-icon" />
+                {tab.label}
+              </h1>
+              <p className="dash-page-desc">{tab.desc}</p>
+            </header>
+          )}
 
-          <section className="dash-panel">
+          <section
+            className={tab.id === "agent" ? "dash-panel is-agent" : "dash-panel"}
+          >
             {tab.id === "projects" ? (
               <ProjectsPanel />
             ) : tab.id === "logs" ? (

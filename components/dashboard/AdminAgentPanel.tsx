@@ -3,7 +3,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
   SendHorizontal,
-  Trash2,
+  SquarePen,
   MessageCircle,
   ShieldAlert,
   Check,
@@ -1055,52 +1055,63 @@ export default function AdminAgentPanel() {
     </div>
   );
 
+  const sessionTitle =
+    sessions.find((s) => s.id === currentSession)?.title ||
+    (currentSession ? "Sesi berjalan" : "Sesi baru");
+
   return (
     <div className="aag-wrap">
-      <div className="aag-strip">
-        <span
-          className={
-            instStatus === "ok"
-              ? "aag-dot aag-dot-ok"
-              : instStatus === "unreachable"
-                ? "aag-dot aag-dot-bad"
-                : "aag-dot"
-          }
-          aria-hidden="true"
-        />
-        <span className="aag-strip-text">
-          {instStatus === null
-            ? "Memeriksa instance administrator…"
-            : instStatus === "ok"
-              ? `Instance administrator aktif${instModel ? ` · model ${instModel}` : ""}`
-              : "Instance administrator tidak terjangkau — pastikan backend & opencode-core admin berjalan."}
-        </span>
-        <span className="aag-strip-spacer" />
-        <select
-          className="aag-session-select"
-          value={currentSession}
-          disabled={busy}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v) void switchSession(v);
-          }}
-          aria-label="Pilih sesi lama"
-        >
-          <option value="">Sesi saat ini</option>
-          {sessions.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.title || s.id}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          className="chat-clear"
-          onClick={clearChat}
-          title="Mulai sesi baru"
-        >
-          <Trash2 size={15} /> Sesi baru
-        </button>
+      {/* Kepala chat gaya aplikasi chat umum (permintaan user
+          18 Nov): judul sesi + status instance di kiri; pemilih
+          sesi & tombol sesi baru di kanan. */}
+      <div className="aag-header">
+        <div className="aag-title-wrap">
+          <div className="aag-title">{sessionTitle}</div>
+          <div className="aag-subtitle">
+            <span
+              className={
+                instStatus === "ok"
+                  ? "aag-dot aag-dot-ok"
+                  : instStatus === "unreachable"
+                    ? "aag-dot aag-dot-bad"
+                    : "aag-dot"
+              }
+              aria-hidden="true"
+            />
+            {instStatus === null
+              ? "Memeriksa instance administrator…"
+              : instStatus === "ok"
+                ? `Administrator aktif${instModel ? ` · ${instModel}` : ""}`
+                : "Instance administrator tidak terjangkau — pastikan backend & opencode-core admin berjalan."}
+          </div>
+        </div>
+        <div className="aag-header-actions">
+          <select
+            className="aag-session-select"
+            value={currentSession}
+            disabled={busy}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v) void switchSession(v);
+            }}
+            aria-label="Pilih sesi lama"
+          >
+            <option value="">Sesi saat ini</option>
+            {sessions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title || s.id}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="aag-new-btn"
+            onClick={clearChat}
+            title="Mulai sesi baru"
+          >
+            <SquarePen size={15} /> Sesi baru
+          </button>
+        </div>
       </div>
 
       <div
@@ -1178,6 +1189,7 @@ export default function AdminAgentPanel() {
         )}
       </div>
 
+      <div className="aag-composer">
       {messages.length <= 1 && (
         <div className="chat-suggest">
           {SUGGESTIONS.map((s) => (
@@ -1230,6 +1242,7 @@ export default function AdminAgentPanel() {
           <SendHorizontal size={17} />
         </button>
       </form>
+      </div>
     </div>
   );
 }

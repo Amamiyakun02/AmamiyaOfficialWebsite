@@ -5011,3 +5011,97 @@ code {
     animation: none;
   }
 }
+
+/* Tata letak chat AI Agent gaya aplikasi chat umum (permintaan
+   user 18 Nov): kepala berisi judul sesi + tombol sesi baru,
+   ruang chat di tengah (kolom tengah maks 780px, tanpa kotak),
+   input menempel di bawah. Kepala halaman shell disembunyikan
+   khusus tab ini (lihat DashboardShell). */
+.dash-content.is-agent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 34px 16px;
+}
+.dash-panel.is-agent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 920px) {
+  .dash-content.is-agent {
+    padding: 14px 16px 12px;
+  }
+}
+.aag-wrap {
+  flex: 1;
+  min-height: 0;
+}
+.aag-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 2px 2px 13px;
+  border-bottom: 1px solid #202026;
+  margin-bottom: 4px;
+}
+.aag-title-wrap {
+  min-width: 0;
+}
+.aag-title {
+  font-size: 16.5px;
+  font-weight: 650;
+  color: #f4f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 430px;
+}
+.aag-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #9a9aa6;
+  margin-top: 2px;
+}
+.aag-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.aag-new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #17171b;
+  border: 1px solid #2a2a30;
+  color: #ececf0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.aag-new-btn:hover {
+  border-color: #3d3d46;
+  background: rgba(255, 255, 255, 0.05);
+}
+.aag-log {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 16px max(2px, calc((100% - 780px) / 2));
+}
+.aag-composer {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding-top: 10px;
+}
