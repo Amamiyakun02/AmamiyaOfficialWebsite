@@ -4591,3 +4591,120 @@ code {
     padding: 20px 16px;
   }
 }
+
+/* ===== Dashboard Modul 6: AI Providers (tab AI Agent) ===== */
+.aip-strip {
+  background: rgba(0, 129, 251, 0.05);
+  border: 1px solid rgba(0, 129, 251, 0.28);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.aip-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.aip-strip-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a8a92;
+}
+.aip-current {
+  margin-top: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #f2f2f4;
+}
+.aip-missing {
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #e3b341;
+}
+.aip-confirm {
+  margin-top: 12px;
+  border-top: 1px dashed rgba(0, 129, 251, 0.3);
+  padding-top: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #c9c9cf;
+}
+.aip-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.aip-result {
+  margin-top: 12px;
+  background: rgba(53, 208, 127, 0.06);
+  border: 1px solid rgba(53, 208, 127, 0.3);
+  border-radius: 12px;
+  padding: 13px 15px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #c9c9cf;
+}
+.aip-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #f2f2f4;
+}
+.aip-result-row {
+  margin-top: 6px;
+}
+.aip-mono {
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: #f2f2f4;
+}
+.aip-badge-key-ok {
+  border-color: rgba(53, 208, 127, 0.45);
+  color: #35d07f;
+}
+.aip-badge-key-no {
+  border-color: rgba(255, 133, 133, 0.5);
+  color: #ff8585;
+}
+.aip-models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aip-model-row {
+  display: flex;
+  gap: 8px;
+}
+.aip-model-input {
+  flex: 1;
+  min-width: 0;
+  background: #0c0c0e;
+  border: 1px solid #26262b;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #f2f2f4;
+  outline: none;
+}
+.aip-model-input:focus {
+  border-color: #0081fb;
+}
+.aip-check {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #c9c9cf;
+  cursor: pointer;
+}
+.aip-check input {
+  margin-top: 3px;
+}

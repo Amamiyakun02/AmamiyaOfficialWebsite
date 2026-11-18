@@ -27,7 +27,9 @@ import { apiUrl } from "@/lib/api";
      sama dengan tema situs. Di layar sempit sidebar menyusut jadi
      bilah atas dengan navigasi horizontal.
    - Isi: 6 modul sesuai spec vault (Projects, Logs, Integrations,
-     Contents, Users, AI Agent); panel AI Agent belum dibangun. */
+     Contents, Users, AI Agent). Tab AI Agent berisi panel AI
+     Providers (registri provider + Publish config opencode);
+     panel chat agent menyusul. */
 
 const AmbientBackground = dynamic(() => import("./AmbientBackground"), {
   ssr: false,
@@ -53,6 +55,11 @@ const UsersPanel = dynamic(() => import("./dashboard/UsersPanel"), {
 const ContentsPanel = dynamic(() => import("./dashboard/ContentsPanel"), {
   ssr: false,
 });
+
+const AiProvidersPanel = dynamic(
+  () => import("./dashboard/AiProvidersPanel"),
+  { ssr: false },
+);
 
 type Tab = {
   id: string;
@@ -95,7 +102,7 @@ const TABS: Tab[] = [
   {
     id: "agent",
     label: "AI Agent",
-    desc: "Antarmuka agen AI (opencode/Hermes) untuk bekerja di dalam direktori proyek terdaftar. Aksi tulis wajib persetujuan dan tercatat di audit.",
+    desc: "Konfigurasi provider AI untuk agent publik (opencode): kelola provider & model, tetapkan satu sebagai default, lalu Publish agar config opencode ditulis ulang dari database. Kredensial hanya dirujuk lewat nama variabel .env — nilai API key tidak pernah masuk sini.",
     icon: Bot,
   },
 ];
@@ -238,10 +245,7 @@ export default function DashboardShell() {
             ) : tab.id === "contents" ? (
               <ContentsPanel />
             ) : (
-              <p className="dash-panel-note">
-                Modul ini sedang disiapkan — kerangka dan gerbang loginnya
-                sudah live; isinya dibangun bertahap berikutnya.
-              </p>
+              <AiProvidersPanel />
             )}
           </section>
         </div>
