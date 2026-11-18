@@ -16,13 +16,11 @@ export const metadata: Metadata = {
   title: "Amamiya | Portofolio",
   description:
     "Portofolio Amamiya: aplikasi AI, web & mobile, dan alat otomatisasi. Dibangun di atas panggung grid tipografi interaktif ala Muse Wonder.",
-  // Ikon aplikasi: logo agent Vienna (public/vienna.svg, monogram VA
-  // gradasi biru tanpa latar — menggantikan favicon.png sejak
-  // 18 Nov 2026 atas permintaan user). Ikon apple tetap PNG karena
-  // iOS tidak menerima SVG untuk ikon layar utama.
+  // Ikon aplikasi: logo monogram "AM" dari user (public/favicon.png,
+  // ditambahkan user 2 Nov 2026 menggantikan tawaran ikon ∞ yang lama).
   icons: {
-    icon: "/vienna.svg",
-    shortcut: "/vienna.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
     apple: "/favicon.png",
   },
 };

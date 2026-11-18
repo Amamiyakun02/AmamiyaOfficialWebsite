@@ -190,7 +190,7 @@ export default function DashboardShell() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="dash-brand-mark"
-            src="/vienna.svg"
+            src="/favicon.png"
             alt=""
             width={30}
             height={30}

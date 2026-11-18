@@ -867,7 +867,7 @@ export default function AdminAgentPanel() {
   const renderHitlCard = (card: HitlCard) => (
     <div key={card.id} className="msg msg-ai">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+      <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
       <div className="msg-col">
         {card.status === "cancelled" ? (
           <div className="hitl-card is-cancelled">
@@ -1128,7 +1128,7 @@ export default function AdminAgentPanel() {
             <div className={m.sender === "user" ? "msg msg-user" : "msg msg-ai"}>
               {m.sender === "ai" && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+                <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
               )}
               <div className="msg-col">
                 <div className="msg-bubble">
@@ -1165,7 +1165,7 @@ export default function AdminAgentPanel() {
         {waiting && (
           <div className="msg msg-ai">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="msg-avatar" src="/favicon.png" alt="" width={26} height={26} />
+            <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
             <div className="msg-col">
               <div className="msg-bubble msg-typing">
                 <span className="dot" />
