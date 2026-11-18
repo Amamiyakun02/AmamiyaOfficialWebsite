@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import {
+  Check,
+  Crown,
+  Loader2,
+  Pencil,
+  Star,
+  Trash2,
+  X,
+  Zap,
+} from "lucide-react";
 
 /* Modul AI Provider — registri provider AI (backend commit
    f3c00f4 CRUD + 1dcf88b publish; skema registri provider di
@@ -843,62 +853,70 @@ export default function AiProvidersPanel() {
           {items.map((p) => {
             const tr = testResults[p.id];
             return (
-              <li key={p.id} className="proj-card">
-                <div className="proj-main">
-                  <div className="proj-row1">
-                    <span className="proj-name">{p.name}</span>
-                    <span className="proj-badge">{p.adapter}</span>
+              <li
+                key={p.id}
+                className={
+                  "aip-card" +
+                  (p.is_default ? " is-defpub" : "") +
+                  (p.is_default_admin ? " is-defadm" : "")
+                }
+              >
+                <div className="aip-card-head">
+                  <span className="aip-card-name">{p.name}</span>
+                  <span className="proj-badge">{p.adapter}</span>
+                  <span
+                    className={`proj-badge proj-badge-${p.status === "active" ? "active" : "archived"}`}
+                  >
+                    {p.status}
+                  </span>
+                  {p.is_default && (
+                    <span className="proj-badge proj-badge-top">
+                      ★ Default publik
+                    </span>
+                  )}
+                  {p.is_default_admin && (
+                    <span className="proj-badge aip-badge-admin">
+                      ★ Default admin
+                    </span>
+                  )}
+                  {p.auth_env_var ? (
                     <span
-                      className={`proj-badge proj-badge-${p.status === "active" ? "active" : "archived"}`}
+                      className={`proj-badge ${p.auth_env_present ? "aip-badge-key-ok" : "aip-badge-key-no"}`}
                     >
-                      {p.status}
+                      {p.auth_env_present
+                        ? "Key terisi"
+                        : "Key belum ada di .env"}
                     </span>
-                    {p.is_default && (
-                      <span className="proj-badge proj-badge-top">
-                        ★ Default publik
-                      </span>
-                    )}
-                    {p.is_default_admin && (
-                      <span className="proj-badge aip-badge-admin">
-                        ★ Default admin
-                      </span>
-                    )}
-                    {p.auth_env_var ? (
-                      <span
-                        className={`proj-badge ${p.auth_env_present ? "aip-badge-key-ok" : "aip-badge-key-no"}`}
-                      >
-                        {p.auth_env_present
-                          ? "Key terisi"
-                          : "Key belum ada di .env"}
-                      </span>
-                    ) : (
-                      <span className="proj-badge">Tanpa env key</span>
-                    )}
-                  </div>
-                  <p className="proj-meta">
-                    <span className="proj-path">{p.provider_key}</span>
-                    {p.base_url && (
-                      <span className="proj-path">{p.base_url}</span>
-                    )}
-                  </p>
-                  <div className="proj-meta">
-                    <span>
-                      {p.models?.length ?? 0} model
-                      {p.default_model
-                        ? ` · default: ${p.default_model}`
-                        : ""}
-                    </span>
-                    {p.package && (
-                      <span className="proj-path">{p.package}</span>
-                    )}
-                    {p.updated_at && (
-                      <span>Diubah {fmtDateTime(p.updated_at)}</span>
-                    )}
-                  </div>
-                  {p.notes && <p className="proj-desc">{p.notes}</p>}
-                  {(p.last_tested_at || tr) && (
-                    <p className="proj-meta">
-                      {tr ? (
+                  ) : (
+                    <span className="proj-badge">Tanpa env key</span>
+                  )}
+                </div>
+                <p className="aip-card-sub">
+                  <span className="aip-mono">{p.provider_key}</span>
+                  {p.base_url && (
+                    <span className="aip-mono">{p.base_url}</span>
+                  )}
+                  {p.package && (
+                    <span className="aip-mono aip-dim">{p.package}</span>
+                  )}
+                </p>
+                <div className="aip-card-model">
+                  <span className="aip-card-model-label">Model default</span>
+                  <span className="aip-mono aip-card-model-id">
+                    {p.default_model ?? "—"}
+                  </span>
+                  <span className="aip-card-model-count">
+                    {p.models?.length ?? 0} model
+                    {p.updated_at
+                      ? ` · diubah ${fmtDateTime(p.updated_at)}`
+                      : ""}
+                  </span>
+                </div>
+                {p.notes && <p className="aip-card-notes">{p.notes}</p>}
+                <div className="aip-card-foot">
+                  <span className="aip-card-test">
+                    {p.last_tested_at || tr ? (
+                      tr ? (
                         tr.ok ? (
                           <span className="intg-ok">
                             ✓ Test barusan: HTTP {tr.status_code}
@@ -925,81 +943,94 @@ export default function AiProvidersPanel() {
                           ✗ Test terakhir gagal ·{" "}
                           {fmtDateTime(p.last_tested_at)}
                         </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-                <div className="proj-actions">
+                      )
+                    ) : (
+                      <span className="aip-dim">Belum pernah dites</span>
+                    )}
+                  </span>
                   {confirmId === p.id ? (
-                    <>
-                      <span className="proj-confirm-text">
-                        Hapus {p.name}? Ini soft delete — datanya tidak
-                        langsung hilang permanen.
+                    <span className="aip-card-confirm">
+                      <span className="aip-confirm-text">
+                        Hapus {p.name}?
                       </span>
                       <button
                         type="button"
-                        className="proj-del-yes"
+                        className="aip-icon-btn is-danger"
+                        title="Ya, hapus (soft delete)"
+                        aria-label="Ya, hapus"
                         onClick={() => void remove(p)}
                       >
-                        Ya, hapus
+                        <Check size={15} />
                       </button>
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="aip-icon-btn"
+                        title="Batal"
+                        aria-label="Batal"
                         onClick={() => setConfirmId(null)}
                       >
-                        Batal
+                        <X size={15} />
                       </button>
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span className="aip-card-actions">
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="aip-icon-btn"
+                        title="Tes koneksi"
+                        aria-label="Tes koneksi"
                         disabled={testingId === p.id}
                         onClick={() => void runTest(p)}
                       >
-                        {testingId === p.id ? "Mengetes…" : "Tes koneksi"}
+                        {testingId === p.id ? (
+                          <Loader2 size={15} className="aip-spin" />
+                        ) : (
+                          <Zap size={15} />
+                        )}
                       </button>
                       {!p.is_default && (
                         <button
                           type="button"
-                          className="proj-mini"
+                          className="aip-icon-btn is-star"
+                          title="Jadikan default publik"
+                          aria-label="Jadikan default publik"
                           disabled={defaultingId === p.id}
                           onClick={() => void makeDefault(p, "public")}
                         >
-                          {defaultingId === p.id
-                            ? "Menetapkan…"
-                            : "Default publik"}
+                          <Star size={15} />
                         </button>
                       )}
                       {!p.is_default_admin && (
                         <button
                           type="button"
-                          className="proj-mini"
+                          className="aip-icon-btn is-crown"
+                          title="Jadikan default admin"
+                          aria-label="Jadikan default admin"
                           disabled={defaultingId === p.id}
                           onClick={() => void makeDefault(p, "admin")}
                         >
-                          {defaultingId === p.id
-                            ? "Menetapkan…"
-                            : "Default admin"}
+                          <Crown size={15} />
                         </button>
                       )}
                       <button
                         type="button"
-                        className="proj-mini"
+                        className="aip-icon-btn"
+                        title="Ubah"
+                        aria-label="Ubah"
                         onClick={() => openEdit(p)}
                       >
-                        Ubah
+                        <Pencil size={15} />
                       </button>
                       <button
                         type="button"
-                        className="proj-mini proj-del"
+                        className="aip-icon-btn is-danger"
+                        title="Hapus"
+                        aria-label="Hapus"
                         onClick={() => setConfirmId(p.id)}
                       >
-                        Hapus
+                        <Trash2 size={15} />
                       </button>
-                    </>
+                    </span>
                   )}
                 </div>
               </li>
