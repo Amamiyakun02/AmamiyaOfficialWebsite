@@ -3427,6 +3427,10 @@ code {
    di tengah panggung dengan sendirinya. */
 .login-wrap .stage-title {
   padding-top: 0;
+  /* Geseran turun 10px bawaan panggung beranda dibuang di login
+     agar pusat form tepat sama dengan pusat lubang grid (kosong
+     atas-bawah simetris). */
+  transform: none;
 }
 /* Layar pendek (viewport laptop user setelah chrome browser):
    kompensasi dikurangi agar seluruh tumpukan tetap muat —
@@ -3475,7 +3479,9 @@ code {
 }
 .login-form {
   pointer-events: auto;
-  width: min(340px, 86vw);
+  /* Dilebarkan (koreksi user 18 Nov): 340px terasa sempit di dalam
+     lubang grid yang lebar. */
+  width: min(440px, 88vw);
   margin: 14px auto 0;
   /* Dipadatkan (5 Nov): di layar laptop pendek (864 CSS px) form
      versi longgar menjorok melewati tepi bawah panggung. */

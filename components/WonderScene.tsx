@@ -779,17 +779,17 @@ export default function WonderScene({
           ? Math.min(96, Math.max(84, viewH * 0.2))
           : Math.max(120, Math.min(HOLE_MAX_H, viewH * HOLE_H_RATIO));
       // Mode login (koreksi user 18 Nov): lubang mengikuti FORM —
-      // form login (~340px) jauh lebih tinggi dari lubang judul
-      // (maks 210px) sehingga menindih kata grid di atas-bawahnya.
-      // Kini tinggi form diukur, lalu 2 baris di atas + 2 baris di
-      // bawahnya ikut dikosongkan; form duduk tepat di tengah
-      // lubang (keduanya sama-sama di tengah panggung).
+      // form login jauh lebih tinggi dari lubang judul (maks 210px)
+      // sehingga menindih kata grid di atas-bawahnya. Kini tinggi
+      // form diukur, lalu 1 baris di atas + 1 baris di bawahnya
+      // ikut dikosongkan (jarak pas, tidak terlalu jauh — koreksi
+      // user putaran kedua); form duduk tepat di tengah lubang.
       let holeH = holeHBase;
       if (loginMode) {
         const formEl =
           cvs!.parentElement?.querySelector<HTMLElement>(".login-form");
         const fh = formEl?.offsetHeight ?? 0;
-        if (fh > 0) holeH = fh + 4 * CH;
+        if (fh > 0) holeH = fh + 2 * CH;
       }
       // (Ponsel: lubang WAJIB lebih tinggi dari blok judul + ikon
       // (±50px) tapi tidak kelewat tinggi — rumus persen murni pernah
