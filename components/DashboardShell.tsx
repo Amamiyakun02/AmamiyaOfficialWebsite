@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
@@ -137,7 +137,25 @@ export default function DashboardShell() {
   const router = useRouter();
   const [state, setState] = useState<"checking" | "ok">("checking");
   const [user, setUser] = useState<string>("");
-  const [active, setActive] = useState<string>("overview");
+  // Tab aktif disinkronkan ke ?tab= di URL (koreksi user 18 Nov:
+  // modul harus punya alamat agar refresh tidak melempar kembali
+  // ke Overview). Nilai awal dibaca dari URL; id tak dikenal jatuh
+  // ke overview. Aman dari hydration mismatch karena sebelum
+  // gerbang sesi lolos, yang dirender hanya layar "Memeriksa sesi…".
+  const [active, setActive] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t && TABS.some((x) => x.id === t)) return t;
+    }
+    return "overview";
+  });
+
+  const selectTab = useCallback((id: string) => {
+    setActive(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", id);
+    window.history.replaceState(null, "", url);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("dashboard_token");
@@ -212,7 +230,7 @@ export default function DashboardShell() {
                 type="button"
                 className={`dash-nav-item${on ? " dash-nav-on" : ""}`}
                 aria-current={on ? "page" : undefined}
-                onClick={() => setActive(t.id)}
+                onClick={() => selectTab(t.id)}
               >
                 <Icon size={17} className="dash-nav-icon" />
                 <span>{t.label}</span>
@@ -273,7 +291,7 @@ export default function DashboardShell() {
             className={tab.id === "agent" ? "dash-panel is-agent" : "dash-panel"}
           >
             {tab.id === "overview" ? (
-              <OverviewPanel onNavigate={setActive} />
+              <OverviewPanel onNavigate={selectTab} />
             ) : tab.id === "projects" ? (
               <ProjectsPanel />
             ) : tab.id === "logs" ? (
