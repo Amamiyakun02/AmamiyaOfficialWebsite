@@ -11,6 +11,7 @@ import {
   FolderGit2,
   House,
   LogOut,
+  PlugZap,
   ScrollText,
   Users,
 } from "lucide-react";
@@ -26,10 +27,12 @@ import { apiUrl } from "@/lib/api";
      konten mengalir di kolom utama berlatar AmbientBackground yang
      sama dengan tema situs. Di layar sempit sidebar menyusut jadi
      bilah atas dengan navigasi horizontal.
-   - Isi: 6 modul sesuai spec vault (Projects, Logs, Integrations,
-     Contents, Users, AI Agent). Tab AI Agent berisi panel AI
-     Providers (registri provider + Publish config opencode);
-     panel chat agent menyusul. */
+   - Isi: 7 modul sesuai spec vault (Projects, Logs, Integrations,
+     Contents, Users, AI Provider, AI Agent). Tab AI Provider berisi
+     panel registri provider + Publish config opencode (dua target:
+     agent publik & agent administrator); tab AI Agent berisi
+     antarmuka chat agent ADMINISTRATOR (role admin opencode,
+     tergerbang token dashboard, HITL penuh). */
 
 const AmbientBackground = dynamic(() => import("./AmbientBackground"), {
   ssr: false,
@@ -58,6 +61,11 @@ const ContentsPanel = dynamic(() => import("./dashboard/ContentsPanel"), {
 
 const AiProvidersPanel = dynamic(
   () => import("./dashboard/AiProvidersPanel"),
+  { ssr: false },
+);
+
+const AdminAgentPanel = dynamic(
+  () => import("./dashboard/AdminAgentPanel"),
   { ssr: false },
 );
 
@@ -100,9 +108,15 @@ const TABS: Tab[] = [
     icon: Users,
   },
   {
+    id: "providers",
+    label: "AI Provider",
+    desc: "Konfigurasi provider AI untuk agent publik & administrator (opencode): kelola provider & model, tetapkan default untuk masing-masing agent, lalu Publish agar config opencode ditulis ulang dari database. Kredensial hanya dirujuk lewat nama variabel .env — nilai API key tidak pernah masuk sini.",
+    icon: PlugZap,
+  },
+  {
     id: "agent",
     label: "AI Agent",
-    desc: "Konfigurasi provider AI untuk agent publik (opencode): kelola provider & model, tetapkan satu sebagai default, lalu Publish agar config opencode ditulis ulang dari database. Kredensial hanya dirujuk lewat nama variabel .env — nilai API key tidak pernah masuk sini.",
+    desc: "Antarmuka agent ADMINISTRATOR: chat dengan agent opencode role admin (akses setara server) yang tergerbang login dashboard. Setiap aksi berisiko meminta persetujuanmu lewat kartu HITL sebelum dijalankan — agent tidak bergerak tanpa izin.",
     icon: Bot,
   },
 ];
@@ -244,8 +258,10 @@ export default function DashboardShell() {
               <UsersPanel />
             ) : tab.id === "contents" ? (
               <ContentsPanel />
-            ) : (
+            ) : tab.id === "providers" ? (
               <AiProvidersPanel />
+            ) : (
+              <AdminAgentPanel />
             )}
           </section>
         </div>

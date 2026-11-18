@@ -4775,3 +4775,75 @@ code {
 .dash-modal-foot .proj-error {
   margin: 0 0 10px;
 }
+
+/* Panel AI Agent (administrator) — strip status + log chat di
+   dalam panel dashboard; gelembung memakai ulang gaya .chat-*. */
+.aag-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.aag-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #101013;
+  border: 1px solid #232329;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.aag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #55555f;
+  flex: none;
+}
+.aag-dot-ok {
+  background: #34d399;
+}
+.aag-dot-bad {
+  background: #f87171;
+}
+.aag-strip-text {
+  font-size: 13px;
+  color: #b9b9c4;
+}
+.aag-strip-spacer {
+  flex: 1;
+}
+.aag-session-select {
+  background: #17171b;
+  border: 1px solid #2a2a30;
+  color: #e8e8ec;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  max-width: 260px;
+}
+.aag-log {
+  height: min(540px, 58vh);
+  border: 1px solid #232329;
+  border-radius: 12px;
+  background: rgba(10, 10, 12, 0.5);
+  padding: 16px;
+}
+
+/* Dua strip publish AI Provider (publik & administrator). */
+.aip-strips {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.aip-strip-admin {
+  border-color: rgba(167, 139, 250, 0.35);
+}
+.aip-badge-admin {
+  color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.45);
+}
+.aip-strips + .aip-missing,
+.aip-strips + .proj-error {
+  margin-top: 12px;
+}
