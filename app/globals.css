@@ -5167,3 +5167,15 @@ code {
 .aag-composer {
   padding: 12px 18px 14px;
 }
+
+/* Rata kiri-kanan di dalam bingkai (permintaan user 18 Nov):
+   kolom pesan & composer tidak lagi mengambang di tengah —
+   keduanya selebar penuh sisi dalam bingkai dengan padding
+   seragam 18px, sejajar dengan header. */
+.aag-log {
+  padding: 16px 18px;
+}
+.aag-composer {
+  max-width: none;
+  margin: 0;
+}
