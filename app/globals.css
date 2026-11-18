@@ -3598,10 +3598,15 @@ code {
 
 /* --- Sidebar --- */
 .dash-side {
+  /* Hitam pekat DI ATAS kanvas ambien (position + z-index): unsur
+     semesta + highlight mouse hanya boleh tampak di konten utama,
+     tidak menembus sidebar (permintaan user 18 Nov). */
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 22px;
-  background: #0a0a0d;
+  background: #050506;
   border-right: 1px solid #1d1d21;
   padding: 20px 14px 16px;
   min-height: 0;
@@ -4042,6 +4047,19 @@ code {
   border: 1px solid #26262b;
   border-radius: 14px;
   padding: 14px 16px;
+}
+/* Nama kelas .proj-card bertabrakan dengan kartu section Projects
+   publik (flex-direction: column + hover terangkat): tanpa koreksi
+   tercakup .dash-panel ini, kartu dashboard ikut tertumpuk vertikal
+   dan melayang saat hover (dikeluhkan user 18 Nov: "kurang rapi").
+   TIDAK boleh ditaruh di aturan .proj-card polos — arah baris akan
+   bocor balik dan merusak kartu publik. */
+.dash-panel .proj-card {
+  flex-direction: row;
+  align-items: flex-start;
+}
+.dash-panel .proj-card:hover {
+  transform: none;
 }
 .proj-thumb {
   width: 120px;
@@ -4545,7 +4563,7 @@ code {
   .proj-span2 {
     grid-column: span 1;
   }
-  .proj-card {
+  .dash-panel .proj-card {
     flex-direction: column;
   }
   .proj-actions {
