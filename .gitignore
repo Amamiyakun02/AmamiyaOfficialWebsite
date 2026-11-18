@@ -9,8 +9,13 @@ dist/
 .DS_Store
 Thumbs.db
 
-# env lokal
-.env*.local
+# env lokal — jangan pernah commit file env asli (lihat .env.example)
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
 
 # cache build TypeScript
 *.tsbuildinfo
