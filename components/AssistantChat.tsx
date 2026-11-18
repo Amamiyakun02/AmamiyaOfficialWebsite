@@ -8,71 +8,36 @@ import ReactMarkdown from "react-markdown";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
-   Halaman chat Vienna AI Assistant — dipindah dari WebPortofolio lama
-   (src/pages/Assistant.tsx) dengan kontrak backend yang sama persis:
-   - engine: gemini / mercury / deepseek → /v1/<engine>/chat
-   - kesiapan engine dari GET /v1/engines (404 = mercury & deepseek off)
-   - sesi per engine di localStorage, diperbarui dari header
-     X-Session-ID; riwayat chat per engine juga di localStorage
-   - jawaban streaming SSE: baris "data: {json}" dengan {text},
-     {done, usage, sources}, {error}, dan "[DONE]"; ada fallback
-     respons JSON polos seperti versi lama.
-   - potongan SSE Mercury besar-besar (model difusi): teks diterima
-     diungkap bertahap seperti mengetik oleh loop rAF (startReveal);
-     pesan AI yang selesai dirender markdown betulan (react-markdown).
+   Halaman chat Vienna AI Assistant.
+   SUMBER ENDPOINT (update 18 Nov 2026, sesuai catatan vault
+   "Vienna Agent.md — Referensi Endpoint Chat Core OpenCode"): chat
+   kini berjalan di core opencode lewat backend —
+   POST /v1/opencode/chat/stream dengan body {prompt, session_id?}.
+   Riwayat percakapan disimpan opencode serve sendiri; frontend
+   hanya menyimpan session_id (dari event meta/done) + salinan
+   tampilan riwayat di localStorage. Sebelumnya halaman ini memakai
+   engine lama (/v1/<engine>/chat: gemini/mercury/deepseek) dengan
+   tab pemilih engine — tab itu hilang karena sumbernya kini satu.
+   - aliran SSE: {meta: {session_id}} di awal, {text} berkali-kali,
+     {meta: {tool}} saat agent memanggil tool, ditutup
+     {done, session_id, tools_used, model, usage}; gagal = {error}.
+   - teks yang diterima diungkap bertahap seperti mengetik oleh loop
+     rAF (startReveal); pesan AI selesai dirender markdown betulan
+     (react-markdown).
    Quick prompt dari halaman utama tiba sebagai ?q= dan terkirim
    otomatis sekali saat halaman dibuka.
    ===================================================================== */
 
-type EngineId = "gemini" | "mercury" | "deepseek";
+const CHAT_ENDPOINT = "/v1/opencode/chat/stream";
+const SESSION_KEY = "assistant_session_id";
+const HISTORY_KEY = "assistant_chat_history";
 
-const ENGINE_ORDER: EngineId[] = ["mercury", "gemini", "deepseek"];
-
-// Engine yang AKTIF dipakai (keputusan user 2 Nov 2026): hanya Mercury.
-// Gemini nonaktif sementara — kunci API Google-nya diblokir (403
-// API_KEY_SERVICE_BLOCKED); DeepSeek nonaktif — modelnya tidak tersedia
-// di pool LARP Router (400). Untuk mengaktifkan lagi, tambahkan id-nya
-// ke daftar ini; status dari backend tetap dicek seperti biasa.
-const ENABLED_ENGINES: EngineId[] = ["mercury"];
-
-const ENGINE_ENDPOINT: Record<EngineId, string> = {
-  gemini: "/v1/gemini/chat",
-  mercury: "/v1/mercury/chat",
-  deepseek: "/v1/deepseek/chat",
-};
-
-const ENGINE_LABEL: Record<EngineId, string> = {
-  gemini: "Google Gemini-3.1",
-  mercury: "Inception Mercury-3",
-  deepseek: "DeepSeek V4.1",
-};
-
-const ENGINE_SHORT: Record<EngineId, string> = {
-  gemini: "Gemini-3.1",
-  mercury: "Mercury-3",
-  deepseek: "DeepSeek-V4.1",
-};
-
-const SUGGESTIONS: Record<EngineId, string[]> = {
-  gemini: [
-    "Ceritakan tentang scripting Linux Anda.",
-    "Bagaimana latar belakang Anda?",
-    "Tampilkan proyek terbaru Anda.",
-    "Bagaimana cara kita bekerja sama?",
-  ],
-  mercury: [
-    "Apa itu diffusion language model?",
-    "Buat contoh API Python singkat.",
-    "Ceritakan stack AI Anda.",
-    "Bagaimana cara kita bekerja sama?",
-  ],
-  deepseek: [
-    "Bagaimana cara kerja model reasoning?",
-    "Buat contoh endpoint FastAPI singkat.",
-    "Bandingkan DeepSeek dengan Gemini.",
-    "Bagaimana cara kita bekerja sama?",
-  ],
-};
+const SUGGESTIONS: string[] = [
+  "Apa itu diffusion language model?",
+  "Buat contoh API Python singkat.",
+  "Ceritakan stack AI Anda.",
+  "Bagaimana cara kita bekerja sama?",
+];
 
 type BackendUsage = {
   model?: string;
@@ -88,7 +53,7 @@ type MessageMeta = {
   latencyMs: number;
   tokens: number;
   realTokens?: boolean;
-  sources?: string[];
+  tools?: string[];
 };
 
 type Message = {
@@ -103,12 +68,36 @@ const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4))
 const nowTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-function welcomeMessage(engine: EngineId): Message {
+function welcomeMessage(): Message {
   return {
     sender: "ai",
-    text: `Halo! Saya Vienna, asisten AI Amamiya (ditenagai oleh ${ENGINE_LABEL[engine]}). Tanyakan tentang keahliannya, proyeknya, atau cara menghubunginya.`,
+    text: "Halo! Saya Vienna, asisten AI Amamiya. Tanyakan tentang keahliannya, proyeknya, atau cara menghubunginya.",
     timestamp: nowTime(),
   };
+}
+
+// Bentuk usage jalur opencode berbeda dari engine lama: done membawa
+// {cost, tokens} dengan tokens berupa objek opencode. Normalkan ke
+// total_tokens agar resolveTokens lama bisa dipakai apa adanya.
+function normalizeUsage(u: unknown): BackendUsage | null {
+  if (!u || typeof u !== "object") return null;
+  const rec = u as Record<string, unknown>;
+  if (typeof rec.total_tokens === "number") {
+    return { total_tokens: rec.total_tokens };
+  }
+  const t = rec.tokens;
+  if (typeof t === "number") return { total_tokens: t };
+  if (t && typeof t === "object") {
+    const tt = t as Record<string, unknown>;
+    if (typeof tt.total === "number" && tt.total > 0) {
+      return { total_tokens: tt.total };
+    }
+    const sum =
+      (typeof tt.input === "number" ? tt.input : 0) +
+      (typeof tt.output === "number" ? tt.output : 0);
+    if (sum > 0) return { total_tokens: sum };
+  }
+  return null;
 }
 
 function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
@@ -160,16 +149,6 @@ function MessageText({ text }: { text: string }) {
 
 export default function AssistantChat() {
   const searchParams = useSearchParams();
-  const [engine, setEngine] = useState<EngineId>(() => {
-    if (typeof window === "undefined") return "mercury";
-    const saved = localStorage.getItem("assistant_selected_model") as EngineId | null;
-    return saved && ENABLED_ENGINES.includes(saved) ? saved : "mercury";
-  });
-  const [engineStatus, setEngineStatus] = useState<Record<EngineId, boolean>>({
-    gemini: ENABLED_ENGINES.includes("gemini"),
-    mercury: ENABLED_ENGINES.includes("mercury"),
-    deepseek: ENABLED_ENGINES.includes("deepseek"),
-  });
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<Message[]>([]);
   messagesRef.current = messages;
@@ -192,62 +171,18 @@ export default function AssistantChat() {
   // sedang di dekat bawah; user yang menggulir ke atas tidak ditarik.
   const stickRef = useRef(true);
   const quickSentRef = useRef(false);
-  const [userId] = useState(() => {
-    if (typeof window === "undefined") return "guest";
-    let id = localStorage.getItem("assistant_user_id");
-    if (!id) {
-      id = `guest_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-      localStorage.setItem("assistant_user_id", id);
-    }
-    return id;
-  });
 
-  // Muat riwayat per engine (atau pesan sambutan bila kosong).
+  // Muat riwayat tampilan (atau pesan sambutan bila kosong). Riwayat
+  // betulan percakapan ada di opencode serve, terikat session_id.
   useEffect(() => {
-    localStorage.setItem("assistant_selected_model", engine);
     try {
-      const raw = localStorage.getItem(`assistant_chat_history_${engine}`);
+      const raw = localStorage.getItem(HISTORY_KEY);
       const parsed = raw ? (JSON.parse(raw) as Message[]) : null;
-      setMessages(parsed && parsed.length > 0 ? parsed : [welcomeMessage(engine)]);
+      setMessages(parsed && parsed.length > 0 ? parsed : [welcomeMessage()]);
     } catch {
-      setMessages([welcomeMessage(engine)]);
+      setMessages([welcomeMessage()]);
     }
     setHydrated(true);
-  }, [engine]);
-
-  // Kesiapan engine dari backend.
-  useEffect(() => {
-    let cancelled = false;
-    fetch(apiUrl("/v1/engines"))
-      .then((res) => {
-        if (res.status === 404) {
-          return {
-            engines: [
-              { id: "mercury", available: false },
-              { id: "deepseek", available: false },
-            ],
-          };
-        }
-        return res.ok ? res.json() : null;
-      })
-      .then((data: { engines?: Array<{ id?: string; available?: boolean }> } | null) => {
-        if (cancelled || !data || !Array.isArray(data.engines)) return;
-        setEngineStatus((prev) => {
-          const next = { ...prev };
-          for (const e of data.engines!) {
-            if (e?.id && ENGINE_ORDER.includes(e.id as EngineId) && ENABLED_ENGINES.includes(e.id as EngineId)) {
-              next[e.id as EngineId] = e.available !== false;
-            }
-          }
-          return next;
-        });
-      })
-      .catch(() => {
-        /* backend tidak terjangkau — status dibiarkan default */
-      });
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   useEffect(() => {
@@ -258,16 +193,13 @@ export default function AssistantChat() {
   // Hentikan loop ungkap saat komponen dilepas.
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
-  const persist = useCallback(
-    (engineKey: EngineId, msgs: Message[]) => {
-      try {
-        localStorage.setItem(`assistant_chat_history_${engineKey}`, JSON.stringify(msgs));
-      } catch {
-        /* storage penuh/tidak tersedia — abaikan */
-      }
-    },
-    [],
-  );
+  const persist = useCallback((msgs: Message[]) => {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(msgs));
+    } catch {
+      /* storage penuh/tidak tersedia — abaikan */
+    }
+  }, []);
 
   const send = useCallback(
     async (rawText: string) => {
@@ -279,7 +211,7 @@ export default function AssistantChat() {
       // terisi di closure — ref selalu mencerminkan riwayat terbaru.
       const history = [...messagesRef.current, userMsg];
       setMessages(history);
-      persist(engine, history);
+      persist(history);
       setInput("");
       if (inputRef.current) inputRef.current.style.height = "auto";
       stickRef.current = true;
@@ -288,7 +220,8 @@ export default function AssistantChat() {
       const startTime = performance.now();
       let streamedText = "";
       let streamUsage: BackendUsage | null = null;
-      let streamSources: string[] = [];
+      let streamModel: string | null = null;
+      let streamTools: string[] = [];
       const aiId = `stream_${Date.now()}`;
 
       const finishWith = (finalText: string) => {
@@ -307,16 +240,16 @@ export default function AssistantChat() {
               ? {
                   ...m,
                   meta: {
-                    engine: streamUsage?.model || ENGINE_SHORT[engine],
+                    engine: streamModel || "Vienna Agent",
                     latencyMs,
                     tokens: tk.tokens,
                     realTokens: tk.realTokens,
-                    sources: streamSources,
+                    tools: streamTools,
                   },
                 }
               : m,
           );
-          persist(engine, withMeta);
+          persist(withMeta);
           return withMeta;
         });
       };
@@ -363,25 +296,17 @@ export default function AssistantChat() {
       };
 
       try {
-        const apiMessages = history
-          .slice(1)
-          .map((m) => ({ role: m.sender === "user" ? "user" : "assistant", content: m.text }));
-        const response = await fetch(apiUrl(ENGINE_ENDPOINT[engine]), {
+        // Riwayat TIDAK dikirim: serve menyimpannya per session_id.
+        // Tanpa session_id tersimpan, backend membuat sesi baru dan
+        // mengembalikannya lewat event meta pertama.
+        const response = await fetch(apiUrl(CHAT_ENDPOINT), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_id: userId,
-            session_id: localStorage.getItem(`assistant_session_id_${engine}`),
-            messages: apiMessages,
-            lang: "id",
+            prompt: text,
+            session_id: localStorage.getItem(SESSION_KEY) || undefined,
           }),
         });
-        try {
-          const sid = response.headers.get("X-Session-ID");
-          if (sid) localStorage.setItem(`assistant_session_id_${engine}`, sid);
-        } catch {
-          /* abaikan */
-        }
         if (!response.ok) {
           let detail = "";
           try {
@@ -416,8 +341,8 @@ export default function AssistantChat() {
                 const responseText =
                   data.response || data.text || data.reply || data.message || "";
                 if (responseText) {
-                  streamUsage = (data.usage ?? null) as BackendUsage | null;
-                  streamSources = Array.isArray(data.sources) ? data.sources : [];
+                  streamUsage = normalizeUsage(data.usage);
+                  if (typeof data.model === "string") streamModel = data.model;
                   setWaiting(false);
                   finishWith(responseText);
                   setBusy(false);
@@ -447,9 +372,32 @@ export default function AssistantChat() {
             }
             const parsed = JSON.parse(jsonStr);
             if (parsed.error) throw new Error(parsed.error);
+            if (parsed.meta && typeof parsed.meta === "object") {
+              // Event meta pertama membawa session_id sesi ini;
+              // meta {tool} hanya penanda aktivitas — tidak ditampilkan.
+              const sid = (parsed.meta as { session_id?: unknown }).session_id;
+              if (typeof sid === "string" && sid) {
+                try {
+                  localStorage.setItem(SESSION_KEY, sid);
+                } catch {
+                  /* abaikan */
+                }
+              }
+              continue;
+            }
             if (parsed.done === true) {
-              if (parsed.usage && typeof parsed.usage === "object") streamUsage = parsed.usage;
-              if (Array.isArray(parsed.sources)) streamSources = parsed.sources;
+              streamUsage = normalizeUsage(parsed.usage);
+              if (typeof parsed.model === "string") streamModel = parsed.model;
+              if (Array.isArray(parsed.tools_used)) {
+                streamTools = parsed.tools_used as string[];
+              }
+              if (typeof parsed.session_id === "string" && parsed.session_id) {
+                try {
+                  localStorage.setItem(SESSION_KEY, parsed.session_id);
+                } catch {
+                  /* abaikan */
+                }
+              }
               continue;
             }
             if (parsed.text) {
@@ -475,7 +423,7 @@ export default function AssistantChat() {
         setWaiting(false);
       }
     },
-    [busy, engine, persist, userId],
+    [busy, persist],
   );
 
   // Quick prompt dari halaman utama: kirim sekali saat tiba, SETELAH
@@ -492,29 +440,17 @@ export default function AssistantChat() {
     void send(q);
   }, [hydrated, searchParams, send]);
 
-  const clearChat = async () => {
+  // Sesi baru = buang session_id lokal; backend membuat sesi baru
+  // pada kiriman berikutnya. Tidak ada endpoint new-session lagi.
+  const clearChat = () => {
     try {
-      const res = await fetch(apiUrl("/v1/assistant/new-session"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          engine,
-          session_id: localStorage.getItem(`assistant_session_id_${engine}`),
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.session_id) {
-          localStorage.setItem(`assistant_session_id_${engine}`, data.session_id);
-        }
-      }
+      localStorage.removeItem(SESSION_KEY);
     } catch {
-      localStorage.removeItem(`assistant_session_id_${engine}`);
+      /* abaikan */
     }
-    const fresh = [welcomeMessage(engine)];
+    const fresh = [welcomeMessage()];
     setMessages(fresh);
-    persist(engine, fresh);
+    persist(fresh);
   };
 
   return (
@@ -523,22 +459,6 @@ export default function AssistantChat() {
         <Link href="/#tools" className="chat-back">
           <ArrowLeft size={16} /> Semua tools
         </Link>
-        <div className="chat-engines" role="tablist" aria-label="Pilih engine AI">
-          {ENGINE_ORDER.map((id) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={engine === id}
-              className={engine === id ? "engine-pill is-active" : "engine-pill"}
-              disabled={!engineStatus[id]}
-              title={engineStatus[id] ? ENGINE_LABEL[id] : `${ENGINE_LABEL[id]} belum tersedia di server`}
-              onClick={() => setEngine(id)}
-            >
-              {ENGINE_SHORT[id]}
-            </button>
-          ))}
-        </div>
         <button type="button" className="chat-clear" onClick={clearChat} title="Mulai sesi baru">
           <Trash2 size={15} /> Sesi baru
         </button>
@@ -575,8 +495,8 @@ export default function AssistantChat() {
                     {m.meta.engine} · {(m.meta.latencyMs / 1000).toFixed(1)} dtk ·{" "}
                     {m.meta.realTokens ? "" : "±"}
                     {m.meta.tokens} token
-                    {m.meta.sources && m.meta.sources.length > 0
-                      ? ` · sumber: ${m.meta.sources.join(", ")}`
+                    {m.meta.tools && m.meta.tools.length > 0
+                      ? ` · tool: ${m.meta.tools.join(", ")}`
                       : ""}
                   </span>
                 )}
@@ -601,7 +521,7 @@ export default function AssistantChat() {
 
       {messages.length <= 1 && (
         <div className="chat-suggest">
-          {SUGGESTIONS[engine].map((s) => (
+          {SUGGESTIONS.map((s) => (
             <button key={s} type="button" className="qp-chip" onClick={() => void send(s)} disabled={busy}>
               {s}
             </button>
@@ -632,7 +552,7 @@ export default function AssistantChat() {
               void send(input);
             }
           }}
-          placeholder={`Tulis pesan untuk Vienna (${ENGINE_SHORT[engine]})…`}
+          placeholder="Tulis pesan untuk Vienna…"
           aria-label="Tulis pesan"
           rows={1}
           maxLength={4000}
