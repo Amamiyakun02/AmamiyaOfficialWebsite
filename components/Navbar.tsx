@@ -127,7 +127,7 @@ export default function Navbar() {
             className="brand"
             onClick={(e) => go(e, "home")}
           >
-            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+            <img src="/vienna.svg" alt="" className="brand-logo" /> Amamiya
           </Link>
           <nav>
             {LINKS.map((l) => (
@@ -181,7 +181,7 @@ export default function Navbar() {
               setOpen(false);
             }}
           >
-            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+            <img src="/vienna.svg" alt="" className="brand-logo" /> Amamiya
           </Link>
           <button
             type="button"
