@@ -13,8 +13,10 @@ const nextConfig: NextConfig = {
   // Situs kini SATU halaman per section — alamat lama dari struktur
   // multi-halaman (tahap 1) diarahkan ke jangkar section yang setara.
   // API backend Vienna Agent diteruskan ke backend lokal (default
-  // 127.0.0.1:8000; ganti lewat env BACKEND_ORIGIN saat start) agar
-  // situs yang dibuka dari alamat mana pun (localhost / tunnel /
+  // 127.0.0.1:8000; tujuan diganti lewat env BACKEND_ORIGIN yang
+  // dibaca saat BUILD — terbukti 19 Nov 2026: mengganti env saat
+  // start saja TIDAK mengubah tujuan rewrite, wajib build ulang)
+  // agar situs yang dibuka dari alamat mana pun (localhost / tunnel /
   // domain) selalu seasal dan menjangkau backend di mesin yang sama.
   async rewrites() {
     const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8000";
