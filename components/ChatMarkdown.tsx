@@ -83,17 +83,12 @@ function segment(text: string): Seg[] {
   return segs;
 }
 
-function CodeBlock({
-  lang,
-  code,
-  highlight,
-}: {
-  lang: string;
-  code: string;
-  highlight: boolean;
-}) {
+/* Blok kode dengan highlight penuh (dipakai ChatMarkdown untuk
+   blok yang pagarnya sudah menutup, dan dipakai ulang kartu file
+   untuk pratinjau isi file). Bahasa tak dikenal/text = polos. */
+export function HighlightedCode({ lang, code }: { lang: string; code: string }) {
   const resolved = LANG_ALIASES[lang.toLowerCase()] ?? lang.toLowerCase();
-  if (highlight && resolved !== "text" && hljs.getLanguage(resolved)) {
+  if (resolved !== "text" && hljs.getLanguage(resolved)) {
     // Keluaran hljs aman: teks kode di-escape oleh highlight.js
     // sendiri sebelum dibungkus span token.
     const html = hljs.highlight(code, { language: resolved }).value;
@@ -111,6 +106,25 @@ function CodeBlock({
       <code>{code}</code>
     </pre>
   );
+}
+
+function CodeBlock({
+  lang,
+  code,
+  highlight,
+}: {
+  lang: string;
+  code: string;
+  highlight: boolean;
+}) {
+  if (!highlight) {
+    return (
+      <pre className="msg-code">
+        <code>{code}</code>
+      </pre>
+    );
+  }
+  return <HighlightedCode lang={lang} code={code} />;
 }
 
 export default function ChatMarkdown({

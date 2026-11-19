@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import ChatMarkdown from "@/components/ChatMarkdown";
+import FileCards, { type ChatFile } from "@/components/FileCards";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -86,6 +87,7 @@ type Message = {
   text: string;
   timestamp: string;
   meta?: MessageMeta;
+  files?: ChatFile[];
 };
 
 type HitlOption = { value: string; label: string; description?: string };
@@ -168,6 +170,20 @@ function normalizeUsage(u: unknown): BackendUsage | null {
     if (sum > 0) return { ...base, total_tokens: sum };
   }
   return null;
+}
+
+// Saring entri files dari payload backend ke bentuk yang aman
+// dirender (name/path string, size angka; content string|null).
+function pickFiles(raw: unknown): ChatFile[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (f): f is ChatFile =>
+      !!f &&
+      typeof f === "object" &&
+      typeof (f as ChatFile).name === "string" &&
+      typeof (f as ChatFile).path === "string" &&
+      typeof (f as ChatFile).size === "number",
+  );
 }
 
 function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
@@ -488,6 +504,7 @@ export default function AdminAgentPanel() {
       let streamUsage: BackendUsage | null = null;
       let streamModel: string | null = null;
       let streamTools: string[] = [];
+      let streamFiles: ChatFile[] = [];
       const aiId = `stream_${Date.now()}`;
 
       let segText = "";
@@ -579,6 +596,9 @@ export default function AdminAgentPanel() {
                     reasoning: streamUsage?.reasoning_tokens,
                     cost: streamUsage?.cost_usd,
                   },
+                  ...(streamFiles.length > 0
+                    ? { files: streamFiles }
+                    : {}),
                 }
               : m,
           );
@@ -653,6 +673,9 @@ export default function AdminAgentPanel() {
                 if (responseText) {
                   streamUsage = normalizeUsage(data.usage);
                   if (typeof data.model === "string") streamModel = data.model;
+                  if (Array.isArray(data.files)) {
+                    streamFiles = pickFiles(data.files);
+                  }
                   setWaiting(false);
                   finishWith(responseText);
                   setBusy(false);
@@ -757,6 +780,9 @@ export default function AdminAgentPanel() {
               if (typeof parsed.model === "string") streamModel = parsed.model;
               if (Array.isArray(parsed.tools_used)) {
                 streamTools = parsed.tools_used as string[];
+              }
+              if (Array.isArray(parsed.files)) {
+                streamFiles = pickFiles(parsed.files);
               }
               if (typeof parsed.session_id === "string" && parsed.session_id) {
                 try {
@@ -1287,6 +1313,7 @@ export default function AdminAgentPanel() {
                     <span className="msg-caret" aria-hidden="true" />
                   )}
                 </div>
+                <FileCards files={m.files} />
                 <div className="msg-meta">
                   <span>{m.timestamp}</span>
                   {m.meta && (

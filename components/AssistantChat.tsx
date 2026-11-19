@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import ChatMarkdown from "@/components/ChatMarkdown";
+import FileCards, { type ChatFile } from "@/components/FileCards";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -30,7 +31,10 @@ import { apiUrl } from "@/lib/api";
    tab pemilih engine — tab itu hilang karena sumbernya kini satu.
    - aliran SSE: {meta: {session_id}} di awal, {text} berkali-kali,
      {meta: {tool}} saat agent memanggil tool, ditutup
-     {done, session_id, tools_used, model, usage}; gagal = {error}.
+     {done, session_id, tools_used, model, usage, files}; gagal =
+     {error}. files = lampiran file hasil kerja agent pada giliran
+     itu (backend 2471994) — dirender sebagai kartu FileCards di
+     bawah gelembung pesan yang ditutup event done tersebut.
      TIDAK ADA event reasoning (terukur 19 Nov 2026) — token
      reasoning hanya angka di usage akhir.
    - HITL (body hitl: true): meta {hitl_form} / {hitl_permission}
@@ -91,6 +95,7 @@ type Message = {
   text: string;
   timestamp: string;
   meta?: MessageMeta;
+  files?: ChatFile[];
 };
 
 /* ---- HITL (18 Nov 2026): pertanyaan & persetujuan dari agent ----
@@ -183,6 +188,20 @@ function normalizeUsage(u: unknown): BackendUsage | null {
     if (sum > 0) return { ...base, total_tokens: sum };
   }
   return null;
+}
+
+// Saring entri files dari payload backend ke bentuk yang aman
+// dirender (name/path string, size angka; content string|null).
+function pickFiles(raw: unknown): ChatFile[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (f): f is ChatFile =>
+      !!f &&
+      typeof f === "object" &&
+      typeof (f as ChatFile).name === "string" &&
+      typeof (f as ChatFile).path === "string" &&
+      typeof (f as ChatFile).size === "number",
+  );
 }
 
 function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
@@ -469,6 +488,7 @@ export default function AssistantChat() {
       let streamUsage: BackendUsage | null = null;
       let streamModel: string | null = null;
       let streamTools: string[] = [];
+      let streamFiles: ChatFile[] = [];
       const aiId = `stream_${Date.now()}`;
 
       // --- Segmen stream: satu giliran bisa dipecah kartu HITL ---
@@ -574,6 +594,9 @@ export default function AssistantChat() {
                     reasoning: streamUsage?.reasoning_tokens,
                     cost: streamUsage?.cost_usd,
                   },
+                  ...(streamFiles.length > 0
+                    ? { files: streamFiles }
+                    : {}),
                 }
               : m,
           );
@@ -637,6 +660,9 @@ export default function AssistantChat() {
                 if (responseText) {
                   streamUsage = normalizeUsage(data.usage);
                   if (typeof data.model === "string") streamModel = data.model;
+                  if (Array.isArray(data.files)) {
+                    streamFiles = pickFiles(data.files);
+                  }
                   setWaiting(false);
                   finishWith(responseText);
                   setBusy(false);
@@ -734,6 +760,9 @@ export default function AssistantChat() {
               if (typeof parsed.model === "string") streamModel = parsed.model;
               if (Array.isArray(parsed.tools_used)) {
                 streamTools = parsed.tools_used as string[];
+              }
+              if (Array.isArray(parsed.files)) {
+                streamFiles = pickFiles(parsed.files);
               }
               if (typeof parsed.session_id === "string" && parsed.session_id) {
                 try {
@@ -1182,6 +1211,7 @@ export default function AssistantChat() {
                 )}
                 {m.id === streamId && <span className="msg-caret" aria-hidden="true" />}
               </div>
+              <FileCards files={m.files} />
               <div className="msg-meta">
                 <span>{m.timestamp}</span>
                 {m.meta && (

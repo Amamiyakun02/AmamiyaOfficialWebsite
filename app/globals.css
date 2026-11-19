@@ -1881,6 +1881,90 @@ code {
   cursor: default;
   opacity: 0.75;
 }
+/* Kartu lampiran file hasil kerja agent (FileCards, 19 Nov 2026):
+   tampil di bawah gelembung pesan AI yang gilirannya menghasilkan
+   file; pratinjau memakai blok kode .msg-code yang sama. */
+.file-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.file-card {
+  border: 1px solid #26262b;
+  background: #101013;
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+.file-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.file-card-icon {
+  color: #7db4ff;
+  flex: none;
+  margin-top: 2px;
+}
+.file-card-info {
+  flex: 1;
+  min-width: 0;
+}
+.file-card-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.file-card-size {
+  color: #9a9aa2;
+  font-size: 11.5px;
+  margin-left: 7px;
+  white-space: nowrap;
+}
+.file-card-path {
+  font-size: 11.5px;
+  color: #75757e;
+  overflow-wrap: anywhere;
+}
+.file-card-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid #2c2c33;
+  background: #17171b;
+  color: #c9c9d2;
+  cursor: pointer;
+}
+.file-card-btn:hover {
+  color: #fff;
+  border-color: #3a3a41;
+}
+.file-chev {
+  transition: transform 0.18s ease;
+}
+.file-chev.is-open {
+  transform: rotate(180deg);
+}
+.file-preview {
+  margin-top: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+.file-preview .msg-code {
+  margin: 0;
+}
+.file-omitted {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: #9a9aa2;
+  font-style: italic;
+}
 .msg-bubble {
   border-radius: 14px;
   padding: 10px 14px;
