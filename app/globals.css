@@ -1783,6 +1783,104 @@ code {
   color: #c9c9d2;
 }
 .msg-md hr { border: 0; border-top: 1px solid #26262b; margin: 12px 0; }
+/* Tabel GFM (remark-gfm, 19 Nov 2026): display block + overflow
+   agar tabel lebar bisa digeser di gelembung sempit/HP. */
+.msg-md table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13.5px;
+}
+.msg-md th, .msg-md td {
+  border: 1px solid #2c2c33;
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.msg-md th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-weight: 600;
+}
+.msg-md tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+/* Palet highlight.js untuk blok kode chat (.msg-code) — warna
+   token selaras tema gelap situs; kode polos mewarisi warna teks. */
+.msg-code .hljs-comment, .msg-code .hljs-quote {
+  color: #75757e;
+  font-style: italic;
+}
+.msg-code .hljs-keyword, .msg-code .hljs-selector-tag, .msg-code .hljs-doctag {
+  color: #c792ea;
+}
+.msg-code .hljs-string, .msg-code .hljs-regexp, .msg-code .hljs-meta .hljs-string {
+  color: #98c379;
+}
+.msg-code .hljs-number, .msg-code .hljs-literal {
+  color: #e5a558;
+}
+.msg-code .hljs-title, .msg-code .hljs-title.function_, .msg-code .hljs-section {
+  color: #82aaff;
+}
+.msg-code .hljs-title.class_, .msg-code .hljs-type, .msg-code .hljs-built_in {
+  color: #4ec9b0;
+}
+.msg-code .hljs-attr, .msg-code .hljs-attribute, .msg-code .hljs-variable,
+.msg-code .hljs-template-variable, .msg-code .hljs-selector-id,
+.msg-code .hljs-name, .msg-code .hljs-tag {
+  color: #7db4ff;
+}
+.msg-code .hljs-symbol, .msg-code .hljs-bullet, .msg-code .hljs-link {
+  color: #89ddff;
+}
+.msg-code .hljs-strong { color: #fff; font-weight: 700; }
+/* Status tool berjalan di chat (event meta.tool): baris kecil
+   sejajar kolom pesan, hilang saat teks/done tiba. */
+.tool-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #9a9aa2;
+  padding-left: 36px;
+  margin: -2px 0 6px;
+}
+.tool-status-spin {
+  flex: none;
+  animation: toolspin 1.1s linear infinite;
+}
+@keyframes toolspin {
+  to { transform: rotate(360deg); }
+}
+/* HITL: input jawaban bebas (field custom) + chip entri custom
+   pada field multiselect. */
+.hitl-custom-input {
+  margin-top: 8px;
+}
+.hitl-custom-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.hitl-custom-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: #cfe4ff;
+  background: rgba(0, 129, 251, 0.14);
+  border: 1px solid rgba(0, 129, 251, 0.45);
+  border-radius: 999px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.hitl-custom-chip:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
 .msg-bubble {
   border-radius: 14px;
   padding: 10px 14px;

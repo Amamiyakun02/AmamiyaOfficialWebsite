@@ -8,8 +8,10 @@ import {
   ShieldAlert,
   Check,
   Hourglass,
+  LoaderCircle,
+  X,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import ChatMarkdown from "@/components/ChatMarkdown";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -22,9 +24,10 @@ import { apiUrl } from "@/lib/api";
    token dashboard; tanpa token valid balasannya 401. HITL penuh:
    form (question) + permission dijawab lewat endpoint sessions
    dengan query ?role=admin + header token yang sama.
-   Mesin chat (SSE, ungkap rAF, segmen per kartu HITL, indikator
-   menunggu) meniru AssistantChat yang sudah teruji — disalin dengan
-   adaptasi role admin, TANPA batas peran publik.
+   Mesin chat (SSE, render markdown per-delta lewat ChatMarkdown,
+   segmen per kartu HITL, indikator menunggu + status tool) meniru
+   AssistantChat yang sudah teruji — disalin dengan adaptasi role
+   admin, TANPA batas peran publik.
    Daftar sesi dari GET /v1/opencode/sessions?role=admin; riwayat
    sesi lama dimuat dari GET .../sessions/{id}/messages?role=admin
    (hanya part teks yang dirender).
@@ -57,6 +60,12 @@ type BackendUsage = {
   completion_tokens?: number;
   prompt_tokens_est?: number;
   response_tokens_est?: number;
+  // Bentuk opencode (event done): usage.tokens.{input,output,
+  // reasoning} + usage.cost — diisi normalizeUsage.
+  input_tokens?: number;
+  output_tokens?: number;
+  reasoning_tokens?: number;
+  cost_usd?: number;
 };
 
 type MessageMeta = {
@@ -65,6 +74,10 @@ type MessageMeta = {
   tokens: number;
   realTokens?: boolean;
   tools?: string[];
+  inTokens?: number;
+  outTokens?: number;
+  reasoning?: number;
+  cost?: number;
 };
 
 type Message = {
@@ -83,6 +96,9 @@ type HitlField = {
   type?: string;
   required?: boolean;
   options?: HitlOption[];
+  // custom: true = pengguna boleh mengetik jawaban sendiri di luar
+  // opsi; type "multiselect" = jawaban berupa array string.
+  custom?: boolean;
 };
 type HitlFormData = {
   id: string;
@@ -123,23 +139,33 @@ function welcomeMessage(): Message {
   };
 }
 
+// Bentuk usage opencode pada event done: {cost, tokens{input,
+// output, reasoning, cache}} (terukur 19 Nov 2026). Normalkan ke
+// total_tokens + bawa rincian input/output/reasoning & cost untuk
+// footer (cost admin selalu 0 → disembunyikan di footer).
 function normalizeUsage(u: unknown): BackendUsage | null {
   if (!u || typeof u !== "object") return null;
   const rec = u as Record<string, unknown>;
+  const cost = typeof rec.cost === "number" ? rec.cost : undefined;
   if (typeof rec.total_tokens === "number") {
-    return { total_tokens: rec.total_tokens };
+    return { total_tokens: rec.total_tokens, cost_usd: cost };
   }
   const t = rec.tokens;
-  if (typeof t === "number") return { total_tokens: t };
+  if (typeof t === "number") return { total_tokens: t, cost_usd: cost };
   if (t && typeof t === "object") {
     const tt = t as Record<string, unknown>;
+    const base: BackendUsage = {
+      cost_usd: cost,
+      input_tokens: typeof tt.input === "number" ? tt.input : undefined,
+      output_tokens: typeof tt.output === "number" ? tt.output : undefined,
+      reasoning_tokens:
+        typeof tt.reasoning === "number" ? tt.reasoning : undefined,
+    };
     if (typeof tt.total === "number" && tt.total > 0) {
-      return { total_tokens: tt.total };
+      return { ...base, total_tokens: tt.total };
     }
-    const sum =
-      (typeof tt.input === "number" ? tt.input : 0) +
-      (typeof tt.output === "number" ? tt.output : 0);
-    if (sum > 0) return { total_tokens: sum };
+    const sum = (base.input_tokens ?? 0) + (base.output_tokens ?? 0);
+    if (sum > 0) return { ...base, total_tokens: sum };
   }
   return null;
 }
@@ -155,14 +181,30 @@ function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
   return { tokens: estimateTokens(fallbackText), realTokens: false };
 }
 
-function MessageMarkdown({ text }: { text: string }) {
-  return (
-    <div className="msg-md">
-      <ReactMarkdown>{text}</ReactMarkdown>
-    </div>
-  );
-}
+// Footer: cost 0 (atau terlalu kecil) disembunyikan — model admin
+// selalu melaporkan cost 0 karena opencode tak punya harga Lyber.
+const formatCost = (cost: number): string =>
+  "$" + cost.toFixed(4).replace(/0+$/, "").replace(/\.$/, ".00");
 
+// Label status tool (event {meta: {tool}}) selama agent bekerja.
+const TOOL_LABELS: Record<string, string> = {
+  write: "Menulis file…",
+  read: "Membaca file…",
+  edit: "Mengedit file…",
+  bash: "Menjalankan perintah…",
+  shell: "Menjalankan perintah…",
+  question: "Menyiapkan pertanyaan…",
+  webfetch: "Mengambil halaman web…",
+  websearch: "Mencari di web…",
+  grep: "Mencari dalam file…",
+  glob: "Mencari file…",
+  task: "Menjalankan sub-tugas…",
+};
+const toolLabel = (name: string): string =>
+  TOOL_LABELS[name] ?? `Memakai tool ${name}…`;
+
+// Render teks pesan PENGGUNA (bukan markdown). Pesan AI memakai
+// ChatMarkdown.
 function MessageText({ text }: { text: string }) {
   const segments = text.split("```");
   return (
@@ -195,11 +237,8 @@ export default function AdminAgentPanel() {
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [streamId, setStreamId] = useState<string | null>(null);
-  const targetRef = useRef("");
-  const shownRef = useRef(0);
-  const streamDoneRef = useRef(false);
-  const segRef = useRef("");
-  const rafRef = useRef(0);
+  // Nama tool yang sedang dijalankan agent (event meta.tool).
+  const [toolName, setToolName] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const stickRef = useRef(true);
@@ -268,8 +307,6 @@ export default function AdminAgentPanel() {
     if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, waiting]);
 
-  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
-
   const persist = useCallback((msgs: Message[]) => {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(msgs));
@@ -280,8 +317,10 @@ export default function AdminAgentPanel() {
 
   /* ---- HITL ---- */
   const [hitlCards, setHitlCards] = useState<HitlCard[]>([]);
+  // Jawaban per kartu per field: string, atau string[] untuk field
+  // multiselect.
   const [hitlAnswers, setHitlAnswers] = useState<
-    Record<string, Record<string, string>>
+    Record<string, Record<string, string | string[]>>
   >({});
 
   const patchCard = useCallback((id: string, patch: Partial<HitlCard>) => {
@@ -347,7 +386,10 @@ export default function AdminAgentPanel() {
   }, [hydrated]);
 
   const replyForm = useCallback(
-    async (card: HitlCard, answerOverride?: Record<string, string>) => {
+    async (
+      card: HitlCard,
+      answerOverride?: Record<string, string | string[]>,
+    ) => {
       patchCard(card.id, { status: "sending", error: undefined });
       try {
         const res = await fetch(
@@ -440,6 +482,7 @@ export default function AdminAgentPanel() {
       stickRef.current = true;
       setBusy(true);
       setWaiting(true);
+      setToolName(null);
       const startTime = performance.now();
       let allText = "";
       let streamUsage: BackendUsage | null = null;
@@ -453,7 +496,6 @@ export default function AdminAgentPanel() {
       let anySegCreated = false;
       let lastSegId = aiId;
       let segCount = 0;
-      segRef.current = aiId;
 
       let waitingNow = true;
       const setWaitingBoth = (v: boolean) => {
@@ -482,20 +524,13 @@ export default function AdminAgentPanel() {
           : anySegCreated
             ? lastSegId
             : userMsg.id!;
-        if (segCreated) {
-          const doneText = targetRef.current;
-          const id = segId;
-          setMessages((prev) =>
-            prev.map((m) => (m.id === id ? { ...m, text: doneText } : m)),
-          );
-        }
+        // Teks segmen lama sudah tercermin penuh lewat render
+        // per-delta; status tool dibersihkan (kartu menggantikannya).
+        setToolName(null);
         segText = "";
-        targetRef.current = "";
-        shownRef.current = 0;
         segCount += 1;
         segId = `${aiId}_s${segCount}`;
         segCreated = false;
-        segRef.current = segId;
         setStreamId(segId);
         return anchorId;
       };
@@ -503,6 +538,7 @@ export default function AdminAgentPanel() {
       const finishWith = (finalText: string) => {
         setStreamId(null);
         setWaitingBoth(false);
+        setToolName(null);
         setHitlCards((prev) =>
           prev.map((c) =>
             c.status === "pending" ? { ...c, status: "cancelled" as const } : c,
@@ -538,6 +574,10 @@ export default function AdminAgentPanel() {
                     tokens: tk.tokens,
                     realTokens: tk.realTokens,
                     tools: streamTools,
+                    inTokens: streamUsage?.input_tokens,
+                    outTokens: streamUsage?.output_tokens,
+                    reasoning: streamUsage?.reasoning_tokens,
+                    cost: streamUsage?.cost_usd,
                   },
                 }
               : m,
@@ -548,41 +588,9 @@ export default function AdminAgentPanel() {
         void loadSessions();
       };
 
-      targetRef.current = "";
-      shownRef.current = 0;
-      streamDoneRef.current = false;
-      let revealStarted = false;
-      const startReveal = () => {
-        if (revealStarted) return;
-        revealStarted = true;
-        const reduced =
-          typeof window !== "undefined" &&
-          window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        const step = () => {
-          const target = targetRef.current;
-          const shown = shownRef.current;
-          if (shown < target.length) {
-            const remaining = target.length - shown;
-            const inc = reduced
-              ? remaining
-              : Math.max(1, Math.min(Math.ceil(remaining / 18), 24));
-            const next = Math.min(target.length, shown + inc);
-            shownRef.current = next;
-            const slice = target.slice(0, next);
-            const id = segRef.current;
-            setMessages((prev) =>
-              prev.map((m) => (m.id === id ? { ...m, text: slice } : m)),
-            );
-            rafRef.current = requestAnimationFrame(step);
-          } else if (!streamDoneRef.current) {
-            setWaitingBoth(true);
-            rafRef.current = requestAnimationFrame(step);
-          } else {
-            finishWith(target || "(tidak ada jawaban)");
-          }
-        };
-        rafRef.current = requestAnimationFrame(step);
-      };
+      // Render per-delta: setiap potongan teks SSE langsung ditulis
+      // ke gelembung segmen aktif dan dirender ChatMarkdown dari
+      // string gabungannya.
 
       try {
         const response = await fetch(apiUrl(CHAT_ENDPOINT), {
@@ -683,6 +691,9 @@ export default function AdminAgentPanel() {
                 }
                 setCurrentSession(sid);
               }
+              if (typeof meta.tool === "string" && meta.tool) {
+                setToolName(meta.tool);
+              }
               const form = meta.hitl_form as HitlFormData | undefined;
               if (form && typeof form.id === "string") {
                 const card: HitlCard = {
@@ -760,24 +771,23 @@ export default function AdminAgentPanel() {
             if (parsed.text) {
               ensureBubble();
               setWaitingBoth(false);
+              setToolName(null);
               allText += parsed.text;
               segText += parsed.text;
-              targetRef.current = segText;
-              startReveal();
+              const id = segId;
+              const txt = segText;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, text: txt } : m)),
+              );
             }
           }
         }
-        streamDoneRef.current = true;
-        if (!revealStarted) finishWith(segText || "(tidak ada jawaban)");
+        finishWith(segText || "(tidak ada jawaban)");
       } catch (err) {
-        cancelAnimationFrame(rafRef.current);
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
         setWaiting(false);
         ensureBubble();
-        targetRef.current = `⚠️ ${msg}`;
-        shownRef.current = targetRef.current.length;
-        streamDoneRef.current = true;
         finishWith(`⚠️ ${msg}`);
       } finally {
         setBusy(false);
@@ -858,11 +868,13 @@ export default function AdminAgentPanel() {
 
   const formComplete = (
     form: HitlFormData,
-    ans: Record<string, string>,
+    ans: Record<string, string | string[]>,
   ): boolean =>
-    form.fields.every(
-      (f) => f.required === false || (ans[f.key] ?? "").trim().length > 0,
-    );
+    form.fields.every((f) => {
+      if (f.required === false) return true;
+      const v = ans[f.key];
+      return Array.isArray(v) ? v.length > 0 : (v ?? "").trim().length > 0;
+    });
 
   const renderHitlCard = (card: HitlCard) => (
     <div key={card.id} className="msg msg-ai">
@@ -887,12 +899,38 @@ export default function AdminAgentPanel() {
             </div>
             {card.form.fields.map((f) => {
               const locked = card.status !== "pending";
-              const value = hitlAnswers[card.id]?.[f.key] ?? "";
-              const setField = (v: string) => {
+              const raw = hitlAnswers[card.id]?.[f.key];
+              const isMulti = f.type === "multiselect";
+              const value = typeof raw === "string" ? raw : "";
+              const selectedArr = Array.isArray(raw) ? raw : [];
+              const setField = (v: string | string[]) => {
                 const next = { ...(hitlAnswers[card.id] ?? {}), [f.key]: v };
                 setHitlAnswers((prev) => ({ ...prev, [card.id]: next }));
                 return next;
               };
+              // Pembaruan array multiselect secara fungsional dari
+              // state terbaru — klik beruntun tidak saling menimpa.
+              const updateMulti = (fn: (arr: string[]) => string[]) => {
+                setHitlAnswers((prev) => {
+                  const cur = prev[card.id]?.[f.key];
+                  const arr = Array.isArray(cur) ? cur : [];
+                  return {
+                    ...prev,
+                    [card.id]: {
+                      ...(prev[card.id] ?? {}),
+                      [f.key]: fn(arr),
+                    },
+                  };
+                });
+              };
+              // Jawaban teks bebas (field custom): nilai yang bukan
+              // salah satu opsi = tulisan pengguna sendiri.
+              const customValue =
+                !isMulti &&
+                f.options &&
+                !f.options.some((o) => o.value === value)
+                  ? value
+                  : "";
               return (
                 <div key={f.key} className="hitl-field">
                   <div className="hitl-field-title">{f.title}</div>
@@ -900,33 +938,121 @@ export default function AdminAgentPanel() {
                     <div className="hitl-field-desc">{f.description}</div>
                   )}
                   {f.options && f.options.length > 0 ? (
-                    <div className="hitl-options">
-                      {f.options.map((o) => (
-                        <button
-                          key={o.value}
-                          type="button"
-                          disabled={locked}
-                          className={
-                            value === o.value
-                              ? "hitl-option is-selected"
-                              : "hitl-option"
-                          }
-                          onClick={() => {
-                            const next = setField(o.value);
-                            if (card.form && formComplete(card.form, next)) {
-                              void replyForm(card, next);
-                            }
-                          }}
-                        >
-                          <span className="hitl-option-label">{o.label}</span>
-                          {o.description && (
-                            <span className="hitl-option-desc">
-                              {o.description}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      <div className="hitl-options">
+                        {f.options.map((o) => {
+                          const selected = isMulti
+                            ? selectedArr.includes(o.value)
+                            : value === o.value;
+                          return (
+                            <button
+                              key={o.value}
+                              type="button"
+                              disabled={locked}
+                              className={
+                                selected
+                                  ? "hitl-option is-selected"
+                                  : "hitl-option"
+                              }
+                              onClick={() => {
+                                if (isMulti) {
+                                  // Multiselect: alih pilihan saja;
+                                  // pengiriman lewat tombol Kirim
+                                  // jawaban (jawaban = array string).
+                                  updateMulti((arr) =>
+                                    arr.includes(o.value)
+                                      ? arr.filter((x) => x !== o.value)
+                                      : [...arr, o.value],
+                                  );
+                                  return;
+                                }
+                                const next = setField(o.value);
+                                if (
+                                  card.form &&
+                                  formComplete(card.form, next)
+                                ) {
+                                  void replyForm(card, next);
+                                }
+                              }}
+                            >
+                              <span className="hitl-option-label">
+                                {o.label}
+                              </span>
+                              {o.description && (
+                                <span className="hitl-option-desc">
+                                  {o.description}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {isMulti &&
+                        selectedArr.some(
+                          (v) => !f.options?.some((o) => o.value === v),
+                        ) && (
+                          <div className="hitl-custom-list">
+                            {selectedArr
+                              .filter(
+                                (v) =>
+                                  !f.options?.some((o) => o.value === v),
+                              )
+                              .map((v) => (
+                                <button
+                                  key={v}
+                                  type="button"
+                                  className="hitl-custom-chip"
+                                  disabled={locked}
+                                  onClick={() =>
+                                    updateMulti((arr) =>
+                                      arr.filter((x) => x !== v),
+                                    )
+                                  }
+                                >
+                                  {v} <X size={12} />
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      {f.custom &&
+                        (isMulti ? (
+                          <input
+                            className="hitl-input hitl-custom-input"
+                            disabled={locked}
+                            placeholder="atau tulis jawabanmu sendiri, Enter untuk menambahkan…"
+                            defaultValue=""
+                            onKeyDown={(e) => {
+                              if (e.key !== "Enter") return;
+                              const draft = e.currentTarget.value.trim();
+                              if (!draft) return;
+                              updateMulti((arr) =>
+                                arr.includes(draft) ? arr : [...arr, draft],
+                              );
+                              e.currentTarget.value = "";
+                            }}
+                          />
+                        ) : (
+                          <input
+                            className="hitl-input hitl-custom-input"
+                            disabled={locked}
+                            placeholder="atau tulis jawabanmu sendiri…"
+                            value={customValue}
+                            onChange={(e) => setField(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (
+                                e.key === "Enter" &&
+                                card.form &&
+                                formComplete(
+                                  card.form,
+                                  hitlAnswers[card.id] ?? {},
+                                )
+                              ) {
+                                void replyForm(card);
+                              }
+                            }}
+                          />
+                        ))}
+                    </>
                   ) : f.type === "textarea" ? (
                     <textarea
                       className="hitl-input"
@@ -972,12 +1098,29 @@ export default function AdminAgentPanel() {
               </div>
             ) : (
               <>
-                {card.form.fields.some((f) => !f.options?.length) && (
+                {card.form.fields.some(
+                  (f) => !f.options?.length || f.custom,
+                ) && (
                   <div className="hitl-hint">
                     Tekan Enter untuk mengirim jawaban.
                   </div>
                 )}
                 <div className="hitl-actions">
+                  {card.form.fields.some(
+                    (f) => f.type === "multiselect",
+                  ) && (
+                    <button
+                      type="button"
+                      className="hitl-btn hitl-btn-primary"
+                      disabled={
+                        card.status !== "pending" ||
+                        !formComplete(card.form, hitlAnswers[card.id] ?? {})
+                      }
+                      onClick={() => void replyForm(card)}
+                    >
+                      Kirim jawaban
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="hitl-btn"
@@ -1132,8 +1275,11 @@ export default function AdminAgentPanel() {
               )}
               <div className="msg-col">
                 <div className="msg-bubble">
-                  {m.sender === "ai" && m.id !== streamId ? (
-                    <MessageMarkdown text={m.text} />
+                  {m.sender === "ai" ? (
+                    <ChatMarkdown
+                      text={m.text}
+                      streaming={m.id === streamId}
+                    />
                   ) : (
                     <MessageText text={m.text} />
                   )}
@@ -1147,8 +1293,23 @@ export default function AdminAgentPanel() {
                     <span>
                       {" · "}
                       {m.meta.engine} · {(m.meta.latencyMs / 1000).toFixed(1)}{" "}
-                      dtk · {m.meta.realTokens ? "" : "±"}
-                      {m.meta.tokens} token
+                      dtk ·{" "}
+                      {m.meta.inTokens != null && m.meta.outTokens != null ? (
+                        <>
+                          {m.meta.inTokens} masuk · {m.meta.outTokens} keluar
+                        </>
+                      ) : (
+                        <>
+                          {m.meta.realTokens ? "" : "±"}
+                          {m.meta.tokens} token
+                        </>
+                      )}
+                      {m.meta.reasoning
+                        ? ` · penalaran ${m.meta.reasoning}`
+                        : ""}
+                      {m.meta.cost && m.meta.cost >= 0.0001
+                        ? ` · ${formatCost(m.meta.cost)}`
+                        : ""}
                       {m.meta.tools && m.meta.tools.length > 0
                         ? ` · tool: ${m.meta.tools.join(", ")}`
                         : ""}
@@ -1162,7 +1323,7 @@ export default function AdminAgentPanel() {
               .map((card) => renderHitlCard(card))}
           </Fragment>
         ))}
-        {waiting && (
+        {waiting && !toolName && (
           <div className="msg msg-ai">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
@@ -1173,6 +1334,14 @@ export default function AdminAgentPanel() {
                 <span className="dot" />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Status tool yang sedang berjalan (event meta.tool). */}
+        {toolName && busy && (
+          <div className="tool-status" role="status">
+            <LoaderCircle size={13} className="tool-status-spin" />
+            <span>{toolLabel(toolName)}</span>
           </div>
         )}
 

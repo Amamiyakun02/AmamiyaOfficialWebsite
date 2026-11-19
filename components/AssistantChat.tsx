@@ -11,8 +11,10 @@ import {
   ShieldAlert,
   Check,
   Hourglass,
+  LoaderCircle,
+  X,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import ChatMarkdown from "@/components/ChatMarkdown";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -29,13 +31,18 @@ import { apiUrl } from "@/lib/api";
    - aliran SSE: {meta: {session_id}} di awal, {text} berkali-kali,
      {meta: {tool}} saat agent memanggil tool, ditutup
      {done, session_id, tools_used, model, usage}; gagal = {error}.
+     TIDAK ADA event reasoning (terukur 19 Nov 2026) — token
+     reasoning hanya angka di usage akhir.
    - HITL (body hitl: true): meta {hitl_form} / {hitl_permission}
      dirender sebagai kartu yang dijawab lewat endpoint reply
      backend (agent lanjut di aliran yang sama); kartu tertunda
      dipulihkan dari GET forms/permissions sesudah reload.
-   - teks yang diterima diungkap bertahap seperti mengetik oleh loop
-     rAF (startReveal); pesan AI selesai dirender markdown betulan
-     (react-markdown).
+   - render teks mengikuti bentuk output TERUKUR (19 Nov 2026):
+     delta produksi kasar (1–6 potongan besar), jadi gelembung
+     stream dirender ulang sebagai markdown (komponen ChatMarkdown:
+     GFM + highlight) dari string gabungan pada SETIAP delta —
+     loop ungkap rAF lama dibuang. Event {meta: {tool}} tampil
+     sebagai status kecil selama tool berjalan.
    Quick prompt dari halaman utama tiba sebagai ?q= dan terkirim
    otomatis sekali saat halaman dibuka.
    ===================================================================== */
@@ -58,6 +65,12 @@ type BackendUsage = {
   completion_tokens?: number;
   prompt_tokens_est?: number;
   response_tokens_est?: number;
+  // Bentuk opencode (event done): usage.tokens.{input,output,
+  // reasoning} + usage.cost — diisi normalizeUsage.
+  input_tokens?: number;
+  output_tokens?: number;
+  reasoning_tokens?: number;
+  cost_usd?: number;
 };
 
 type MessageMeta = {
@@ -66,6 +79,10 @@ type MessageMeta = {
   tokens: number;
   realTokens?: boolean;
   tools?: string[];
+  inTokens?: number;
+  outTokens?: number;
+  reasoning?: number;
+  cost?: number;
 };
 
 type Message = {
@@ -90,6 +107,10 @@ type HitlField = {
   type?: string;
   required?: boolean;
   options?: HitlOption[];
+  // custom: true (bentuk terverifikasi produksi 19 Nov 2026) =
+  // pengguna boleh mengetik jawaban sendiri di luar opsi.
+  // type "multiselect" = jawaban berupa array string.
+  custom?: boolean;
 };
 type HitlFormData = {
   id: string;
@@ -132,25 +153,34 @@ function welcomeMessage(): Message {
 }
 
 // Bentuk usage jalur opencode berbeda dari engine lama: done membawa
-// {cost, tokens} dengan tokens berupa objek opencode. Normalkan ke
-// total_tokens agar resolveTokens lama bisa dipakai apa adanya.
+// {cost, tokens} dengan tokens berupa objek opencode
+// {input, output, reasoning, cache{read, write}} (terukur 19 Nov
+// 2026). Normalkan ke total_tokens agar resolveTokens lama bisa
+// dipakai apa adanya, SAMBIL membawa rincian input/output/reasoning
+// + cost untuk footer pesan (cost admin selalu 0 → disembunyikan).
 function normalizeUsage(u: unknown): BackendUsage | null {
   if (!u || typeof u !== "object") return null;
   const rec = u as Record<string, unknown>;
+  const cost = typeof rec.cost === "number" ? rec.cost : undefined;
   if (typeof rec.total_tokens === "number") {
-    return { total_tokens: rec.total_tokens };
+    return { total_tokens: rec.total_tokens, cost_usd: cost };
   }
   const t = rec.tokens;
-  if (typeof t === "number") return { total_tokens: t };
+  if (typeof t === "number") return { total_tokens: t, cost_usd: cost };
   if (t && typeof t === "object") {
     const tt = t as Record<string, unknown>;
+    const base: BackendUsage = {
+      cost_usd: cost,
+      input_tokens: typeof tt.input === "number" ? tt.input : undefined,
+      output_tokens: typeof tt.output === "number" ? tt.output : undefined,
+      reasoning_tokens:
+        typeof tt.reasoning === "number" ? tt.reasoning : undefined,
+    };
     if (typeof tt.total === "number" && tt.total > 0) {
-      return { total_tokens: tt.total };
+      return { ...base, total_tokens: tt.total };
     }
-    const sum =
-      (typeof tt.input === "number" ? tt.input : 0) +
-      (typeof tt.output === "number" ? tt.output : 0);
-    if (sum > 0) return { total_tokens: sum };
+    const sum = (base.input_tokens ?? 0) + (base.output_tokens ?? 0);
+    if (sum > 0) return { ...base, total_tokens: sum };
   }
   return null;
 }
@@ -166,19 +196,32 @@ function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
   return { tokens: estimateTokens(fallbackText), realTokens: false };
 }
 
-// Isi pesan AI yang SUDAH selesai dirender sebagai markdown betulan
-// (tebal, daftar, judul, tautan) — sebelumnya markdown tampil mentah.
-// Saat streaming berjalan, pesan ditampilkan teks polos + karet ketik
-// (lihat MessageText) lalu ditukar ke render ini begitu selesai.
-function MessageMarkdown({ text }: { text: string }) {
-  return (
-    <div className="msg-md">
-      <ReactMarkdown>{text}</ReactMarkdown>
-    </div>
-  );
-}
+// Footer: cost 0 (atau terlalu kecil) disembunyikan — model admin
+// selalu melaporkan cost 0 karena opencode tak punya harga Lyber.
+const formatCost = (cost: number): string =>
+  "$" + cost.toFixed(4).replace(/0+$/, "").replace(/\.$/, ".00");
 
-// Render teks pesan: blok ```...``` jadi <pre>, sisanya pre-wrap biasa.
+// Label status tool (event {meta: {tool}}) selama agent bekerja —
+// status kecil yang hilang saat teks berikutnya/done tiba, bukan
+// gelembung sendiri.
+const TOOL_LABELS: Record<string, string> = {
+  write: "Menulis file…",
+  read: "Membaca file…",
+  edit: "Mengedit file…",
+  bash: "Menjalankan perintah…",
+  shell: "Menjalankan perintah…",
+  question: "Menyiapkan pertanyaan…",
+  webfetch: "Mengambil halaman web…",
+  websearch: "Mencari di web…",
+  grep: "Mencari dalam file…",
+  glob: "Mencari file…",
+  task: "Menjalankan sub-tugas…",
+};
+const toolLabel = (name: string): string =>
+  TOOL_LABELS[name] ?? `Memakai tool ${name}…`;
+
+// Render teks pesan PENGGUNA (bukan markdown): blok ```...``` jadi
+// <pre>, sisanya pre-wrap biasa. Pesan AI memakai ChatMarkdown.
 function MessageText({ text }: { text: string }) {
   const segments = text.split("```");
   return (
@@ -211,18 +254,13 @@ export default function AssistantChat() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
-  // Streaming halus (9 Nov): backend mengirim SSE dalam potongan besar
-  // (Mercury = model difusi), jadi teks yang SUDAH diterima diungkap
-  // bertahap oleh loop rAF agar mengalir seperti mengetik. streamId =
-  // pesan yang sedang diungkap (dirender polos + karet, belum markdown).
+  // streamId = gelembung segmen stream yang sedang aktif (dirender
+  // ChatMarkdown dengan streaming=true; blok kode yang pagarnya
+  // belum tiba tampil polos). Render diperbarui per delta SSE.
   const [streamId, setStreamId] = useState<string | null>(null);
-  const targetRef = useRef("");
-  const shownRef = useRef(0);
-  const streamDoneRef = useRef(false);
-  // Id gelembung segmen stream yang sedang aktif (satu giliran chat
-  // bisa terdiri dari beberapa segmen yang dipisah kartu HITL).
-  const segRef = useRef("");
-  const rafRef = useRef(0);
+  // Nama tool yang sedang dijalankan agent (event meta.tool);
+  // null = tidak ada tool aktif.
+  const [toolName, setToolName] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   // Tetap menempel ke bawah saat streaming HANYA bila user memang
@@ -248,9 +286,6 @@ export default function AssistantChat() {
     if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, waiting]);
 
-  // Hentikan loop ungkap saat komponen dilepas.
-  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
-
   const persist = useCallback((msgs: Message[]) => {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(msgs));
@@ -261,8 +296,10 @@ export default function AssistantChat() {
 
   /* ---- HITL: kartu pertanyaan/persetujuan + jawabannya ---- */
   const [hitlCards, setHitlCards] = useState<HitlCard[]>([]);
+  // Jawaban per kartu per field: string untuk field biasa/teks/
+  // custom, string[] untuk field multiselect.
   const [hitlAnswers, setHitlAnswers] = useState<
-    Record<string, Record<string, string>>
+    Record<string, Record<string, string | string[]>>
   >({});
 
   const patchCard = useCallback((id: string, patch: Partial<HitlCard>) => {
@@ -329,7 +366,10 @@ export default function AssistantChat() {
   }, [hydrated]);
 
   const replyForm = useCallback(
-    async (card: HitlCard, answerOverride?: Record<string, string>) => {
+    async (
+      card: HitlCard,
+      answerOverride?: Record<string, string | string[]>,
+    ) => {
       patchCard(card.id, { status: "sending", error: undefined });
       try {
         const res = await fetch(
@@ -423,6 +463,7 @@ export default function AssistantChat() {
       stickRef.current = true;
       setBusy(true);
       setWaiting(true);
+      setToolName(null);
       const startTime = performance.now();
       let allText = "";
       let streamUsage: BackendUsage | null = null;
@@ -439,7 +480,6 @@ export default function AssistantChat() {
       let anySegCreated = false;
       let lastSegId = aiId;
       let segCount = 0;
-      segRef.current = aiId;
 
       // Indikator "agent bekerja": titik mengetik tampil selama agent
       // sibuk TANPA teks mengalir (berpikir, menjalankan tool, atau
@@ -465,28 +505,21 @@ export default function AssistantChat() {
         ]);
       };
 
-      // Tutup segmen aktif (teksnya dijepret selesai) dan mulai
-      // segmen baru; mengembalikan id penjangkar untuk kartu HITL.
+      // Tutup segmen aktif dan mulai segmen baru; mengembalikan id
+      // penjangkar untuk kartu HITL. Teks segmen lama sudah tercermin
+      // penuh di gelembungnya lewat render per-delta. Status tool
+      // dibersihkan: kartu yang tiba menggantikannya sebagai UI.
       const rotateSegment = (): string => {
         const anchorId = segCreated
           ? segId
           : anySegCreated
             ? lastSegId
             : userMsg.id!;
-        if (segCreated) {
-          const doneText = targetRef.current;
-          const id = segId;
-          setMessages((prev) =>
-            prev.map((m) => (m.id === id ? { ...m, text: doneText } : m)),
-          );
-        }
+        setToolName(null);
         segText = "";
-        targetRef.current = "";
-        shownRef.current = 0;
         segCount += 1;
         segId = `${aiId}_s${segCount}`;
         segCreated = false;
-        segRef.current = segId;
         setStreamId(segId);
         return anchorId;
       };
@@ -494,6 +527,7 @@ export default function AssistantChat() {
       const finishWith = (finalText: string) => {
         setStreamId(null);
         setWaitingBoth(false);
+        setToolName(null);
         // Giliran berakhir: kartu HITL yang belum terjawab kehilangan
         // alirannya — tandai tidak berlaku agar tidak dijawab percuma.
         setHitlCards((prev) =>
@@ -535,6 +569,10 @@ export default function AssistantChat() {
                     tokens: tk.tokens,
                     realTokens: tk.realTokens,
                     tools: streamTools,
+                    inTokens: streamUsage?.input_tokens,
+                    outTokens: streamUsage?.output_tokens,
+                    reasoning: streamUsage?.reasoning_tokens,
+                    cost: streamUsage?.cost_usd,
                   },
                 }
               : m,
@@ -544,51 +582,9 @@ export default function AssistantChat() {
         });
       };
 
-      // Mesin ungkap bertahap: targetRef menampung SELURUH teks yang
-      // sudah diterima dari SSE; loop rAF menggeser shownRef menuju
-      // target dengan laju adaptif (sisa besar = lebih cepat, dibatasi
-      // ±24 karakter/frame) sehingga potongan besar dari backend tampil
-      // mengalir. Begitu stream selesai DAN teks tertampil penuh,
-      // finishWith menutup pesan (meta + simpan). prefers-reduced-
-      // motion: ungkap seketika tanpa animasi.
-      targetRef.current = "";
-      shownRef.current = 0;
-      streamDoneRef.current = false;
-      let revealStarted = false;
-      const startReveal = () => {
-        if (revealStarted) return;
-        revealStarted = true;
-        const reduced =
-          typeof window !== "undefined" &&
-          window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        const step = () => {
-          const target = targetRef.current;
-          const shown = shownRef.current;
-          if (shown < target.length) {
-            const remaining = target.length - shown;
-            const inc = reduced
-              ? remaining
-              : Math.max(1, Math.min(Math.ceil(remaining / 18), 24));
-            const next = Math.min(target.length, shown + inc);
-            shownRef.current = next;
-            const slice = target.slice(0, next);
-            const id = segRef.current;
-            setMessages((prev) =>
-              prev.map((m) => (m.id === id ? { ...m, text: slice } : m)),
-            );
-            rafRef.current = requestAnimationFrame(step);
-          } else if (!streamDoneRef.current) {
-            // Teks tertampil sudah mengejar target tapi aliran belum
-            // selesai: agent sedang bekerja tanpa teks (tool/jeda) —
-            // tampilkan lagi animasi menunggu.
-            setWaitingBoth(true);
-            rafRef.current = requestAnimationFrame(step);
-          } else {
-            finishWith(target || "(tidak ada jawaban)");
-          }
-        };
-        rafRef.current = requestAnimationFrame(step);
-      };
+      // Render per-delta: setiap potongan teks SSE langsung ditulis
+      // ke gelembung segmen aktif (lihat handler parsed.text) dan
+      // dirender ChatMarkdown dari string gabungannya.
 
       try {
         // Riwayat TIDAK dikirim: serve menyimpannya per session_id.
@@ -670,7 +666,8 @@ export default function AssistantChat() {
             if (parsed.error) throw new Error(parsed.error);
             if (parsed.meta && typeof parsed.meta === "object") {
               // Event meta pertama membawa session_id sesi ini;
-              // meta {tool} hanya penanda aktivitas — tidak ditampilkan.
+              // meta {tool} = tool yang mulai dijalankan agent —
+              // tampil sebagai status kecil sampai teks/done tiba.
               const meta = parsed.meta as Record<string, unknown>;
               const sid = meta.session_id;
               if (typeof sid === "string" && sid) {
@@ -679,6 +676,9 @@ export default function AssistantChat() {
                 } catch {
                   /* abaikan */
                 }
+              }
+              if (typeof meta.tool === "string" && meta.tool) {
+                setToolName(meta.tool);
               }
               // HITL: agent bertanya / meminta persetujuan. Aliran
               // tetap terbuka (heartbeat backend) — kartu dirender
@@ -747,20 +747,21 @@ export default function AssistantChat() {
             if (parsed.text) {
               ensureBubble();
               setWaitingBoth(false);
+              setToolName(null);
               allText += parsed.text;
               segText += parsed.text;
-              targetRef.current = segText;
-              startReveal();
+              const id = segId;
+              const txt = segText;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, text: txt } : m)),
+              );
             }
           }
         }
-        // Stream selesai: loop ungkap memanggil finishWith begitu
-        // teks tertampil mengejar target (atau langsung di sini bila
-        // tidak ada potongan teks sama sekali).
-        streamDoneRef.current = true;
-        if (!revealStarted) finishWith(segText || "(tidak ada jawaban)");
+        // Stream selesai: tutup segmen aktif dengan teks gabungan
+        // terakhir (meta ditempel oleh finishWith).
+        finishWith(segText || "(tidak ada jawaban)");
       } catch (err) {
-        cancelAnimationFrame(rafRef.current);
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
         setWaiting(false);
@@ -807,13 +808,16 @@ export default function AssistantChat() {
 
   // Kelengkapan jawaban form: semua field wajib (required !== false)
   // terisi. Dipakai untuk kirim-otomatis saat pilihan terakhir dipilih.
+  // Field multiselect terisi bila arraynya tak kosong.
   const formComplete = (
     form: HitlFormData,
-    ans: Record<string, string>,
+    ans: Record<string, string | string[]>,
   ): boolean =>
-    form.fields.every(
-      (f) => f.required === false || (ans[f.key] ?? "").trim().length > 0,
-    );
+    form.fields.every((f) => {
+      if (f.required === false) return true;
+      const v = ans[f.key];
+      return Array.isArray(v) ? v.length > 0 : (v ?? "").trim().length > 0;
+    });
 
   // Satu baris kartu HITL di aliran chat (dipakai terselip sesudah
   // pesan penjangkarnya maupun di akhir untuk kartu pemulihan).
@@ -840,12 +844,38 @@ export default function AssistantChat() {
             </div>
             {card.form.fields.map((f) => {
               const locked = card.status !== "pending";
-              const value = hitlAnswers[card.id]?.[f.key] ?? "";
-              const setField = (v: string) => {
+              const raw = hitlAnswers[card.id]?.[f.key];
+              const isMulti = f.type === "multiselect";
+              const value = typeof raw === "string" ? raw : "";
+              const selectedArr = Array.isArray(raw) ? raw : [];
+              const setField = (v: string | string[]) => {
                 const next = { ...(hitlAnswers[card.id] ?? {}), [f.key]: v };
                 setHitlAnswers((prev) => ({ ...prev, [card.id]: next }));
                 return next;
               };
+              // Pembaruan array multiselect secara fungsional dari
+              // state terbaru — klik beruntun tidak saling menimpa.
+              const updateMulti = (fn: (arr: string[]) => string[]) => {
+                setHitlAnswers((prev) => {
+                  const cur = prev[card.id]?.[f.key];
+                  const arr = Array.isArray(cur) ? cur : [];
+                  return {
+                    ...prev,
+                    [card.id]: {
+                      ...(prev[card.id] ?? {}),
+                      [f.key]: fn(arr),
+                    },
+                  };
+                });
+              };
+              // Jawaban teks bebas (field custom): nilai yang bukan
+              // salah satu opsi = tulisan pengguna sendiri.
+              const customValue =
+                !isMulti &&
+                f.options &&
+                !f.options.some((o) => o.value === value)
+                  ? value
+                  : "";
               return (
                 <div key={f.key} className="hitl-field">
                   <div className="hitl-field-title">{f.title}</div>
@@ -853,36 +883,125 @@ export default function AssistantChat() {
                     <div className="hitl-field-desc">{f.description}</div>
                   )}
                   {f.options && f.options.length > 0 ? (
-                    <div className="hitl-options">
-                      {f.options.map((o) => (
-                        <button
-                          key={o.value}
-                          type="button"
-                          disabled={locked}
-                          className={
-                            value === o.value
-                              ? "hitl-option is-selected"
-                              : "hitl-option"
-                          }
-                          onClick={() => {
-                            // Pilih = kirim: begitu semua field wajib
-                            // terisi, jawaban langsung terkirim — tanpa
-                            // tombol Kirim (permintaan user 18 Nov).
-                            const next = setField(o.value);
-                            if (card.form && formComplete(card.form, next)) {
-                              void replyForm(card, next);
-                            }
-                          }}
-                        >
-                          <span className="hitl-option-label">{o.label}</span>
-                          {o.description && (
-                            <span className="hitl-option-desc">
-                              {o.description}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      <div className="hitl-options">
+                        {f.options.map((o) => {
+                          const selected = isMulti
+                            ? selectedArr.includes(o.value)
+                            : value === o.value;
+                          return (
+                            <button
+                              key={o.value}
+                              type="button"
+                              disabled={locked}
+                              className={
+                                selected
+                                  ? "hitl-option is-selected"
+                                  : "hitl-option"
+                              }
+                              onClick={() => {
+                                if (isMulti) {
+                                  // Multiselect: alih pilihan saja;
+                                  // pengiriman lewat tombol Kirim
+                                  // jawaban (jawaban = array string).
+                                  updateMulti((arr) =>
+                                    arr.includes(o.value)
+                                      ? arr.filter((x) => x !== o.value)
+                                      : [...arr, o.value],
+                                  );
+                                  return;
+                                }
+                                // Pilih = kirim: begitu semua field
+                                // wajib terisi, jawaban langsung
+                                // terkirim — tanpa tombol Kirim
+                                // (permintaan user 18 Nov).
+                                const next = setField(o.value);
+                                if (
+                                  card.form &&
+                                  formComplete(card.form, next)
+                                ) {
+                                  void replyForm(card, next);
+                                }
+                              }}
+                            >
+                              <span className="hitl-option-label">
+                                {o.label}
+                              </span>
+                              {o.description && (
+                                <span className="hitl-option-desc">
+                                  {o.description}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {isMulti &&
+                        selectedArr.some(
+                          (v) => !f.options?.some((o) => o.value === v),
+                        ) && (
+                          <div className="hitl-custom-list">
+                            {selectedArr
+                              .filter(
+                                (v) =>
+                                  !f.options?.some((o) => o.value === v),
+                              )
+                              .map((v) => (
+                                <button
+                                  key={v}
+                                  type="button"
+                                  className="hitl-custom-chip"
+                                  disabled={locked}
+                                  onClick={() =>
+                                    updateMulti((arr) =>
+                                      arr.filter((x) => x !== v),
+                                    )
+                                  }
+                                >
+                                  {v} <X size={12} />
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      {f.custom &&
+                        (isMulti ? (
+                          <input
+                            className="hitl-input hitl-custom-input"
+                            disabled={locked}
+                            placeholder="atau tulis jawabanmu sendiri, Enter untuk menambahkan…"
+                            defaultValue=""
+                            onKeyDown={(e) => {
+                              if (e.key !== "Enter") return;
+                              const draft = e.currentTarget.value.trim();
+                              if (!draft) return;
+                              updateMulti((arr) =>
+                                arr.includes(draft) ? arr : [...arr, draft],
+                              );
+                              e.currentTarget.value = "";
+                            }}
+                          />
+                        ) : (
+                          <input
+                            className="hitl-input hitl-custom-input"
+                            disabled={locked}
+                            placeholder="atau tulis jawabanmu sendiri…"
+                            value={customValue}
+                            onChange={(e) => setField(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (
+                                e.key === "Enter" &&
+                                card.form &&
+                                formComplete(
+                                  card.form,
+                                  hitlAnswers[card.id] ?? {},
+                                )
+                              ) {
+                                void replyForm(card);
+                              }
+                            }}
+                          />
+                        ))}
+                    </>
                   ) : f.type === "textarea" ? (
                     <textarea
                       className="hitl-input"
@@ -928,12 +1047,29 @@ export default function AssistantChat() {
               </div>
             ) : (
               <>
-                {card.form.fields.some((f) => !f.options?.length) && (
+                {card.form.fields.some(
+                  (f) => !f.options?.length || f.custom,
+                ) && (
                   <div className="hitl-hint">
                     Tekan Enter untuk mengirim jawaban.
                   </div>
                 )}
                 <div className="hitl-actions">
+                  {card.form.fields.some(
+                    (f) => f.type === "multiselect",
+                  ) && (
+                    <button
+                      type="button"
+                      className="hitl-btn hitl-btn-primary"
+                      disabled={
+                        card.status !== "pending" ||
+                        !formComplete(card.form, hitlAnswers[card.id] ?? {})
+                      }
+                      onClick={() => void replyForm(card)}
+                    >
+                      Kirim jawaban
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="hitl-btn"
@@ -1039,8 +1175,8 @@ export default function AssistantChat() {
             )}
             <div className="msg-col">
               <div className="msg-bubble">
-                {m.sender === "ai" && m.id !== streamId ? (
-                  <MessageMarkdown text={m.text} />
+                {m.sender === "ai" ? (
+                  <ChatMarkdown text={m.text} streaming={m.id === streamId} />
                 ) : (
                   <MessageText text={m.text} />
                 )}
@@ -1052,8 +1188,22 @@ export default function AssistantChat() {
                   <span>
                     {" · "}
                     {m.meta.engine} · {(m.meta.latencyMs / 1000).toFixed(1)} dtk ·{" "}
-                    {m.meta.realTokens ? "" : "±"}
-                    {m.meta.tokens} token
+                    {m.meta.inTokens != null && m.meta.outTokens != null ? (
+                      <>
+                        {m.meta.inTokens} masuk · {m.meta.outTokens} keluar
+                      </>
+                    ) : (
+                      <>
+                        {m.meta.realTokens ? "" : "±"}
+                        {m.meta.tokens} token
+                      </>
+                    )}
+                    {m.meta.reasoning
+                      ? ` · penalaran ${m.meta.reasoning}`
+                      : ""}
+                    {m.meta.cost && m.meta.cost >= 0.0001
+                      ? ` · ${formatCost(m.meta.cost)}`
+                      : ""}
                     {m.meta.tools && m.meta.tools.length > 0
                       ? ` · tool: ${m.meta.tools.join(", ")}`
                       : ""}
@@ -1069,7 +1219,7 @@ export default function AssistantChat() {
             .map((card) => renderHitlCard(card))}
           </Fragment>
         ))}
-        {waiting && (
+        {waiting && !toolName && (
           <div className="msg msg-ai">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
@@ -1080,6 +1230,15 @@ export default function AssistantChat() {
                 <span className="dot" />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Status tool yang sedang berjalan (event meta.tool) —
+            baris kecil, hilang saat teks berikutnya/done tiba. */}
+        {toolName && busy && (
+          <div className="tool-status" role="status">
+            <LoaderCircle size={13} className="tool-status-spin" />
+            <span>{toolLabel(toolName)}</span>
           </div>
         )}
 
