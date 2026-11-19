@@ -9,7 +9,11 @@ const DASHBOARD_HOST = "dashboard.amamiya.web.id";
 const PUBLIC_HOSTS = new Set(["amamiya.web.id", "www.amamiya.web.id"]);
 
 // Selain /dashboard, host dashboard tetap butuh: aset Next (/_next),
-// API backend lewat rewrites (/v1/*), favicon, dan CV yang ditaut komponen bersama.
+// API backend lewat rewrites (/v1/*), favicon, avatar agent, dan CV
+// yang ditaut komponen bersama. /vienna.svg ditambahkan 19 Nov 2026:
+// tanpa baris ini avatar chat AI Agent di host dashboard kena rewrite
+// ke /404 (HTML dibaca sebagai gambar → ikon gambar rusak), karena
+// proxy ini ditulis sebelum berkas avatar itu ada.
 function allowedOnDashboardHost(pathname: string): boolean {
   return (
     pathname === "/dashboard" ||
@@ -18,6 +22,7 @@ function allowedOnDashboardHost(pathname: string): boolean {
     pathname.startsWith("/v1/") ||
     pathname === "/favicon.png" ||
     pathname === "/favicon.ico" ||
+    pathname === "/vienna.svg" ||
     pathname === "/profesional-cv.pdf"
   );
 }
