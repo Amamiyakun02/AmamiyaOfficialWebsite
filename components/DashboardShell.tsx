@@ -10,6 +10,7 @@ import {
   FileText,
   FolderGit2,
   House,
+  Inbox,
   LayoutDashboard,
   LogOut,
   PlugZap,
@@ -29,8 +30,10 @@ import { apiUrl } from "@/lib/api";
      sama dengan tema situs. Di layar sempit sidebar menyusut jadi
      bilah atas dengan navigasi horizontal.
    - Isi: Overview (halaman utama statistik, tab bawaan saat masuk)
-     + 7 modul sesuai spec vault (Projects, Logs, Integrations,
-     Contents, Users, AI Provider, AI Agent). Tab AI Provider berisi
+     + 8 modul sesuai spec vault (Projects, Logs, Integrations,
+     Contents, Inbox, Users, AI Provider, AI Agent). Tab Inbox
+     menampung pesan formulir Contact + feedback pengunjung dari
+     gudang backend /v1/admin/feedbacks. Tab AI Provider berisi
      panel registri provider + Publish config opencode (dua target:
      agent publik & agent administrator); tab AI Agent berisi
      antarmuka chat agent ADMINISTRATOR (role admin opencode,
@@ -62,6 +65,10 @@ const UsersPanel = dynamic(() => import("./dashboard/UsersPanel"), {
 });
 
 const ContentsPanel = dynamic(() => import("./dashboard/ContentsPanel"), {
+  ssr: false,
+});
+
+const InboxPanel = dynamic(() => import("./dashboard/InboxPanel"), {
   ssr: false,
 });
 
@@ -106,6 +113,11 @@ const TABS: Tab[] = [
     id: "contents",
     label: "Contents",
     icon: FileText,
+  },
+  {
+    id: "inbox",
+    label: "Inbox",
+    icon: Inbox,
   },
   {
     id: "users",
@@ -290,6 +302,8 @@ export default function DashboardShell() {
               <IntegrationsPanel />
             ) : tab.id === "users" ? (
               <UsersPanel />
+            ) : tab.id === "inbox" ? (
+              <InboxPanel />
             ) : tab.id === "contents" ? (
               <ContentsPanel />
             ) : tab.id === "providers" ? (

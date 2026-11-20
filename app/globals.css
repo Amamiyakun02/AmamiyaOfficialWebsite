@@ -1241,7 +1241,8 @@ code {
   color: #d7d7dd;
 }
 .contact-form input,
-.contact-form textarea {
+.contact-form textarea,
+.contact-form select {
   padding: 11px 13px;
   border-radius: 10px;
   border: 1px solid #2c2c33;
@@ -1964,6 +1965,164 @@ code {
   font-size: 12.5px;
   color: #9a9aa2;
   font-style: italic;
+}
+/* Kartu notif pesan masuk di Overview (20 Nov 2026): jumlah belum
+   dibaca dari tab Inbox; klik berpindah ke tab inbox. */
+.ov-inbox-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(180deg, #131318, #0e0e11);
+  border: 1px solid #26262c;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  color: #f2f2f4;
+  cursor: pointer;
+  font: inherit;
+}
+.ov-inbox-card:hover {
+  border-color: #3a3a44;
+}
+.ov-inbox-card.has-unread {
+  border-color: rgba(0, 129, 251, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 129, 251, 0.25);
+}
+.ov-inbox-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(0, 129, 251, 0.14);
+  color: #5ea9ff;
+  flex: none;
+}
+.ov-inbox-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ov-inbox-text b {
+  font-size: 15px;
+  font-weight: 650;
+}
+.ov-inbox-text i {
+  font-style: normal;
+  font-size: 12.5px;
+  color: #9a9aa2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ov-inbox-arrow {
+  color: #75757e;
+  flex: none;
+}
+/* Panel Inbox dashboard (20 Nov 2026): daftar pesan kontak +
+   feedback di atas sistem kartu .dcard bersama. */
+.inbox-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.inbox-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.inbox-filter {
+  border: 1px solid #2c2c33;
+  background: #17171b;
+  color: #c9c9d2;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.inbox-filter:hover {
+  color: #fff;
+  border-color: #3a3a41;
+}
+.inbox-filter.is-on {
+  background: rgba(0, 129, 251, 0.16);
+  border-color: rgba(0, 129, 251, 0.5);
+  color: #fff;
+}
+.inbox-count {
+  flex: 1;
+  font-size: 12.5px;
+  color: #9a9aa2;
+  text-align: right;
+}
+.inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.inbox-card.is-unread {
+  border-color: rgba(0, 129, 251, 0.45);
+}
+.inbox-badge-new {
+  background: rgba(0, 129, 251, 0.18);
+  color: #7db4ff;
+  border-color: rgba(0, 129, 251, 0.45);
+}
+.inbox-mail {
+  color: #7db4ff;
+  text-decoration: none;
+}
+.inbox-mail:hover {
+  text-decoration: underline;
+}
+.inbox-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #d8d8de;
+  margin: 2px 0 0;
+}
+.inbox-stars {
+  color: #e5b95f;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-left: auto;
+}
+.inbox-stars-off {
+  color: #3a3a41;
+}
+/* Pemilih rating bintang di halaman tool Feedback. */
+.fb-stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fb-star {
+  display: inline-flex;
+  padding: 3px;
+  border: none;
+  background: none;
+  color: #3a3a41;
+  cursor: pointer;
+}
+.fb-star.is-on {
+  color: #e5b95f;
+}
+.fb-star.is-on svg {
+  fill: currentColor;
+}
+.fb-stars-note {
+  margin-left: 8px;
+  font-size: 12.5px;
+  color: #9a9aa2;
 }
 .msg-bubble {
   border-radius: 14px;

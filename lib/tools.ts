@@ -33,5 +33,5 @@ export const toolsData: ToolDef[] = [
   { slug: "mcp-playground", name: "MCP Playground", desc: "Coba langsung 31 tool MCP server-ku (AgentMCP): sistem, database, produk, booking, dan pencarian web.", icon: Plug, status: "live" },
   { slug: "automations", name: "Automations", desc: "Kumpulan workflow otomatisasi yang kubangun untuk pekerjaan berulang.", icon: Workflow, status: "migrasi" },
   { slug: "status", name: "Service Status", desc: "Pantau kesehatan backend dan layanan-layanan yang menopang situs ini.", icon: Activity, status: "migrasi" },
-  { slug: "feedback", name: "Feedback", desc: "Kirim ulasan dan masukan tentang situs dan tool-tool di sini.", icon: MessageSquare, status: "migrasi" },
+  { slug: "feedback", name: "Feedback", desc: "Kirim ulasan dan masukan tentang situs dan tool-tool di sini.", icon: MessageSquare, status: "live" },
 ];

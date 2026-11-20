@@ -39,8 +39,13 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 };
 
 // Halaman Kontak — formulir yang sama seperti WebPortofolio lama:
-// pesan dikirim sebagai feedback ke backend Vienna Agent
-// (POST /v1/admin/feedbacks) dengan payload yang identik.
+// pesan dikirim ke gudang feedback backend Vienna Agent
+// (POST /v1/admin/feedbacks) dan dibaca lewat tab Inbox dashboard.
+// category kini "contact" (dulu "general") agar Inbox bisa
+// membedakan pesan kontak dari feedback tool; field email/source
+// dikirim dari sekarang — backend lama mengabaikannya dengan aman,
+// backend baru (prompt serah-terima 20 Nov 2026) menyimpannya
+// sebagai field terstruktur.
 export default function ContactSection() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,9 +66,11 @@ export default function ContactSection() {
         body: JSON.stringify({
           customer_name: name,
           rating: "5",
-          category: "general",
+          category: "contact",
           content: `Contact from ${name} <${email}>:\n\n${message}`,
           status: "new",
+          email,
+          source: "contact",
         }),
       });
       if (!res.ok) throw new Error("failed");

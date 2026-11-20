@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import {
+  ArrowUpRight,
   Blocks,
   CircleDollarSign,
   Coins,
   FileText,
   FolderGit2,
+  Mail,
   MessagesSquare,
   PlugZap,
   RotateCcw,
@@ -180,6 +182,15 @@ export default function OverviewPanel({
   });
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  // Kartu notif pesan masuk (tab Inbox): dihitung dari gudang
+  // feedback backend /v1/admin/feedbacks — jalur terpisah dari
+  // endpoint overview maupun fallback, kegagalannya hanya
+  // menyembunyikan kartu ini.
+  const [inbox, setInbox] = useState<{
+    total: number;
+    unread: number;
+    latestName: string | null;
+  } | null>(null);
 
   const loadFallback = useCallback(async (token: string) => {
     const auth = { headers: { "X-Admin-Token": token } };
@@ -265,6 +276,26 @@ export default function OverviewPanel({
     } catch {
       await loadFallback(token);
       setMode("fallback");
+    }
+    try {
+      const res = await fetch(apiUrl("/v1/admin/feedbacks?limit=100"), {
+        headers: { "X-Admin-Token": token },
+      });
+      if (res.ok) {
+        const arr = (await res.json()) as {
+          customer_name?: string;
+          status?: string;
+        }[];
+        if (Array.isArray(arr)) {
+          setInbox({
+            total: arr.length,
+            unread: arr.filter((f) => (f.status || "new") === "new").length,
+            latestName: arr[0]?.customer_name || null,
+          });
+        }
+      }
+    } catch {
+      // Kartu notif inbox disembunyikan bila sumbernya gagal.
     }
     setUpdatedAt(new Date());
     setLoading(false);
@@ -531,6 +562,30 @@ export default function OverviewPanel({
             <b className="ov-mini-value">{fmtDuration(ai.avg_turn_duration_ms)}</b>
           </div>
         </div>
+      )}
+
+      {inbox && (
+        <button
+          type="button"
+          className={`ov-inbox-card${inbox.unread > 0 ? " has-unread" : ""}`}
+          onClick={() => onNavigate("inbox")}
+        >
+          <span className="ov-inbox-icon">
+            <Mail size={19} />
+          </span>
+          <span className="ov-inbox-text">
+            <b>
+              {inbox.unread > 0
+                ? `${inbox.unread} pesan belum dibaca`
+                : "Tidak ada pesan baru"}
+            </b>
+            <i>
+              {inbox.total} pesan masuk dari Contact &amp; Feedback
+              {inbox.latestName ? ` · terbaru dari ${inbox.latestName}` : ""}
+            </i>
+          </span>
+          <ArrowUpRight size={16} className="ov-inbox-arrow" />
+        </button>
       )}
 
       <div className="ov-grid2">
