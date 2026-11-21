@@ -5443,6 +5443,129 @@ code {
   padding-top: 10px;
 }
 
+/* Lampiran berkas + masukan suara di composer AI Agent (21 Nov):
+   chip berkas menunggu kirim, tombol alat (klip/mik), lapisan
+   jatuhkan berkas, dan penanda lampiran pada pesan terkirim. */
+.aag-wrap {
+  position: relative;
+}
+.aag-drop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 129, 251, 0.12);
+  border: 2px dashed #0081fb;
+  border-radius: 16px;
+  color: #cfe7ff;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.aag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.aag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  background: #141416;
+  border: 1px solid #26262b;
+  color: #d7d7de;
+  border-radius: 999px;
+  padding: 4px 6px 4px 10px;
+  font-size: 12.5px;
+}
+.aag-chip.is-error {
+  border-color: rgba(255, 110, 110, 0.5);
+  color: #ff9c9c;
+}
+.aag-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+.aag-chip-size {
+  color: #8a8a92;
+  font-size: 11.5px;
+}
+.aag-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  cursor: pointer;
+  flex: none;
+}
+.aag-spin {
+  animation: lzspin 0.9s linear infinite;
+}
+.aag-tool-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #26262b;
+  border-radius: 10px;
+  background: transparent;
+  color: #a7a7ae;
+  cursor: pointer;
+}
+.aag-tool-btn:hover {
+  color: #fff;
+  border-color: #3a3a41;
+}
+.aag-tool-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.aag-tool-btn.is-listening {
+  color: #fff;
+  background: #d92d20;
+  border-color: #d92d20;
+  animation: aag-pulse 1.2s ease-in-out infinite;
+}
+@keyframes aag-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 45, 32, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(217, 45, 32, 0);
+  }
+}
+.aag-sent-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.aag-sent-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #26262b;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  color: #c9c9d2;
+}
+
 /* Varian tambahan sistem kartu dashboard. */
 .dcard.is-featured::before {
   background: linear-gradient(90deg, #e8b93e, rgba(232, 185, 62, 0));

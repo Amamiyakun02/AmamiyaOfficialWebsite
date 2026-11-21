@@ -10,9 +10,13 @@ import {
   Hourglass,
   LoaderCircle,
   X,
+  Paperclip,
+  Mic,
+  FileText,
+  AlertCircle,
 } from "lucide-react";
 import ChatMarkdown from "@/components/ChatMarkdown";
-import FileCards, { type ChatFile } from "@/components/FileCards";
+import FileCards, { formatSize, type ChatFile } from "@/components/FileCards";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -32,11 +36,37 @@ import { apiUrl } from "@/lib/api";
    Daftar sesi dari GET /v1/opencode/sessions?role=admin; riwayat
    sesi lama dimuat dari GET .../sessions/{id}/messages?role=admin
    (hanya part teks yang dirender).
+   Lampiran file (21 Nov, permintaan user — sisi admin banyak
+   bekerja dengan file): file diunggah DULU lewat
+   POST /v1/opencode/chat/upload?role=admin (multipart, field
+   "files", header token sama) -> {files: [{id, name, size, mime}]};
+   saat mengirim pesan, id lampiran yang siap ikut di body sebagai
+   "attachments": [id, ...] dan backend menyediakan berkasnya ke
+   agent dari ruang kerja admin. Batas: maks 5 berkas/pesan,
+   10 MB/berkas (backend menegakkan; frontend memeriksa lebih
+   awal). Kontrak lengkap = prompt serah-terima sesi Backend
+   21 Nov. Masukan suara memakai Web Speech API di peramban
+   (id-ID) — murni sisi klien, tanpa endpoint backend.
    ===================================================================== */
 
 const CHAT_ENDPOINT = "/v1/opencode/chat/stream";
+const UPLOAD_ENDPOINT = "/v1/opencode/chat/upload";
 const SESSION_KEY = "admin_agent_session_id";
 const HISTORY_KEY = "admin_agent_chat_history";
+// Batas lampiran — cermin kontrak backend (backend yang
+// menegakkan; di sini untuk umpan balik cepat sebelum unggah).
+const MAX_ATTACH_FILES = 5;
+const MAX_ATTACH_SIZE = 10 * 1024 * 1024;
+
+type PendingFile = {
+  localId: string;
+  name: string;
+  size: number;
+  status: "uploading" | "ready" | "error";
+  serverId?: string;
+  error?: string;
+};
+type SentAttachment = { name: string; size: number };
 
 const SUGGESTIONS: string[] = [
   "Cek status & kesehatan server saat ini.",
@@ -88,6 +118,7 @@ type Message = {
   timestamp: string;
   meta?: MessageMeta;
   files?: ChatFile[];
+  attachments?: SentAttachment[];
 };
 
 type HitlOption = { value: string; label: string; description?: string };
@@ -255,6 +286,19 @@ export default function AdminAgentPanel() {
   const [streamId, setStreamId] = useState<string | null>(null);
   // Nama tool yang sedang dijalankan agent (event meta.tool).
   const [toolName, setToolName] = useState<string | null>(null);
+  // Lampiran menunggu kirim + masukan suara (lihat kontrak di
+  // header berkas). pendingRef = cermin untuk dibaca send().
+  const [pending, setPending] = useState<PendingFile[]>([]);
+  const pendingRef = useRef<PendingFile[]>([]);
+  pendingRef.current = pending;
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [listening, setListening] = useState(false);
+  const [voiceOk] = useState<boolean>(
+    () =>
+      typeof window !== "undefined" &&
+      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
+  );
   const logRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const stickRef = useRef(true);
@@ -480,19 +524,196 @@ export default function AdminAgentPanel() {
     [patchCard],
   );
 
+  // --- Lampiran: pilih/tempel/jatuhkan berkas -> unggah sekarang,
+  // chip menunjukkan status; yang "ready" ikut terkirim. ---
+  const addFiles = useCallback((list: FileList | File[]) => {
+    const files = Array.from(list);
+    if (files.length === 0) return;
+    const room = MAX_ATTACH_FILES - pendingRef.current.length;
+    const accepted: { pf: PendingFile; file: File }[] = [];
+    const rejected: PendingFile[] = [];
+    files.forEach((f, i) => {
+      const localId = `att_${Date.now()}_${i}`;
+      if (i >= room) {
+        rejected.push({
+          localId,
+          name: f.name,
+          size: f.size,
+          status: "error",
+          error: `Maksimal ${MAX_ATTACH_FILES} berkas per pesan.`,
+        });
+      } else if (f.size > MAX_ATTACH_SIZE) {
+        rejected.push({
+          localId,
+          name: f.name,
+          size: f.size,
+          status: "error",
+          error: "Melebihi batas 10 MB.",
+        });
+      } else {
+        accepted.push({
+          pf: { localId, name: f.name, size: f.size, status: "uploading" },
+          file: f,
+        });
+      }
+    });
+    setPending((prev) => [
+      ...prev,
+      ...accepted.map((a) => a.pf),
+      ...rejected,
+    ]);
+    if (accepted.length === 0) return;
+    void (async () => {
+      try {
+        const fd = new FormData();
+        accepted.forEach((a) => fd.append("files", a.file));
+        const res = await fetch(apiUrl(`${UPLOAD_ENDPOINT}?role=admin`), {
+          method: "POST",
+          headers: authHeaders(),
+          body: fd,
+        });
+        if (!res.ok) {
+          let detail = "";
+          try {
+            detail =
+              ((await res.json()) as { detail?: string }).detail || "";
+          } catch {
+            /* bukan JSON */
+          }
+          throw new Error(detail || `server menjawab ${res.status}`);
+        }
+        const data = (await res.json()) as {
+          files?: { id?: string }[];
+        };
+        const got = data.files ?? [];
+        setPending((prev) =>
+          prev.map((p) => {
+            const idx = accepted.findIndex((a) => a.pf.localId === p.localId);
+            if (idx === -1) return p;
+            const g = got[idx];
+            return g?.id
+              ? { ...p, status: "ready" as const, serverId: g.id }
+              : {
+                  ...p,
+                  status: "error" as const,
+                  error: "Respons unggahan tidak lengkap.",
+                };
+          }),
+        );
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Unggahan gagal.";
+        setPending((prev) =>
+          prev.map((p) =>
+            accepted.some((a) => a.pf.localId === p.localId)
+              ? { ...p, status: "error" as const, error: msg }
+              : p,
+          ),
+        );
+      }
+    })();
+  }, []);
+
+  const removePending = useCallback((localId: string) => {
+    setPending((prev) => prev.filter((p) => p.localId !== localId));
+  }, []);
+
+  // --- Masukan suara: Web Speech API (id-ID), hasil menyatu ke
+  // kotak teks dan bisa disunting sebelum dikirim. ---
+  const recogRef = useRef<{ stop: () => void } | null>(null);
+  const voiceBaseRef = useRef("");
+  const toggleVoice = useCallback(() => {
+    if (listening) {
+      recogRef.current?.stop();
+      return;
+    }
+    type SpeechCtor = new () => {
+      lang: string;
+      interimResults: boolean;
+      continuous: boolean;
+      onresult:
+        | ((e: {
+            results: ArrayLike<ArrayLike<{ transcript: string }>>;
+          }) => void)
+        | null;
+      onend: (() => void) | null;
+      onerror: (() => void) | null;
+      start: () => void;
+      stop: () => void;
+    };
+    const w = window as unknown as {
+      SpeechRecognition?: SpeechCtor;
+      webkitSpeechRecognition?: SpeechCtor;
+    };
+    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = "id-ID";
+    rec.interimResults = true;
+    rec.continuous = true;
+    voiceBaseRef.current = input.trim() ? `${input.trim()} ` : "";
+    rec.onresult = (e) => {
+      let s = "";
+      for (let i = 0; i < e.results.length; i++)
+        s += e.results[i][0].transcript;
+      setInput(voiceBaseRef.current + s);
+      const el = inputRef.current;
+      if (el) {
+        el.style.height = "auto";
+        el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+      }
+    };
+    rec.onend = () => setListening(false);
+    rec.onerror = () => setListening(false);
+    recogRef.current = rec;
+    setListening(true);
+    try {
+      rec.start();
+    } catch {
+      setListening(false);
+    }
+  }, [listening, input, inputRef]);
+
+  useEffect(
+    () => () => {
+      try {
+        recogRef.current?.stop();
+      } catch {
+        /* abaikan */
+      }
+    },
+    [],
+  );
+
   const send = useCallback(
     async (rawText: string) => {
-      const text = rawText.trim();
-      if (!text || busy) return;
+      const readyAtt = pendingRef.current.filter(
+        (p) => p.status === "ready" && p.serverId,
+      );
+      const uploadingNow = pendingRef.current.some(
+        (p) => p.status === "uploading",
+      );
+      const raw = rawText.trim();
+      if (!raw && readyAtt.length === 0) return;
+      if (busy || uploadingNow) return;
+      const text = raw || "Tolong periksa file yang kulampirkan.";
       const userMsg: Message = {
         id: `user_${Date.now()}`,
         sender: "user",
         text,
         timestamp: nowTime(),
+        ...(readyAtt.length > 0
+          ? {
+              attachments: readyAtt.map((p) => ({
+                name: p.name,
+                size: p.size,
+              })),
+            }
+          : {}),
       };
       const history = [...messagesRef.current, userMsg];
       setMessages(history);
       persist(history);
+      setPending([]);
       setInput("");
       if (inputRef.current) inputRef.current.style.height = "auto";
       stickRef.current = true;
@@ -627,6 +848,9 @@ export default function AdminAgentPanel() {
             })(),
             hitl: true,
             role: "admin",
+            ...(readyAtt.length > 0
+              ? { attachments: readyAtt.map((p) => p.serverId as string) }
+              : {}),
           }),
         });
         if (!response.ok) {
@@ -1229,7 +1453,25 @@ export default function AdminAgentPanel() {
     (currentSession ? "Sesi berjalan" : "Sesi baru");
 
   return (
-    <div className="aag-wrap">
+    <div
+      className="aag-wrap"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node))
+          setDragOver(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+      }}
+    >
+      {dragOver && (
+        <div className="aag-drop">Lepaskan file untuk melampirkan</div>
+      )}
       {/* Kepala chat gaya aplikasi chat umum (permintaan user
           18 Nov): judul sesi + status instance di kiri; pemilih
           sesi & tombol sesi baru di kanan. */}
@@ -1314,6 +1556,16 @@ export default function AdminAgentPanel() {
                   )}
                 </div>
                 <FileCards files={m.files} />
+                {m.attachments && m.attachments.length > 0 && (
+                  <div className="aag-sent-files">
+                    {m.attachments.map((a, j) => (
+                      <span key={j} className="aag-sent-file">
+                        <Paperclip size={12} /> {a.name} ·{" "}
+                        {formatSize(a.size)}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="msg-meta">
                   <span>{m.timestamp}</span>
                   {m.meta && (
@@ -1402,6 +1654,36 @@ export default function AdminAgentPanel() {
         </div>
       )}
 
+      {pending.length > 0 && (
+        <div className="aag-chips">
+          {pending.map((p) => (
+            <span
+              key={p.localId}
+              className={`aag-chip${p.status === "error" ? " is-error" : ""}`}
+              title={p.error || p.name}
+            >
+              {p.status === "uploading" ? (
+                <LoaderCircle size={13} className="aag-spin" />
+              ) : p.status === "error" ? (
+                <AlertCircle size={13} />
+              ) : (
+                <FileText size={13} />
+              )}
+              <span className="aag-chip-name">{p.name}</span>
+              <span className="aag-chip-size">{formatSize(p.size)}</span>
+              <button
+                type="button"
+                className="aag-chip-x"
+                onClick={() => removePending(p.localId)}
+                aria-label={`Hapus lampiran ${p.name}`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       <form
         className="chat-input-row"
         onSubmit={(e) => {
@@ -1409,6 +1691,26 @@ export default function AdminAgentPanel() {
           void send(input);
         }}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          hidden
+          onChange={(e) => {
+            if (e.target.files) addFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          className="aag-tool-btn"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={busy}
+          aria-label="Lampirkan file"
+          title="Lampirkan file (maks 5 berkas, 10 MB per berkas) — atau jatuhkan/tempel berkas ke panel"
+        >
+          <Paperclip size={17} />
+        </button>
         <textarea
           ref={inputRef}
           value={input}
@@ -1424,15 +1726,42 @@ export default function AdminAgentPanel() {
               void send(input);
             }
           }}
+          onPaste={(e) => {
+            const fs = e.clipboardData?.files;
+            if (fs && fs.length > 0) {
+              e.preventDefault();
+              addFiles(fs);
+            }
+          }}
           placeholder="Beri perintah untuk agent administrator…"
           aria-label="Tulis perintah"
           rows={1}
           maxLength={8000}
         />
+        {voiceOk && (
+          <button
+            type="button"
+            className={`aag-tool-btn${listening ? " is-listening" : ""}`}
+            onClick={toggleVoice}
+            aria-label={listening ? "Berhenti mendengarkan" : "Masukan suara"}
+            title={
+              listening
+                ? "Berhenti mendengarkan"
+                : "Masukan suara (Bahasa Indonesia)"
+            }
+          >
+            <Mic size={17} />
+          </button>
+        )}
         <button
           type="submit"
           className="qp-send"
-          disabled={busy || !input.trim()}
+          disabled={
+            busy ||
+            pending.some((p) => p.status === "uploading") ||
+            (!input.trim() &&
+              !pending.some((p) => p.status === "ready"))
+          }
           aria-label="Kirim perintah"
         >
           <SendHorizontal size={17} />
