@@ -4180,7 +4180,12 @@ code {
     gap: 4px;
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 2px;
+    /* Ruang napas WAJIB (perbaikan 21 Nov): overflow-x:auto membuat
+       nav memotong isinya di tepi padding-box, sementara outline
+       fokus tab butuh 3px (2px + offset 1px) di luar kotak item —
+       tanpa padding ini sisi atas/samping outline tab aktif
+       terpotong dan bilah terasa mepet ke baris merek. */
+    padding: 4px 3px;
     min-width: 0;
     scrollbar-width: none;
   }
