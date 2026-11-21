@@ -207,9 +207,29 @@ type RawSessionMessage = {
   type?: string;
   info?: { role?: string };
   text?: string;
+  time?: { created?: number };
   content?: { type?: string; text?: string }[];
   parts?: { type?: string; text?: string }[];
 };
+
+/* Serve v2 mentah mengembalikan riwayat TERBARU-dulu, sedangkan
+   backend yang sudah menormalisasi (commit backend 0cec7ee)
+   mengembalikannya kronologis. Bila semua pesan membawa
+   time.created, urutkan menaik agar kedua dunia tampil benar;
+   bila tidak, percayai urutan pemberi. */
+function orderSessionMessages(
+  raw: RawSessionMessage[],
+): RawSessionMessage[] {
+  if (
+    raw.length > 1 &&
+    raw.every((m) => typeof m.time?.created === "number")
+  ) {
+    return [...raw].sort(
+      (a, b) => (a.time?.created ?? 0) - (b.time?.created ?? 0),
+    );
+  }
+  return raw;
+}
 
 function parseSessionMessage(
   m: RawSessionMessage,
@@ -1033,7 +1053,7 @@ export default function AdminAgentPanel() {
               const data = (await msgRes.json()) as {
                 messages?: RawSessionMessage[];
               };
-              const list = (data.messages ?? [])
+              const list = orderSessionMessages(data.messages ?? [])
                 .map(parseSessionMessage)
                 .filter(
                   (x): x is { sender: "user" | "ai"; text: string } =>
@@ -1330,7 +1350,7 @@ export default function AdminAgentPanel() {
         messages?: RawSessionMessage[];
       };
       const msgs: Message[] = [];
-      for (const m of data.messages ?? []) {
+      for (const m of orderSessionMessages(data.messages ?? [])) {
         const parsed = parseSessionMessage(m);
         if (!parsed) continue;
         msgs.push({
