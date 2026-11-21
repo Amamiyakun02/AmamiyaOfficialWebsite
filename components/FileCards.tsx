@@ -1,4 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -184,18 +190,17 @@ export default function FileCards({
 }
 
 /* =====================================================================
-   Jendela review file hasil agent (dashboard admin, 21 Nov
-   2026): jendela MENGAMBANG multi-tab — beberapa file bisa
-   dibuka bersamaan (satu tab per file, dikunci path), bisa
-   di-minimize ke dock melayang di kanan bawah dan dipulihkan
-   lagi, tiap tab bisa ditutup sendiri. Isi tab aktif: kode
-   ter-highlight DENGAN nomor baris + metadata lengkap — nama
-   file, folder proyek, path, ukuran, jumlah baris, bahasa,
-   status konten. Konten mengikuti kontrak files[] yang sama
-   (teks ≤ 64 KB ikut di payload; lebih besar/biner hanya
-   metadata yang bisa ditampilkan). Hanya tab aktif yang
-   dirender isinya; data semua tab tetap di state panel —
-   itulah biaya RAM yang disadari user saat meminta multi-tab.
+   Review file hasil agent (dashboard admin, 21 Nov 2026).
+   Isi review (ReviewBody): kode ter-highlight DENGAN nomor
+   baris + metadata lengkap — nama file, folder proyek, path,
+   ukuran, jumlah baris, bahasa, status konten. Konten
+   mengikuti kontrak files[] yang sama (teks ≤ 64 KB ikut di
+   payload; lebih besar/biner hanya metadata yang bisa
+   ditampilkan). Di desktop review tampil sebagai JENDELA
+   mengambang per file (FileReviewWindow) yang bisa digeser,
+   di-minimize, dan ditutup — beberapa jendela bisa terbuka
+   bersamaan; di non-desktop sebagai modal tunggal
+   (FileReviewModal).
    ===================================================================== */
 
 function ReviewBody({
@@ -332,131 +337,111 @@ export function FileReviewModal({
   );
 }
 
+/* Jendela review mengambang per file (desktop): bisa
+   DIGESER dari kepala jendelanya, di-MINIMIZE menjadi
+   kepala saja, dan di-TUTUP — seperti jendela aplikasi.
+   Posisi awal di tengah layar dengan geseran tangga per
+   jendela (spawnIndex) agar beberapa jendela tidak menumpuk
+   persis. Klik di mana pun pada jendela membawanya ke depan
+   (onFocus; urutan render panel = urutan z). */
 export function FileReviewWindow({
-  files,
-  activePath,
+  file,
+  zIndex,
+  spawnIndex,
   minimized,
-  onActivate,
-  onCloseFile,
-  onCloseAll,
   onToggleMinimize,
+  onClose,
+  onFocus,
 }: {
-  files: ChatFile[];
-  activePath: string;
+  file: ChatFile;
+  zIndex: number;
+  spawnIndex: number;
   minimized: boolean;
-  onActivate: (path: string) => void;
-  onCloseFile: (path: string) => void;
-  onCloseAll: () => void;
   onToggleMinimize: () => void;
+  onClose: () => void;
+  onFocus: () => void;
 }) {
-  const active =
-    files.find((f) => f.path === activePath) ?? files[files.length - 1];
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null);
 
-  // Esc menutup tab aktif (perilaku Esc modal lama, diperluas).
   useEffect(() => {
-    if (minimized || !active) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCloseFile(active.path);
+    const off = (spawnIndex % 6) * 30;
+    const w = Math.min(920, window.innerWidth - 16);
+    setPos({
+      x: Math.max(8, (window.innerWidth - w) / 2 + off),
+      y: Math.max(8, Math.round(window.innerHeight * 0.07) + off),
+    });
+    // Hanya saat mount: jendela yang ditata ulang z-nya oleh
+    // panel tidak boleh melompat balik ke posisi awal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onHeadPointerDown = (e: ReactPointerEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    if (!pos) return;
+    dragRef.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+    const move = (ev: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      setPos({
+        x: Math.min(Math.max(0, ev.clientX - d.dx), window.innerWidth - 120),
+        y: Math.min(Math.max(0, ev.clientY - d.dy), window.innerHeight - 48),
+      });
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [minimized, active, onCloseFile]);
+    const up = () => {
+      dragRef.current = null;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
 
-  if (files.length === 0 || !active) return null;
-
-  if (minimized) {
-    return (
-      <div className="review-dock" role="region" aria-label="Review file terminimalkan">
-        <span className="review-dock-label">
-          <FileCode size={14} /> {files.length} file
-        </span>
-        {files.map((f) => (
-          <span key={f.path} className="review-dock-chip">
-            <button
-              type="button"
-              className="review-dock-open"
-              onClick={() => onActivate(f.path)}
-              title={`Buka review ${f.name}`}
-            >
-              {f.name}
-            </button>
-            <button
-              type="button"
-              className="review-dock-x"
-              onClick={() => onCloseFile(f.path)}
-              title={`Tutup ${f.name}`}
-            >
-              <X size={12} />
-            </button>
-          </span>
-        ))}
-        <button
-          type="button"
-          className="review-dock-btn"
-          onClick={onToggleMinimize}
-          title="Pulihkan jendela review"
-        >
-          <ChevronUp size={15} />
-        </button>
-      </div>
-    );
-  }
+  if (!pos) return null;
 
   return (
-    <div className="review-window" role="dialog" aria-label="Review file">
-      <div className="review-tabbar">
-        <div className="review-tabs" role="tablist">
-          {files.map((f) => (
-            <span
-              key={f.path}
-              className={`review-tab${f.path === active.path ? " is-active" : ""}`}
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={f.path === active.path}
-                className="review-tab-main"
-                onClick={() => onActivate(f.path)}
-                title={f.path}
-              >
-                {langFromName(f.name) === "text" ? (
-                  <FileText size={13} />
-                ) : (
-                  <FileCode size={13} />
-                )}
-                {f.name}
-              </button>
-              <button
-                type="button"
-                className="review-tab-x"
-                onClick={() => onCloseFile(f.path)}
-                title={`Tutup tab ${f.name}`}
-              >
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className="review-win-actions">
+    <div
+      className="review-window"
+      role="dialog"
+      aria-label={`Review ${file.name}`}
+      style={{
+        left: pos.x,
+        top: pos.y,
+        zIndex,
+        width: minimized ? "min(430px, 94vw)" : undefined,
+      }}
+      onPointerDown={onFocus}
+    >
+      <div className="review-win-head" onPointerDown={onHeadPointerDown}>
+        <span className="review-win-title">
+          {langFromName(file.name) === "text" ? (
+            <FileText size={15} />
+          ) : (
+            <FileCode size={15} />
+          )}
+          {file.name}
+          <span className="review-win-path">{file.path}</span>
+        </span>
+        <span className="review-win-actions">
           <button
             type="button"
             className="file-card-btn"
             onClick={onToggleMinimize}
-            title="Minimize jendela review"
+            title={minimized ? "Pulihkan jendela" : "Minimize"}
           >
-            <Minus size={15} />
+            {minimized ? <ChevronUp size={15} /> : <Minus size={15} />}
           </button>
           <button
             type="button"
             className="file-card-btn"
-            onClick={onCloseAll}
-            title="Tutup semua review"
+            onClick={onClose}
+            title="Tutup review"
           >
             <X size={15} />
           </button>
-        </div>
+        </span>
       </div>
-      <ReviewBody key={active.path} file={active} />
+      {!minimized && <ReviewBody file={file} />}
     </div>
   );
 }

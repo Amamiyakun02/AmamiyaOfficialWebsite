@@ -5297,14 +5297,12 @@ code {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Jendela review mengambang multi-tab: tanpa backdrop —
-   halaman di belakangnya tetap bisa dipakai; minimize
-   meruntuhkannya menjadi dock di kanan bawah. */
+/* Jendela review mengambang per file (desktop): tanpa
+   backdrop — halaman di belakangnya tetap bisa dipakai.
+   Posisi left/top diatur inline oleh komponen (bisa
+   digeser); minimize meruntuhkan isi menjadi kepala saja. */
 .review-window {
   position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   z-index: 60;
   display: flex;
   flex-direction: column;
@@ -5322,176 +5320,47 @@ code {
   min-height: 0;
 }
 
-.review-tabbar {
+.review-win-head {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
-  padding: 8px 10px 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
   border-bottom: 1px solid #1e1e22;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
-.review-tabs {
+.review-win-head:active {
+  cursor: grabbing;
+}
+
+.review-win-title {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 7px;
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.review-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.review-tab {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 9px 9px 0 0;
-  background: #17171b;
-}
-
-.review-tab.is-active {
-  background: #1d1d22;
-  border-color: #26262b;
-}
-
-.review-tab-main {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 4px 7px 10px;
-  background: none;
-  border: none;
-  color: #c9c9cf;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.review-tab.is-active .review-tab-main {
   color: #fff;
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
-.review-tab-x {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 7px 4px 2px;
-  background: none;
-  border: none;
+.review-win-path {
   color: #8a8a93;
-  cursor: pointer;
-}
-
-.review-tab-x:hover {
-  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .review-win-actions {
   display: flex;
-  align-items: center;
   gap: 2px;
-  padding-bottom: 6px;
-}
-
-.review-dock {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  max-width: min(92vw, 640px);
-  padding: 7px 9px;
-  background: #101013;
-  border: 1px solid #26262b;
-  border-radius: 999px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.review-dock::-webkit-scrollbar {
-  display: none;
-}
-
-.review-dock-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   flex: none;
-  color: #8a8a93;
-  font-size: 0.76rem;
-  font-weight: 700;
-  padding: 0 2px;
 }
 
-.review-dock-chip {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  background: #1d1d22;
-  border: 1px solid #2b2b31;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.review-dock-open {
-  padding: 5px 4px 5px 10px;
-  background: none;
-  border: none;
-  color: #e8e8ec;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.review-dock-x {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 7px 4px 1px;
-  background: none;
-  border: none;
-  color: #8a8a93;
-  cursor: pointer;
-}
-
-.review-dock-x:hover {
-  color: #fff;
-}
-
-.review-dock-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #1d1d22;
-  border: 1px solid #2b2b31;
-  color: #e8e8ec;
-  cursor: pointer;
-}
-.review-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #f2f2f5;
-  min-width: 0;
-}
-.review-title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .review-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
