@@ -4155,6 +4155,11 @@ code {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
+  /* min-width: 0 di seluruh rantai WAJIB (perbaikan responsif
+     21 Nov): tanpa ini, lebar min-content bilah tab (9 modul
+     berjajar, ±914px) menggelembungkan kolom grid 1fr sehingga
+     SELURUH dashboard tampil selebar ±914px di layar ponsel —
+     konten terpotong kanan dan judul strip Top Project teriris. */
   .dash-side {
     flex-direction: row;
     flex-wrap: wrap;
@@ -4164,6 +4169,7 @@ code {
     border-right: none;
     border-bottom: 1px solid #1d1d21;
     overflow: visible;
+    min-width: 0;
   }
   .dash-brand {
     padding: 0;
@@ -4175,6 +4181,14 @@ code {
     width: 100%;
     overflow-x: auto;
     padding-bottom: 2px;
+    min-width: 0;
+    scrollbar-width: none;
+  }
+  .dash-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .dash-main {
+    min-width: 0;
   }
   .dash-nav-label {
     display: none;
@@ -4504,6 +4518,9 @@ code {
   font-size: 13.5px;
   font-weight: 700;
   color: #e3b341;
+  /* Boleh menyusut & membungkus di layar sempit agar tidak
+     mendesak pil hitungan keluar strip. */
+  min-width: 0;
 }
 .top-count {
   font-size: 12.5px;

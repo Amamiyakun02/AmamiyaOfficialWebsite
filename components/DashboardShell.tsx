@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ComponentType } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
@@ -160,6 +166,18 @@ export default function DashboardShell() {
     window.history.replaceState(null, "", url);
   }, []);
 
+  // Bilah tab ponsel bergulir horizontal: pastikan tab aktif
+  // (mis. dari ?tab= saat halaman dimuat/refresh) selalu masuk
+  // pandangan, bukan tersembunyi di luar tepi kanan. Di desktop
+  // (sidebar vertikal) efek ini tidak mengubah apa-apa.
+  const navRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (state !== "ok") return;
+    navRef.current
+      ?.querySelector(".dash-nav-on")
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [active, state]);
+
   useEffect(() => {
     const token = localStorage.getItem("dashboard_token");
     if (!token) {
@@ -222,7 +240,7 @@ export default function DashboardShell() {
           </div>
         </div>
 
-        <nav className="dash-nav" aria-label="Modul dashboard">
+        <nav className="dash-nav" aria-label="Modul dashboard" ref={navRef}>
           <div className="dash-nav-label">Modul</div>
           {TABS.map((t) => {
             const Icon = t.icon;
