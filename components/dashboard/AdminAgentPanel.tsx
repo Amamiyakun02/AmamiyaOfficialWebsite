@@ -192,6 +192,44 @@ type OcSession = {
   time?: { created?: number; updated?: number };
 };
 
+/* Bentuk pesan riwayat sesi dari backend. Serve opencode v2
+   mengembalikan pesan bergaya simpanan barunya: {type: "user",
+   text} untuk pengguna dan {type: "assistant", content:
+   [{type: "text" | "reasoning", text}]} untuk agent (blok
+   reasoning dilewati — stream langsung pun tidak pernah
+   menampilkannya), diselingi penanda {type: "idle"}. Bentuk
+   lama v1 {info: {role}, parts: [...]} tetap diterima sebagai
+   cadangan. Parser lama yang hanya mengenal v1 membuat SEMUA
+   riwayat v2 terbaca kosong (insiden 21 Nov: sesi "Ibu kota
+   Indonesia" tampil judulnya saja + pesan sambutan, padahal
+   backend menjawab 200 dan datanya ada). */
+type RawSessionMessage = {
+  type?: string;
+  info?: { role?: string };
+  text?: string;
+  content?: { type?: string; text?: string }[];
+  parts?: { type?: string; text?: string }[];
+};
+
+function parseSessionMessage(
+  m: RawSessionMessage,
+): { sender: "user" | "ai"; text: string } | null {
+  const role = m.type ?? m.info?.role;
+  if (role !== "user" && role !== "assistant" && role !== "ai") return null;
+  const blocksText = (blocks?: { type?: string; text?: string }[]) =>
+    (blocks ?? [])
+      .filter((b) => b.type === "text" && typeof b.text === "string")
+      .map((b) => b.text as string)
+      .join("\n");
+  let text = "";
+  if (role === "user" && typeof m.text === "string") text = m.text;
+  if (!text) text = blocksText(m.content);
+  if (!text) text = blocksText(m.parts);
+  text = text.trim();
+  if (!text) return null;
+  return { sender: role === "user" ? "user" : "ai", text };
+}
+
 // Waktu sesi terakhir diperbarui (epoch ms dari serve) untuk
 // daftar kelola sesi; kosong bila tidak valid.
 const formatSessionTime = (ms?: number): string => {
@@ -965,14 +1003,6 @@ export default function AdminAgentPanel() {
         if (!sid) return null;
         setRecovering(true);
         setWaitingBoth(true);
-        const msgText = (m: {
-          parts?: { type?: string; text?: string }[];
-        }): string =>
-          (m.parts ?? [])
-            .filter((p) => p.type === "text" && typeof p.text === "string")
-            .map((p) => p.text as string)
-            .join("\n")
-            .trim();
         let lastSeen = "";
         try {
           for (let i = 0; i < 36; i++) {
@@ -1001,15 +1031,17 @@ export default function AdminAgentPanel() {
                 : [];
               if (forms.length > 0 || perms.length > 0) return null;
               const data = (await msgRes.json()) as {
-                messages?: {
-                  info?: { role?: string };
-                  parts?: { type?: string; text?: string }[];
-                }[];
+                messages?: RawSessionMessage[];
               };
-              const list = data.messages ?? [];
+              const list = (data.messages ?? [])
+                .map(parseSessionMessage)
+                .filter(
+                  (x): x is { sender: "user" | "ai"; text: string } =>
+                    x !== null,
+                );
               let lastUser = -1;
               for (let j = list.length - 1; j >= 0; j--) {
-                if (list[j].info?.role === "user") {
+                if (list[j].sender === "user") {
                   lastUser = j;
                   break;
                 }
@@ -1017,8 +1049,8 @@ export default function AdminAgentPanel() {
               if (lastUser === -1) continue;
               const candidate = list
                 .slice(lastUser + 1)
-                .filter((m) => m.info?.role !== "user")
-                .map(msgText)
+                .filter((m) => m.sender === "ai")
+                .map((m) => m.text)
                 .filter(Boolean)
                 .join("\n\n");
               if (candidate && candidate === lastSeen) return candidate;
@@ -1295,23 +1327,16 @@ export default function AdminAgentPanel() {
       );
       if (!res.ok) return null;
       const data = (await res.json()) as {
-        messages?: {
-          info?: { role?: string };
-          parts?: { type?: string; text?: string }[];
-        }[];
+        messages?: RawSessionMessage[];
       };
       const msgs: Message[] = [];
       for (const m of data.messages ?? []) {
-        const text = (m.parts ?? [])
-          .filter((p) => p.type === "text" && typeof p.text === "string")
-          .map((p) => p.text as string)
-          .join("\n")
-          .trim();
-        if (!text) continue;
+        const parsed = parseSessionMessage(m);
+        if (!parsed) continue;
         msgs.push({
           id: `hist_${msgs.length}`,
-          sender: m.info?.role === "user" ? "user" : "ai",
-          text,
+          sender: parsed.sender,
+          text: parsed.text,
           timestamp: "",
         });
       }
