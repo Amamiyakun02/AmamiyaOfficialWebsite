@@ -1291,8 +1291,10 @@ code {
 }
 .contact-form input:focus,
 .contact-form textarea:focus {
+  /* Border biru saat fokus DIHAPUS (keputusan user 21 Nov):
+     border tetap warna diamnya untuk semua form. */
   outline: none;
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .contact-form .hero-btn {
   align-self: flex-start;
@@ -2288,7 +2290,7 @@ code {
 }
 .hitl-input:focus {
   outline: none;
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .hitl-input:disabled {
   opacity: 0.7;
@@ -2383,7 +2385,7 @@ code {
   padding: 8px 8px 8px 14px;
 }
 .chat-input-row:focus-within {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .chat-input-row textarea {
   flex: 1;
@@ -2608,7 +2610,7 @@ code {
   outline: none;
 }
 .mcp-run-row input:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .mcp-run {
   display: inline-flex;
@@ -2813,7 +2815,7 @@ code {
   outline: none;
 }
 .vd-url-row input:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .vd-url-row input::placeholder {
   color: #5c5c66;
@@ -2900,7 +2902,7 @@ code {
   outline: none;
 }
 .vd-select:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .vd-select:disabled {
   opacity: 0.4;
@@ -3390,7 +3392,7 @@ code {
   color: #fff;
   outline: none;
 }
-.pdf-cut-field input:focus { border-color: rgba(0, 129, 251, 0.55); }
+.pdf-cut-field input:focus { border-color: #26262b; }
 .pdf-cut-btn {
   display: inline-flex;
   align-items: center;
@@ -3435,7 +3437,7 @@ code {
   color: #fff;
   outline: none;
 }
-.pdf-search input:focus { border-color: rgba(0, 129, 251, 0.55); }
+.pdf-search input:focus { border-color: #26262b; }
 
 .pdf-tabs {
   display: inline-flex;
@@ -3848,7 +3850,7 @@ code {
   width: 100%;
 }
 .login-field input:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .login-error {
   font-size: 13px;
@@ -4140,12 +4142,16 @@ code {
 
 /* Fokus yang terlihat untuk semua kontrol di dalam dashboard. */
 .dash-app button:focus-visible,
-.dash-app a:focus-visible,
+.dash-app a:focus-visible {
+  outline: 2px solid rgba(0, 129, 251, 0.65);
+  outline-offset: 1px;
+}
+/* Form di dashboard: tanpa border/outline biru saat fokus
+   (keputusan user 21 Nov, berlaku semua form). */
 .dash-app input:focus-visible,
 .dash-app select:focus-visible,
 .dash-app textarea:focus-visible {
-  outline: 2px solid rgba(0, 129, 251, 0.65);
-  outline-offset: 1px;
+  outline: none;
 }
 
 /* Layar sempit: sidebar menjadi bilah atas — merek + baris
@@ -4248,7 +4254,7 @@ code {
 .proj-field input:focus,
 .proj-field textarea:focus,
 .proj-field select:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .proj-filter,
 .proj-field select {
@@ -5030,7 +5036,7 @@ code {
   outline: none;
 }
 .aip-model-input:focus {
-  border-color: #0081fb;
+  border-color: #26262b;
 }
 .aip-check {
   display: flex;
