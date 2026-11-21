@@ -19,6 +19,8 @@ import {
   Inbox,
   LayoutDashboard,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   PlugZap,
   ScrollText,
   Users,
@@ -34,7 +36,9 @@ import { apiUrl } from "@/lib/api";
      (ikon + label, status aktif redup-putih dengan ikon aksen),
      konten mengalir di kolom utama berlatar AmbientBackground yang
      sama dengan tema situs. Di layar sempit sidebar menyusut jadi
-     bilah atas dengan navigasi horizontal.
+     bilah atas dengan navigasi horizontal. Di desktop sidebar
+     bisa DILIPAT menjadi rel ikon 68px (tombol di baris merek;
+     keadaan tersimpan di localStorage) — tambahan 21 Nov 2026.
    - Isi: Overview (halaman utama statistik, tab bawaan saat masuk)
      + 8 modul sesuai spec vault (Projects, Logs, Integrations,
      Contents, Inbox, Users, AI Provider, AI Agent). Tab Inbox
@@ -179,6 +183,32 @@ export default function DashboardShell() {
     if (active === "agent") setAgentVisited(true);
   }, [active]);
 
+  // Sidebar bisa dilipat menjadi rel ikon (desktop) agar area
+  // konten lebih lega — permintaan user 21 Nov 2026. Keadaan
+  // tersimpan di localStorage; dibaca sesudah mount agar
+  // render awal konsisten.
+  const [sideCollapsed, setSideCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      setSideCollapsed(
+        localStorage.getItem("dashboard_sidebar_collapsed") === "1",
+      );
+    } catch {
+      /* abaikan */
+    }
+  }, []);
+  const toggleSide = () => {
+    setSideCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("dashboard_sidebar_collapsed", next ? "1" : "0");
+      } catch {
+        /* abaikan */
+      }
+      return next;
+    });
+  };
+
   // Bilah tab ponsel bergulir horizontal: pastikan tab aktif
   // (mis. dari ?tab= saat halaman dimuat/refresh) selalu masuk
   // pandangan, bukan tersembunyi di luar tepi kanan. Di desktop
@@ -236,7 +266,7 @@ export default function DashboardShell() {
   const TabIcon = tab.icon;
 
   return (
-    <div className="dash-app">
+    <div className={sideCollapsed ? "dash-app is-side-collapsed" : "dash-app"}>
       <aside className="dash-side">
         <div className="dash-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -251,6 +281,19 @@ export default function DashboardShell() {
             <span className="dash-brand-name">Amamiya</span>
             <span className="dash-brand-sub">System Dashboard</span>
           </div>
+          <button
+            type="button"
+            className="dash-icon-btn dash-side-toggle"
+            onClick={toggleSide}
+            title={sideCollapsed ? "Buka sidebar" : "Lipat sidebar"}
+            aria-label={sideCollapsed ? "Buka sidebar" : "Lipat sidebar"}
+          >
+            {sideCollapsed ? (
+              <PanelLeftOpen size={16} />
+            ) : (
+              <PanelLeftClose size={16} />
+            )}
+          </button>
         </div>
 
         <nav className="dash-nav" aria-label="Modul dashboard" ref={navRef}>
@@ -264,6 +307,7 @@ export default function DashboardShell() {
                 type="button"
                 className={`dash-nav-item${on ? " dash-nav-on" : ""}`}
                 aria-current={on ? "page" : undefined}
+                title={t.label}
                 onClick={() => selectTab(t.id)}
               >
                 <Icon size={17} className="dash-nav-icon" />
@@ -274,7 +318,7 @@ export default function DashboardShell() {
         </nav>
 
         <div className="dash-side-foot">
-          <a className="dash-site-link" href="/">
+          <a className="dash-site-link" href="/" title="Situs utama">
             <House size={15} />
             <span>Situs utama</span>
             <ArrowUpRight size={13} className="dash-site-link-arrow" />

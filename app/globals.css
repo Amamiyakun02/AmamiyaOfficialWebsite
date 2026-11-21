@@ -4156,6 +4156,62 @@ code {
 
 /* Layar sempit: sidebar menjadi bilah atas — merek + baris
    pengguna menyatu, navigasi modul menggelinding horizontal. */
+/* Sidebar dilipat = rel ikon (hanya desktop >=921px; bilah
+   atas ponsel tidak terpengaruh). Keadaan disimpan di
+   localStorage oleh DashboardShell. */
+@media (min-width: 921px) {
+  .dash-app {
+    transition: grid-template-columns 0.22s ease;
+  }
+  .dash-app.is-side-collapsed {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+  .is-side-collapsed .dash-side {
+    padding: 20px 10px 16px;
+  }
+  .is-side-collapsed .dash-brand {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 2px 0;
+  }
+  .is-side-collapsed .dash-brand-text {
+    display: none;
+  }
+  .is-side-collapsed .dash-side-toggle {
+    margin-left: 0;
+  }
+  .is-side-collapsed .dash-nav-label {
+    display: none;
+  }
+  .is-side-collapsed .dash-nav-item {
+    justify-content: center;
+    padding: 9px 0;
+  }
+  .is-side-collapsed .dash-nav-item span {
+    display: none;
+  }
+  .is-side-collapsed .dash-site-link {
+    justify-content: center;
+    padding: 8px 0;
+  }
+  .is-side-collapsed .dash-site-link span,
+  .is-side-collapsed .dash-site-link-arrow {
+    display: none;
+  }
+  .is-side-collapsed .dash-user-row {
+    flex-direction: column;
+    gap: 9px;
+    padding: 13px 0 2px;
+  }
+  .is-side-collapsed .dash-user-meta {
+    display: none;
+  }
+  .is-side-collapsed .dash-user-row .dash-icon-btn {
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 920px) {
   .dash-app {
     grid-template-columns: 1fr;
