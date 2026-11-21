@@ -3,7 +3,6 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode,
 } from "react";
 import {
   ChevronDown,
@@ -191,11 +190,12 @@ export default function FileCards({
 
 /* =====================================================================
    Review file hasil agent (dashboard admin, 21 Nov 2026).
-   Isi review (ReviewBody): kode ter-highlight DENGAN nomor
-   baris + metadata lengkap — nama file, folder proyek, path,
-   ukuran, jumlah baris, bahasa, status konten. Konten
+   Isi review (ReviewBody): HANYA kode ter-highlight DENGAN
+   nomor baris — metadata dan tombol unduh dibuang atas
+   keputusan user agar area kode lega (nama + lokasi sudah
+   ada di kepala jendela dan di kartu file). Konten
    mengikuti kontrak files[] yang sama (teks ≤ 64 KB ikut di
-   payload; lebih besar/biner hanya metadata yang bisa
+   payload; lebih besar/biner hanya catatan yang bisa
    ditampilkan). Di desktop review tampil sebagai JENDELA
    mengambang per file (FileReviewWindow) yang bisa digeser,
    di-minimize, dan ditutup — beberapa jendela bisa terbuka
@@ -203,13 +203,14 @@ export default function FileCards({
    (FileReviewModal).
    ===================================================================== */
 
-function ReviewBody({
-  file,
-  footerExtra,
-}: {
-  file: ChatFile;
-  footerExtra?: ReactNode;
-}) {
+/* Isi review = HANYA area kode (atau catatan konten
+   dihilangkan). Metadata (nama, path, ukuran, baris, bahasa)
+   dan tombol unduh SENGAJA dibuang atas keputusan user
+   (21 Nov 2026): nama + lokasi sudah ada di kepala jendela/
+   modal dan di kartu file, jadi area review dibuat lega
+   khusus untuk membaca kode. Unduh tetap bisa dari kartu
+   file di chat. */
+function ReviewBody({ file }: { file: ChatFile }) {
   const hasContent = typeof file.content === "string";
   const content = hasContent ? (file.content as string) : "";
   const rawLines = hasContent ? content.split("\n") : [];
@@ -219,62 +220,25 @@ function ReviewBody({
       ? rawLines.length - 1
       : rawLines.length;
   const lang = langFromName(file.name);
-  const slash = file.path.lastIndexOf("/");
-  const folder = slash > 0 ? file.path.slice(0, slash) : "";
-  const project = folder ? folder.split("/")[0] : "";
   const omittedNote =
     file.content_omitted === "too_large"
-      ? "Dihilangkan — file terlalu besar (> 64 KB)"
+      ? "Konten dihilangkan — file terlalu besar (> 64 KB)"
       : file.content_omitted === "binary"
-        ? "Dihilangkan — file biner"
-        : "Tidak disertakan backend";
+        ? "Konten dihilangkan — file biner"
+        : "Konten tidak disertakan backend";
 
-  const meta: { label: string; value: string }[] = [
-    { label: "Nama file", value: file.name },
-    { label: "Folder proyek", value: project || "—" },
-    { label: "Folder", value: folder || "(akar workspace)" },
-    { label: "Path lengkap", value: file.path },
-    { label: "Ukuran", value: formatSize(file.size) },
-    { label: "Baris", value: hasContent ? `${lineCount} baris` : "—" },
-    { label: "Bahasa", value: lang },
-    { label: "Konten", value: hasContent ? "Utuh" : omittedNote },
-  ];
-
+  if (!hasContent) {
+    return <div className="file-omitted review-omitted">{omittedNote}</div>;
+  }
   return (
-    <>
-      <div className="review-meta">
-        {meta.map((m) => (
-          <div key={m.label} className="review-meta-item">
-            <span className="review-meta-label">{m.label}</span>
-            <span className="review-meta-value">{m.value}</span>
-          </div>
+    <div className="review-codewrap">
+      <div className="review-gutter" aria-hidden="true">
+        {Array.from({ length: lineCount }, (_, i) => (
+          <span key={i}>{i + 1}</span>
         ))}
       </div>
-      {hasContent ? (
-        <div className="review-codewrap">
-          <div className="review-gutter" aria-hidden="true">
-            {Array.from({ length: lineCount }, (_, i) => (
-              <span key={i}>{i + 1}</span>
-            ))}
-          </div>
-          <HighlightedCode lang={lang} code={content} />
-        </div>
-      ) : (
-        <div className="file-omitted review-omitted">{omittedNote}</div>
-      )}
-      <div className="review-foot">
-        {hasContent && (
-          <button
-            type="button"
-            className="aag-new-btn"
-            onClick={() => downloadFile(file)}
-          >
-            <Download size={14} /> Unduh file
-          </button>
-        )}
-        {footerExtra}
-      </div>
-    </>
+      <HighlightedCode lang={lang} code={content} />
+    </div>
   );
 }
 
@@ -324,14 +288,7 @@ export function FileReviewModal({
             <X size={16} />
           </button>
         </div>
-        <ReviewBody
-          file={file}
-          footerExtra={
-            <button type="button" className="aag-new-btn" onClick={onClose}>
-              Tutup
-            </button>
-          }
-        />
+        <ReviewBody file={file} />
       </div>
     </div>
   );
@@ -339,7 +296,8 @@ export function FileReviewModal({
 
 /* Jendela review mengambang per file (desktop): bisa
    DIGESER dari kepala jendelanya, di-MINIMIZE menjadi
-   kepala saja, dan di-TUTUP — seperti jendela aplikasi.
+   kepala saja, di-TUTUP, dan DIUBAH UKURANNYA dari tepi
+   kanan/bawah/sudut kanan bawah — seperti jendela aplikasi.
    Posisi awal di tengah layar dengan geseran tangga per
    jendela (spawnIndex) agar beberapa jendela tidak menumpuk
    persis. Klik di mana pun pada jendela membawanya ke depan
@@ -362,6 +320,7 @@ export function FileReviewWindow({
   onFocus: () => void;
 }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
 
   useEffect(() => {
@@ -397,6 +356,44 @@ export function FileReviewWindow({
     window.addEventListener("pointerup", up);
   };
 
+  // Ubah ukuran dari tepi kanan ("r"), tepi bawah ("b"), atau
+  // sudut kanan bawah ("br") — seperti jendela aplikasi.
+  // Ukuran awal jendela mengikuti isi; sekali di-resize,
+  // lebar+tinggi menjadi eksplisit dari rect saat mulai.
+  const startResize =
+    (mode: "r" | "b" | "br") => (e: ReactPointerEvent) => {
+      if (!pos) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const win = (e.currentTarget as HTMLElement).closest(".review-window");
+      if (!win) return;
+      const rect = win.getBoundingClientRect();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startW = rect.width;
+      const startH = rect.height;
+      const maxW = window.innerWidth - pos.x - 8;
+      const maxH = window.innerHeight - pos.y - 8;
+      const move = (ev: PointerEvent) => {
+        setSize({
+          w:
+            mode === "b"
+              ? startW
+              : Math.min(Math.max(380, startW + ev.clientX - startX), maxW),
+          h:
+            mode === "r"
+              ? startH
+              : Math.min(Math.max(220, startH + ev.clientY - startY), maxH),
+        });
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    };
+
   if (!pos) return null;
 
   return (
@@ -408,7 +405,8 @@ export function FileReviewWindow({
         left: pos.x,
         top: pos.y,
         zIndex,
-        width: minimized ? "min(430px, 94vw)" : undefined,
+        width: minimized ? "min(430px, 94vw)" : size ? size.w : undefined,
+        height: minimized || !size ? undefined : size.h,
       }}
       onPointerDown={onFocus}
     >
@@ -442,6 +440,25 @@ export function FileReviewWindow({
         </span>
       </div>
       {!minimized && <ReviewBody file={file} />}
+      {!minimized && (
+        <>
+          <div
+            className="review-resize-r"
+            onPointerDown={startResize("r")}
+            aria-hidden="true"
+          />
+          <div
+            className="review-resize-b"
+            onPointerDown={startResize("b")}
+            aria-hidden="true"
+          />
+          <div
+            className="review-resize-br"
+            onPointerDown={startResize("br")}
+            title="Seret untuk mengubah ukuran"
+          />
+        </>
+      )}
     </div>
   );
 }
