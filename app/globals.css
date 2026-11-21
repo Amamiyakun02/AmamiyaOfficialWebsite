@@ -1599,6 +1599,14 @@ code {
   opacity: 0.45;
   cursor: default;
 }
+/* Varian Stop pada composer AI Agent dashboard: menggantikan
+   tombol kirim selama agent bekerja (menghentikan giliran). */
+.qp-send.is-stop {
+  background: #cf222e;
+}
+.qp-send.is-stop:hover {
+  background: #e0343f;
+}
 .qp-chip {
   border: 1px solid #26262b;
   background: #141416;

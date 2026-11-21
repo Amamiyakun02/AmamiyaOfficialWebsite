@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
   SendHorizontal,
+  Square,
   SquarePen,
   MessageCircle,
   ShieldAlert,
@@ -85,6 +86,12 @@ import { apiUrl } from "@/lib/api";
    (FILES_KEY) dan ditempel kembali setiap riwayat dimuat —
    riwayat backend tidak membawa file, jadi tanpa gudang ini
    kartu file hilang setiap berpindah sesi (perbaikan 21 Nov).
+   Selama agent bekerja, tombol kirim di composer berganti
+   menjadi tombol Stop: menghentikan stream di klien
+   (AbortController) dan meminta backend meng-abort giliran
+   di serve; pesan parsial ditutup dengan penanda
+   "Dihentikan oleh pengguna" dan pemulihan jawaban tidak
+   berjalan (berhenti disengaja bukan stream putus).
    — metadata lokal pesan yang cocok dipertahankan.
    ===================================================================== */
 
@@ -498,6 +505,9 @@ export default function AdminAgentPanel() {
   const [pending, setPending] = useState<PendingFile[]>([]);
   const pendingRef = useRef<PendingFile[]>([]);
   pendingRef.current = pending;
+  // Penghenti giliran yang sedang berjalan: diisi send() selama
+  // stream aktif, dipanggil tombol Stop di composer.
+  const stopRef = useRef<(() => void) | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [listening, setListening] = useState(false);
@@ -1059,6 +1069,34 @@ export default function AdminAgentPanel() {
       setBusy(true);
       setWaiting(true);
       setToolName(null);
+      // Tombol Stop (21 Nov 2026): membatalkan stream di klien
+      // lewat AbortController + best-effort meminta backend
+      // menghentikan giliran di serve (POST sessions/{id}/abort;
+      // endpoint backend menyusul — panggilan ini aman gagal).
+      // Bendera userStopped membedakan berhenti atas perintah
+      // pengguna dari stream putus: jalur pemulihan jawaban
+      // TIDAK boleh berjalan sesudah Stop.
+      const controller = new AbortController();
+      let userStopped = false;
+      stopRef.current = () => {
+        userStopped = true;
+        try {
+          const sid = localStorage.getItem(SESSION_KEY);
+          if (sid) {
+            void fetch(
+              apiUrl(`/v1/opencode/sessions/${sid}/abort?role=admin`),
+              { method: "POST", headers: authHeaders() },
+            ).catch(() => {});
+          }
+        } catch {
+          /* abaikan */
+        }
+        controller.abort();
+      };
+      const stoppedText = () =>
+        segText
+          ? `${segText}\n\n⏹️ *Dihentikan oleh pengguna.*`
+          : "⏹️ *Dihentikan oleh pengguna.*";
       const startTime = performance.now();
       let allText = "";
       let streamUsage: BackendUsage | null = null;
@@ -1269,6 +1307,7 @@ export default function AdminAgentPanel() {
         const response = await fetch(apiUrl(CHAT_ENDPOINT), {
           method: "POST",
           headers: { "Content-Type": "application/json", ...authHeaders() },
+          signal: controller.signal,
           body: JSON.stringify({
             prompt: text,
             session_id: (() => {
@@ -1466,6 +1505,10 @@ export default function AdminAgentPanel() {
             }
           }
         }
+        if (userStopped) {
+          finishWith(stoppedText());
+          return;
+        }
         if (!sawDone) {
           // Stream berakhir tanpa event done: jawaban mungkin
           // terpotong — coba pulihkan dari riwayat sesi dulu.
@@ -1477,6 +1520,10 @@ export default function AdminAgentPanel() {
         }
         finishWith(segText || "(tidak ada jawaban)");
       } catch (err) {
+        if (userStopped) {
+          finishWith(stoppedText());
+          return;
+        }
         // Putus jaringan di tengah stream (TypeError dari reader)
         // bukan vonis gagal: coba pulihkan jawaban dari sesi.
         if (streamStarted && err instanceof TypeError) {
@@ -1492,6 +1539,7 @@ export default function AdminAgentPanel() {
         ensureBubble();
         finishWith(`⚠️ ${msg}`);
       } finally {
+        stopRef.current = null;
         setBusy(false);
         setWaiting(false);
       }
@@ -2323,19 +2371,30 @@ export default function AdminAgentPanel() {
             <Mic size={17} />
           </button>
         )}
-        <button
-          type="submit"
-          className="qp-send"
-          disabled={
-            busy ||
-            pending.some((p) => p.status === "uploading") ||
-            (!input.trim() &&
-              !pending.some((p) => p.status === "ready"))
-          }
-          aria-label="Kirim perintah"
-        >
-          <SendHorizontal size={17} />
-        </button>
+        {busy ? (
+          <button
+            type="button"
+            className="qp-send is-stop"
+            onClick={() => stopRef.current?.()}
+            aria-label="Hentikan agent"
+            title="Hentikan agent"
+          >
+            <Square size={15} fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="qp-send"
+            disabled={
+              pending.some((p) => p.status === "uploading") ||
+              (!input.trim() &&
+                !pending.some((p) => p.status === "ready"))
+            }
+            aria-label="Kirim perintah"
+          >
+            <SendHorizontal size={17} />
+          </button>
+        )}
       </form>
       </div>
       {reviewWins.map((w, i) => (
