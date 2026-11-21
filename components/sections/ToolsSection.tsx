@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { toolsData } from "@/lib/tools";
-import QuickPrompt from "@/components/QuickPrompt";
 import SectionTitle from "@/components/SectionTitle";
 
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
@@ -15,7 +14,6 @@ export default function ToolsSection() {
         video, pengolah PDF dan gambar, sampai playground MCP server-ku.
         Semuanya sedang dipindah ke rumah baru ini secara bertahap.
       </p>
-      <QuickPrompt />
       <div className="proj-grid">
         {toolsData.map((t) => {
           const Icon = t.icon;

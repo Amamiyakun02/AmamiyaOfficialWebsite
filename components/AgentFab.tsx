@@ -29,12 +29,14 @@ import AssistantChat from "@/components/AssistantChat";
      mengirim prompt itu lewat prop quickPrompt AssistantChat.
    ===================================================================== */
 
-// Tiga prompt cepat hover — diambil dari saran bawaan AssistantChat
-// (SUGGESTIONS) yang paling relevan untuk pengunjung portofolio.
+// Tiga prompt cepat hover — warisan bar QuickPrompt lama di
+// section Tools (dihapus 21 Nov 2026 atas keputusan user karena
+// fungsinya tergantikan quick chat ini): promptnya yang
+// berorientasi pengunjung portofolio dipindah ke sini.
 const QUICK_PROMPTS: string[] = [
-  "Ceritakan stack AI Anda.",
-  "Buat contoh API Python singkat.",
-  "Bagaimana cara kita bekerja sama?",
+  "Ceritakan keahlian Amamiya",
+  "Tampilkan proyek terbarunya",
+  "Bagaimana cara menghubunginya?",
 ];
 
 export default function AgentFab() {

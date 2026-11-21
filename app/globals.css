@@ -1574,40 +1574,12 @@ code {
   }
 }
 
-/* ===== Quick prompt (halaman utama) + halaman chat AI (Tahap 2) ===== */
-.quick-prompt {
-  margin: 28px 0 30px;
-  max-width: 640px;
-}
-.qp-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #101013;
-  border: 1px solid #26262b;
-  border-radius: 14px;
-  padding: 8px 8px 8px 14px;
-  transition: border-color 0.15s ease;
-}
-.qp-bar:focus-within {
-  border-color: #0081fb;
-}
-.qp-icon {
-  color: #0081fb;
-  flex: 0 0 auto;
-}
-.qp-bar input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: 0;
-  outline: 0;
-  color: #eeeef2;
-  font-size: 15px;
-}
-.qp-bar input::placeholder {
-  color: #9a9aa2;
-}
+/* ===== Halaman chat AI (Tahap 2) =====
+   Bar QuickPrompt lama di section Tools dihapus 21 Nov 2026
+   (fungsinya tergantikan quick chat mengambang AgentFab; tiga
+   promptnya pindah ke chip hover FAB). Yang tersisa di blok ini
+   adalah .qp-send + .qp-chip — dipakai tombol kirim dan cip
+   saran di dalam AssistantChat. */
 .qp-send {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1624,12 +1596,6 @@ code {
 .qp-send:disabled {
   opacity: 0.45;
   cursor: default;
-}
-.qp-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
 }
 .qp-chip {
   border: 1px solid #26262b;
