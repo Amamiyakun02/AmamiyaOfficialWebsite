@@ -1,5 +1,12 @@
-import { useState } from "react";
-import { ChevronDown, Download, FileCode, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ChevronDown,
+  Download,
+  Eye,
+  FileCode,
+  FileText,
+  X,
+} from "lucide-react";
 import { HighlightedCode } from "@/components/ChatMarkdown";
 
 /* =====================================================================
@@ -78,9 +85,11 @@ function downloadFile(f: ChatFile) {
 function FileCard({
   file,
   defaultOpen,
+  onReview,
 }: {
   file: ChatFile;
   defaultOpen: boolean;
+  onReview?: (f: ChatFile) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const hasContent = typeof file.content === "string";
@@ -103,6 +112,16 @@ function FileCard({
           </div>
           <div className="file-card-path">{file.path}</div>
         </div>
+        {onReview && (
+          <button
+            type="button"
+            className="file-card-btn"
+            onClick={() => onReview(file)}
+            title="Review file ini (kode + metadata lengkap)"
+          >
+            <Eye size={15} />
+          </button>
+        )}
         {hasContent && (
           <>
             <button
@@ -138,7 +157,13 @@ function FileCard({
   );
 }
 
-export default function FileCards({ files }: { files?: ChatFile[] }) {
+export default function FileCards({
+  files,
+  onReview,
+}: {
+  files?: ChatFile[];
+  onReview?: (f: ChatFile) => void;
+}) {
   if (!files || files.length === 0) return null;
   return (
     <div className="file-cards">
@@ -149,8 +174,123 @@ export default function FileCards({ files }: { files?: ChatFile[] }) {
           // Satu file: pratinjau langsung terbuka; banyak file:
           // tertutup agar aliran chat tetap ringkas.
           defaultOpen={files.length === 1}
+          onReview={onReview}
         />
       ))}
+    </div>
+  );
+}
+
+/* =====================================================================
+   Modal review file hasil agent (dashboard admin, 21 Nov 2026):
+   kode ter-highlight DENGAN nomor baris + metadata lengkap —
+   nama file, folder proyek, path, ukuran, jumlah baris, bahasa,
+   status konten. Konten mengikuti kontrak files[] yang sama
+   (teks ≤ 64 KB ikut di payload; lebih besar/biner hanya
+   metadata yang bisa ditampilkan).
+   ===================================================================== */
+export function FileReviewModal({
+  file,
+  onClose,
+}: {
+  file: ChatFile;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const hasContent = typeof file.content === "string";
+  const content = hasContent ? (file.content as string) : "";
+  const rawLines = hasContent ? content.split("\n") : [];
+  // Baris terakhir kosong (newline penutup) tidak dihitung.
+  const lineCount =
+    rawLines.length > 0 && rawLines[rawLines.length - 1] === ""
+      ? rawLines.length - 1
+      : rawLines.length;
+  const lang = langFromName(file.name);
+  const slash = file.path.lastIndexOf("/");
+  const folder = slash > 0 ? file.path.slice(0, slash) : "";
+  const project = folder ? folder.split("/")[0] : "";
+  const omittedNote =
+    file.content_omitted === "too_large"
+      ? "Dihilangkan — file terlalu besar (> 64 KB)"
+      : file.content_omitted === "binary"
+        ? "Dihilangkan — file biner"
+        : "Tidak disertakan backend";
+
+  const meta: { label: string; value: string }[] = [
+    { label: "Nama file", value: file.name },
+    { label: "Folder proyek", value: project || "—" },
+    { label: "Folder", value: folder || "(akar workspace)" },
+    { label: "Path lengkap", value: file.path },
+    { label: "Ukuran", value: formatSize(file.size) },
+    { label: "Baris", value: hasContent ? `${lineCount} baris` : "—" },
+    { label: "Bahasa", value: lang },
+    { label: "Konten", value: hasContent ? "Utuh" : omittedNote },
+  ];
+
+  return (
+    <div
+      className="dash-modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="dash-modal review-modal" role="dialog" aria-modal="true">
+        <div className="dash-modal-head">
+          <div className="review-title">
+            {lang === "text" ? <FileText size={17} /> : <FileCode size={17} />}
+            <span>{file.name}</span>
+          </div>
+          <button
+            type="button"
+            className="file-card-btn"
+            onClick={onClose}
+            title="Tutup review"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className="review-meta">
+          {meta.map((m) => (
+            <div key={m.label} className="review-meta-item">
+              <span className="review-meta-label">{m.label}</span>
+              <span className="review-meta-value">{m.value}</span>
+            </div>
+          ))}
+        </div>
+        {hasContent ? (
+          <div className="review-codewrap">
+            <div className="review-gutter" aria-hidden="true">
+              {Array.from({ length: lineCount }, (_, i) => (
+                <span key={i}>{i + 1}</span>
+              ))}
+            </div>
+            <HighlightedCode lang={lang} code={content} />
+          </div>
+        ) : (
+          <div className="file-omitted review-omitted">{omittedNote}</div>
+        )}
+        <div className="review-foot">
+          {hasContent && (
+            <button
+              type="button"
+              className="aag-new-btn"
+              onClick={() => downloadFile(file)}
+            >
+              <Download size={14} /> Unduh file
+            </button>
+          )}
+          <button type="button" className="aag-new-btn" onClick={onClose}>
+            Tutup
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -14,9 +14,15 @@ import {
   Mic,
   FileText,
   AlertCircle,
+  History,
+  Trash2,
 } from "lucide-react";
 import ChatMarkdown from "@/components/ChatMarkdown";
-import FileCards, { formatSize, type ChatFile } from "@/components/FileCards";
+import FileCards, {
+  FileReviewModal,
+  formatSize,
+  type ChatFile,
+} from "@/components/FileCards";
 import { apiUrl } from "@/lib/api";
 
 /* =====================================================================
@@ -47,6 +53,21 @@ import { apiUrl } from "@/lib/api";
    awal). Kontrak lengkap = prompt serah-terima sesi Backend
    21 Nov. Masukan suara memakai Web Speech API di peramban
    (id-ID) — murni sisi klien, tanpa endpoint backend.
+   Pemulihan stream putus (21 Nov): bila aliran SSE terputus di
+   tengah (jaringan/proxy) padahal agent menyelesaikan
+   gilirannya di serve, panel TIDAK langsung menampilkan error —
+   ia mengambil jawaban final dari riwayat sesi backend
+   (polling ±5 dtk, final = isi stabil dua kali berurutan,
+   batal bila ada HITL tertunda) dan menampilkannya seolah
+   stream tidak pernah putus.
+   Kelola sesi (21 Nov): tombol "Sesi" di header membuka daftar
+   sesi tersimpan — klik membuka riwayatnya (read), ikon tempat
+   sampah menghapus permanen (DELETE /v1/opencode/sessions/{id}
+   ?role=admin; kontrak = prompt serah-terima sesi Backend —
+   backend lama menjawab 404/405 dan UI menampilkannya sebagai
+   catatan, bukan error diam). Review file: kartu file hasil
+   agent punya tombol mata yang membuka FileReviewModal
+   (kode ter-highlight + nomor baris + metadata lengkap).
    ===================================================================== */
 
 const CHAT_ENDPOINT = "/v1/opencode/chat/stream";
@@ -158,7 +179,28 @@ type HitlCard = {
   afterId?: string;
 };
 
-type OcSession = { id: string; title?: string; agent?: string };
+type OcSession = {
+  id: string;
+  title?: string;
+  agent?: string;
+  time?: { created?: number; updated?: number };
+};
+
+// Waktu sesi terakhir diperbarui (epoch ms dari serve) untuk
+// daftar kelola sesi; kosong bila tidak valid.
+const formatSessionTime = (ms?: number): string => {
+  if (!ms || !Number.isFinite(ms)) return "";
+  try {
+    return new Date(ms).toLocaleString("id-ID", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+};
 
 const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4));
 const nowTime = () =>
@@ -286,6 +328,8 @@ export default function AdminAgentPanel() {
   const [streamId, setStreamId] = useState<string | null>(null);
   // Nama tool yang sedang dijalankan agent (event meta.tool).
   const [toolName, setToolName] = useState<string | null>(null);
+  // Sedang memulihkan jawaban dari riwayat sesi (stream putus).
+  const [recovering, setRecovering] = useState(false);
   // Lampiran menunggu kirim + masukan suara (lihat kontrak di
   // header berkas). pendingRef = cermin untuk dibaca send().
   const [pending, setPending] = useState<PendingFile[]>([]);
@@ -309,6 +353,12 @@ export default function AdminAgentPanel() {
   );
   const [instModel, setInstModel] = useState<string>("");
   const [sessions, setSessions] = useState<OcSession[]>([]);
+  // Popover kelola sesi (buka/hapus) + statusnya.
+  const [sessOpen, setSessOpen] = useState(false);
+  const [sessConfirm, setSessConfirm] = useState<string | null>(null);
+  const [sessError, setSessError] = useState("");
+  // File yang sedang dibuka di modal review kode.
+  const [reviewFile, setReviewFile] = useState<ChatFile | null>(null);
   const [currentSession, setCurrentSession] = useState<string>("");
 
   const loadSessions = useCallback(async () => {
@@ -726,6 +776,8 @@ export default function AdminAgentPanel() {
       let streamModel: string | null = null;
       let streamTools: string[] = [];
       let streamFiles: ChatFile[] = [];
+      let sawDone = false;
+      let streamStarted = false;
       const aiId = `stream_${Date.now()}`;
 
       let segText = "";
@@ -833,6 +885,93 @@ export default function AdminAgentPanel() {
       // ke gelembung segmen aktif dan dirender ChatMarkdown dari
       // string gabungannya.
 
+      // Pemulihan jawaban saat stream putus di tengah (insiden
+      // 21 Nov: koneksi streaming diputus proxy saat agent sepi
+      // menjalankan tool ±98 dtk — agent MENYELESAIKAN gilirannya
+      // di serve, tetapi browser hanya melihat "network error").
+      // Ambil teks assistant sesudah pesan user terakhir dari
+      // riwayat sesi backend; dianggap final bila isinya sama di
+      // dua pengambilan berurutan (agent sudah berhenti menulis).
+      // Batalkan pemulihan bila agent ternyata menunggu jawaban
+      // HITL (form/izin tertunda) — alur ganti sesi yang memulihkannya.
+      const tryRecoverAnswer = async (): Promise<string | null> => {
+        let sid: string | null = null;
+        try {
+          sid = localStorage.getItem(SESSION_KEY);
+        } catch {
+          sid = null;
+        }
+        if (!sid) return null;
+        setRecovering(true);
+        setWaitingBoth(true);
+        const msgText = (m: {
+          parts?: { type?: string; text?: string }[];
+        }): string =>
+          (m.parts ?? [])
+            .filter((p) => p.type === "text" && typeof p.text === "string")
+            .map((p) => p.text as string)
+            .join("\n")
+            .trim();
+        let lastSeen = "";
+        try {
+          for (let i = 0; i < 36; i++) {
+            await new Promise((r) => setTimeout(r, 5000));
+            try {
+              const [msgRes, formRes, permRes] = await Promise.all([
+                fetch(
+                  apiUrl(`/v1/opencode/sessions/${sid}/messages?role=admin`),
+                  { headers: authHeaders() },
+                ),
+                fetch(apiUrl(`/v1/opencode/sessions/${sid}/forms?role=admin`), {
+                  headers: authHeaders(),
+                }),
+                fetch(
+                  apiUrl(`/v1/opencode/sessions/${sid}/permissions?role=admin`),
+                  { headers: authHeaders() },
+                ),
+              ]);
+              if (!msgRes.ok) continue;
+              const forms = formRes.ok
+                ? ((await formRes.json()) as { forms?: unknown[] }).forms ?? []
+                : [];
+              const perms = permRes.ok
+                ? ((await permRes.json()) as { permissions?: unknown[] })
+                    .permissions ?? []
+                : [];
+              if (forms.length > 0 || perms.length > 0) return null;
+              const data = (await msgRes.json()) as {
+                messages?: {
+                  info?: { role?: string };
+                  parts?: { type?: string; text?: string }[];
+                }[];
+              };
+              const list = data.messages ?? [];
+              let lastUser = -1;
+              for (let j = list.length - 1; j >= 0; j--) {
+                if (list[j].info?.role === "user") {
+                  lastUser = j;
+                  break;
+                }
+              }
+              if (lastUser === -1) continue;
+              const candidate = list
+                .slice(lastUser + 1)
+                .filter((m) => m.info?.role !== "user")
+                .map(msgText)
+                .filter(Boolean)
+                .join("\n\n");
+              if (candidate && candidate === lastSeen) return candidate;
+              if (candidate) lastSeen = candidate;
+            } catch {
+              /* coba lagi di putaran berikutnya */
+            }
+          }
+        } finally {
+          setRecovering(false);
+        }
+        return null;
+      };
+
       try {
         const response = await fetch(apiUrl(CHAT_ENDPOINT), {
           method: "POST",
@@ -876,6 +1015,7 @@ export default function AdminAgentPanel() {
         }
         const reader = response.body?.getReader();
         if (!reader) throw new Error("Response body is not readable");
+        streamStarted = true;
         const decoder = new TextDecoder();
         let buffer = "";
         let done = false;
@@ -1000,6 +1140,7 @@ export default function AdminAgentPanel() {
               continue;
             }
             if (parsed.done === true) {
+              sawDone = true;
               streamUsage = normalizeUsage(parsed.usage);
               if (typeof parsed.model === "string") streamModel = parsed.model;
               if (Array.isArray(parsed.tools_used)) {
@@ -1032,8 +1173,26 @@ export default function AdminAgentPanel() {
             }
           }
         }
+        if (!sawDone) {
+          // Stream berakhir tanpa event done: jawaban mungkin
+          // terpotong — coba pulihkan dari riwayat sesi dulu.
+          const recovered = await tryRecoverAnswer();
+          if (recovered) {
+            finishWith(recovered);
+            return;
+          }
+        }
         finishWith(segText || "(tidak ada jawaban)");
       } catch (err) {
+        // Putus jaringan di tengah stream (TypeError dari reader)
+        // bukan vonis gagal: coba pulihkan jawaban dari sesi.
+        if (streamStarted && err instanceof TypeError) {
+          const recovered = await tryRecoverAnswer();
+          if (recovered) {
+            finishWith(recovered);
+            return;
+          }
+        }
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
         setWaiting(false);
@@ -1113,6 +1272,34 @@ export default function AdminAgentPanel() {
           timestamp: nowTime(),
         },
       ]);
+    }
+  };
+
+  // Hapus sesi permanen (kontrak backend: DELETE
+  // /v1/opencode/sessions/{id}?role=admin — prompt serah-terima
+  // sesi Backend 21 Nov; backend lama menjawab 404/405 dan UI
+  // menampilkan catatan itu, bukan gagal diam-diam). Menghapus
+  // sesi yang sedang aktif mereset panel ke sesi baru.
+  const deleteSession = async (sid: string) => {
+    setSessError("");
+    try {
+      const res = await fetch(
+        apiUrl(`/v1/opencode/sessions/${sid}?role=admin`),
+        { method: "DELETE", headers: authHeaders() },
+      );
+      if (!res.ok) {
+        setSessError(
+          res.status === 404 || res.status === 405
+            ? "Backend belum mendukung hapus sesi (endpoint DELETE belum tersedia)."
+            : `Gagal menghapus sesi (${res.status}).`,
+        );
+        return;
+      }
+      setSessions((prev) => prev.filter((s) => s.id !== sid));
+      setSessConfirm(null);
+      if (sid === currentSession) clearChat();
+    } catch {
+      setSessError("Gagal menghapus sesi — backend tidak terjangkau.");
     }
   };
 
@@ -1497,23 +1684,95 @@ export default function AdminAgentPanel() {
           </div>
         </div>
         <div className="aag-header-actions">
-          <select
-            className="aag-session-select"
-            value={currentSession}
-            disabled={busy}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v) void switchSession(v);
-            }}
-            aria-label="Pilih sesi lama"
-          >
-            <option value="">Sesi saat ini</option>
-            {sessions.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.title || s.id}
-              </option>
-            ))}
-          </select>
+          <div className="aag-sess">
+            <button
+              type="button"
+              className="aag-new-btn"
+              onClick={() => {
+                setSessOpen((o) => !o);
+                setSessConfirm(null);
+                setSessError("");
+              }}
+              aria-expanded={sessOpen}
+              title="Kelola sesi chat (buka / hapus)"
+            >
+              <History size={15} /> Sesi
+            </button>
+            {sessOpen && (
+              <>
+                <div
+                  className="aag-sess-backdrop"
+                  onClick={() => setSessOpen(false)}
+                />
+                <div className="aag-sess-pop">
+                  <div className="aag-sess-head">Sesi chat tersimpan</div>
+                  {sessions.length === 0 && (
+                    <div className="aag-sess-empty">
+                      Belum ada sesi tersimpan.
+                    </div>
+                  )}
+                  {sessions.map((s) => (
+                    <div
+                      key={s.id}
+                      className={`aag-sess-row${s.id === currentSession ? " is-current" : ""}`}
+                    >
+                      <button
+                        type="button"
+                        className="aag-sess-open"
+                        disabled={busy}
+                        onClick={() => {
+                          setSessOpen(false);
+                          void switchSession(s.id);
+                        }}
+                        title="Buka sesi ini"
+                      >
+                        <span className="aag-sess-title">
+                          {s.title || s.id}
+                        </span>
+                        <span className="aag-sess-time">
+                          {formatSessionTime(s.time?.updated)}
+                        </span>
+                      </button>
+                      {sessConfirm === s.id ? (
+                        <span className="aag-sess-confirm">
+                          <span>Hapus?</span>
+                          <button
+                            type="button"
+                            className="aag-sess-icon is-danger"
+                            onClick={() => void deleteSession(s.id)}
+                            title="Ya, hapus sesi ini"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="aag-sess-icon"
+                            onClick={() => setSessConfirm(null)}
+                            title="Batal"
+                          >
+                            <X size={14} />
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="aag-sess-icon"
+                          disabled={busy}
+                          onClick={() => setSessConfirm(s.id)}
+                          title="Hapus sesi ini"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {sessError && (
+                    <div className="aag-sess-error">{sessError}</div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
           <button
             type="button"
             className="aag-new-btn"
@@ -1555,7 +1814,7 @@ export default function AdminAgentPanel() {
                     <span className="msg-caret" aria-hidden="true" />
                   )}
                 </div>
-                <FileCards files={m.files} />
+                <FileCards files={m.files} onReview={setReviewFile} />
                 {m.attachments && m.attachments.length > 0 && (
                   <div className="aag-sent-files">
                     {m.attachments.map((a, j) => (
@@ -1621,6 +1880,14 @@ export default function AdminAgentPanel() {
           <div className="tool-status" role="status">
             <LoaderCircle size={13} className="tool-status-spin" />
             <span>{toolLabel(toolName)}</span>
+          </div>
+        )}
+
+        {/* Status pemulihan jawaban (stream putus di tengah). */}
+        {recovering && busy && (
+          <div className="tool-status" role="status">
+            <LoaderCircle size={13} className="tool-status-spin" />
+            <span>Koneksi terputus — memulihkan jawaban dari sesi…</span>
           </div>
         )}
 
@@ -1768,6 +2035,12 @@ export default function AdminAgentPanel() {
         </button>
       </form>
       </div>
+      {reviewFile && (
+        <FileReviewModal
+          file={reviewFile}
+          onClose={() => setReviewFile(null)}
+        />
+      )}
     </div>
   );
 }

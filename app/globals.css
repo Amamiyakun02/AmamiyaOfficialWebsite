@@ -5155,14 +5155,205 @@ code {
 .aag-strip-spacer {
   flex: 1;
 }
-.aag-session-select {
-  background: #17171b;
+/* Kelola sesi chat (popover di header AI Agent): daftar sesi
+   tersimpan — klik membuka (read), ikon tempat sampah menghapus
+   (delete) dengan konfirmasi sebaris. Menggantikan <select> lama
+   (21 Nov 2026). */
+.aag-sess {
+  position: relative;
+}
+.aag-sess-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.aag-sess-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 41;
+  width: min(360px, 86vw);
+  max-height: 380px;
+  overflow-y: auto;
+  background: #101013;
   border: 1px solid #2a2a30;
-  color: #e8e8ec;
-  border-radius: 8px;
-  padding: 7px 10px;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  padding: 8px;
+}
+.aag-sess-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a9aa4;
+  padding: 6px 8px 8px;
+}
+.aag-sess-empty {
   font-size: 13px;
-  max-width: 260px;
+  color: #9a9aa4;
+  padding: 4px 8px 10px;
+}
+.aag-sess-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9px;
+  padding: 2px 2px 2px 4px;
+}
+.aag-sess-row:hover {
+  background: #17171b;
+}
+.aag-sess-row.is-current {
+  background: #17171b;
+  box-shadow: inset 2px 0 0 #0081fb;
+}
+.aag-sess-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  background: none;
+  border: none;
+  color: #e8e8ec;
+  text-align: left;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+.aag-sess-title {
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aag-sess-time {
+  font-size: 11px;
+  color: #9a9aa4;
+}
+.aag-sess-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: none;
+  border: 1px solid transparent;
+  color: #9a9aa4;
+  cursor: pointer;
+}
+.aag-sess-icon:hover {
+  color: #e8e8ec;
+  border-color: #2a2a30;
+}
+.aag-sess-icon.is-danger {
+  color: #ff7a7a;
+}
+.aag-sess-confirm {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #ff9a9a;
+  padding-right: 2px;
+}
+.aag-sess-error {
+  font-size: 12px;
+  color: #ff9a9a;
+  padding: 8px;
+  border-top: 1px solid #26262b;
+  margin-top: 6px;
+}
+
+/* Modal review file hasil agent (FileCards): metadata lengkap +
+   kode ter-highlight dengan nomor baris. */
+.review-modal {
+  width: min(920px, 100%);
+}
+.review-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f2f2f5;
+  min-width: 0;
+}
+.review-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+  padding: 14px 20px 4px;
+}
+.review-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.review-meta-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #9a9aa4;
+}
+.review-meta-value {
+  font-size: 13px;
+  color: #e8e8ec;
+  overflow-wrap: anywhere;
+}
+.review-codewrap {
+  display: flex;
+  align-items: flex-start;
+  margin: 12px 20px 4px;
+  background: #0a0a0c;
+  border: 1px solid #26262b;
+  border-radius: 10px;
+  overflow: auto;
+  min-height: 0;
+}
+.review-gutter {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  padding: 10px 10px 10px 12px;
+  border-right: 1px solid #26262b;
+  color: #5c5c66;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  user-select: none;
+}
+.review-codewrap .msg-code {
+  flex: 1;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  line-height: 1.55;
+  overflow: visible;
+}
+.review-omitted {
+  margin: 12px 20px 4px;
+}
+.review-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px 16px;
 }
 .aag-log {
   height: min(540px, 58vh);
