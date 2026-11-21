@@ -20,6 +20,7 @@ import {
 import ChatMarkdown from "@/components/ChatMarkdown";
 import FileCards, {
   FileReviewModal,
+  FileReviewWindow,
   formatSize,
   type ChatFile,
 } from "@/components/FileCards";
@@ -66,8 +67,14 @@ import { apiUrl } from "@/lib/api";
    ?role=admin; kontrak = prompt serah-terima sesi Backend —
    backend lama menjawab 404/405 dan UI menampilkannya sebagai
    catatan, bukan error diam). Review file: kartu file hasil
-   agent punya tombol mata yang membuka FileReviewModal
-   (kode ter-highlight + nomor baris + metadata lengkap).
+   agent punya tombol mata yang membuka FileReviewWindow —
+   jendela mengambang multi-tab (satu tab per file, bisa
+   di-minimize ke dock dan dipulihkan, tab bisa ditutup
+   sendiri) berisi kode ter-highlight + nomor baris + metadata
+   lengkap file aktif. Multi-tab HANYA di desktop (≥1024px)
+   dan dibatasi REVIEW_TAB_MAX tab (lebih dari itu muncul
+   notif overload); di layar non-desktop review kembali ke
+   FileReviewModal tunggal seperti versi awal.
    Keep-alive + rekonsiliasi (21 Nov): DashboardShell TIDAK
    melepas panel ini saat admin pindah tab (disembunyikan saja)
    sehingga stream yang berjalan tetap berlanjut di latar; dan
@@ -83,6 +90,9 @@ const HISTORY_KEY = "admin_agent_chat_history";
 // Batas lampiran — cermin kontrak backend (backend yang
 // menegakkan; di sini untuk umpan balik cepat sebelum unggah).
 const MAX_ATTACH_FILES = 5;
+// Batas tab jendela review multi-tab (desktop) sebelum notif
+// overload muncul — menjaga RAM/DOM tetap waras.
+const REVIEW_TAB_MAX = 5;
 const MAX_ATTACH_SIZE = 10 * 1024 * 1024;
 
 type PendingFile = {
@@ -421,8 +431,58 @@ export default function AdminAgentPanel() {
   const [sessOpen, setSessOpen] = useState(false);
   const [sessConfirm, setSessConfirm] = useState<string | null>(null);
   const [sessError, setSessError] = useState("");
-  // File yang sedang dibuka di modal review kode.
+  // Review file: di DESKTOP (≥1024px) jendela mengambang
+  // multi-tab (file terbuka dikunci path, tab aktif, keadaan
+  // terminimalkan ke dock) dengan batas REVIEW_TAB_MAX tab —
+  // mencoba membuka lebih dari itu memunculkan notif
+  // overload, bukan tab baru. Di layar non-desktop fitur
+  // multi-tab DIMATIKAN (keputusan user 21 Nov 2026): review
+  // kembali modal tunggal satu file (reviewFile).
+  const [reviewFiles, setReviewFiles] = useState<ChatFile[]>([]);
+  const [reviewActive, setReviewActive] = useState("");
+  const [reviewMin, setReviewMin] = useState(false);
   const [reviewFile, setReviewFile] = useState<ChatFile | null>(null);
+  const [reviewNotice, setReviewNotice] = useState("");
+  const noticeTimer = useRef<number | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setIsDesktop(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  const openReview = (f: ChatFile) => {
+    if (!isDesktop) {
+      setReviewFile(f);
+      return;
+    }
+    if (
+      !reviewFiles.some((x) => x.path === f.path) &&
+      reviewFiles.length >= REVIEW_TAB_MAX
+    ) {
+      setReviewNotice(
+        `Maksimal ${REVIEW_TAB_MAX} tab review terbuka — tutup salah satu tab dulu untuk membuka file lain.`,
+      );
+      if (noticeTimer.current) window.clearTimeout(noticeTimer.current);
+      noticeTimer.current = window.setTimeout(() => setReviewNotice(""), 4500);
+      return;
+    }
+    setReviewFiles((prev) =>
+      prev.some((x) => x.path === f.path)
+        ? prev.map((x) => (x.path === f.path ? f : x))
+        : [...prev, f],
+    );
+    setReviewActive(f.path);
+    setReviewMin(false);
+  };
+  const closeReviewFile = (path: string) => {
+    const next = reviewFiles.filter((x) => x.path !== path);
+    setReviewFiles(next);
+    if (path === reviewActive) {
+      setReviewActive(next.length > 0 ? next[next.length - 1].path : "");
+    }
+  };
   const [currentSession, setCurrentSession] = useState<string>("");
 
   const loadSessions = useCallback(async () => {
@@ -1934,7 +1994,7 @@ export default function AdminAgentPanel() {
                     <span className="msg-caret" aria-hidden="true" />
                   )}
                 </div>
-                <FileCards files={m.files} onReview={setReviewFile} />
+                <FileCards files={m.files} onReview={openReview} />
                 {m.attachments && m.attachments.length > 0 && (
                   <div className="aag-sent-files">
                     {m.attachments.map((a, j) => (
@@ -2155,11 +2215,33 @@ export default function AdminAgentPanel() {
         </button>
       </form>
       </div>
+      {reviewFiles.length > 0 && (
+        <FileReviewWindow
+          files={reviewFiles}
+          activePath={reviewActive}
+          minimized={reviewMin}
+          onActivate={(p) => {
+            setReviewActive(p);
+            setReviewMin(false);
+          }}
+          onCloseFile={closeReviewFile}
+          onCloseAll={() => {
+            setReviewFiles([]);
+            setReviewActive("");
+          }}
+          onToggleMinimize={() => setReviewMin((m) => !m)}
+        />
+      )}
       {reviewFile && (
         <FileReviewModal
           file={reviewFile}
           onClose={() => setReviewFile(null)}
         />
+      )}
+      {reviewNotice && (
+        <div className="review-notice" role="status">
+          {reviewNotice}
+        </div>
       )}
     </div>
   );

@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ChevronDown,
+  ChevronUp,
   Download,
   Eye,
   FileCode,
   FileText,
+  Minus,
   X,
 } from "lucide-react";
 import { HighlightedCode } from "@/components/ChatMarkdown";
@@ -182,28 +184,27 @@ export default function FileCards({
 }
 
 /* =====================================================================
-   Modal review file hasil agent (dashboard admin, 21 Nov 2026):
-   kode ter-highlight DENGAN nomor baris + metadata lengkap —
-   nama file, folder proyek, path, ukuran, jumlah baris, bahasa,
+   Jendela review file hasil agent (dashboard admin, 21 Nov
+   2026): jendela MENGAMBANG multi-tab — beberapa file bisa
+   dibuka bersamaan (satu tab per file, dikunci path), bisa
+   di-minimize ke dock melayang di kanan bawah dan dipulihkan
+   lagi, tiap tab bisa ditutup sendiri. Isi tab aktif: kode
+   ter-highlight DENGAN nomor baris + metadata lengkap — nama
+   file, folder proyek, path, ukuran, jumlah baris, bahasa,
    status konten. Konten mengikuti kontrak files[] yang sama
    (teks ≤ 64 KB ikut di payload; lebih besar/biner hanya
-   metadata yang bisa ditampilkan).
+   metadata yang bisa ditampilkan). Hanya tab aktif yang
+   dirender isinya; data semua tab tetap di state panel —
+   itulah biaya RAM yang disadari user saat meminta multi-tab.
    ===================================================================== */
-export function FileReviewModal({
+
+function ReviewBody({
   file,
-  onClose,
+  footerExtra,
 }: {
   file: ChatFile;
-  onClose: () => void;
+  footerExtra?: ReactNode;
 }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   const hasContent = typeof file.content === "string";
   const content = hasContent ? (file.content as string) : "";
   const rawLines = hasContent ? content.split("\n") : [];
@@ -235,62 +236,227 @@ export function FileReviewModal({
   ];
 
   return (
-    <div
-      className="dash-modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="dash-modal review-modal" role="dialog" aria-modal="true">
-        <div className="dash-modal-head">
-          <div className="review-title">
-            {lang === "text" ? <FileText size={17} /> : <FileCode size={17} />}
-            <span>{file.name}</span>
+    <>
+      <div className="review-meta">
+        {meta.map((m) => (
+          <div key={m.label} className="review-meta-item">
+            <span className="review-meta-label">{m.label}</span>
+            <span className="review-meta-value">{m.value}</span>
           </div>
+        ))}
+      </div>
+      {hasContent ? (
+        <div className="review-codewrap">
+          <div className="review-gutter" aria-hidden="true">
+            {Array.from({ length: lineCount }, (_, i) => (
+              <span key={i}>{i + 1}</span>
+            ))}
+          </div>
+          <HighlightedCode lang={lang} code={content} />
+        </div>
+      ) : (
+        <div className="file-omitted review-omitted">{omittedNote}</div>
+      )}
+      <div className="review-foot">
+        {hasContent && (
           <button
             type="button"
-            className="file-card-btn"
+            className="aag-new-btn"
+            onClick={() => downloadFile(file)}
+          >
+            <Download size={14} /> Unduh file
+          </button>
+        )}
+        {footerExtra}
+      </div>
+    </>
+  );
+}
+
+/* Modal review TUNGGAL — dipakai di layar non-desktop
+   (< 1024px), tempat jendela multi-tab dimatikan atas
+   keputusan user (21 Nov 2026): di HP/tablet review tetap
+   modal biasa satu file seperti versi awal. */
+export function FileReviewModal({
+  file,
+  onClose,
+}: {
+  file: ChatFile;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="dash-modal-overlay" onClick={onClose}>
+      <div
+        className="dash-modal review-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Review ${file.name}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="dash-modal-head">
+          <span className="dash-modal-title">
+            {langFromName(file.name) === "text" ? (
+              <FileText size={16} />
+            ) : (
+              <FileCode size={16} />
+            )}{" "}
+            {file.name}
+          </span>
+          <button
+            type="button"
+            className="dicon-btn"
             onClick={onClose}
             title="Tutup review"
           >
             <X size={16} />
           </button>
         </div>
-        <div className="review-meta">
-          {meta.map((m) => (
-            <div key={m.label} className="review-meta-item">
-              <span className="review-meta-label">{m.label}</span>
-              <span className="review-meta-value">{m.value}</span>
-            </div>
-          ))}
-        </div>
-        {hasContent ? (
-          <div className="review-codewrap">
-            <div className="review-gutter" aria-hidden="true">
-              {Array.from({ length: lineCount }, (_, i) => (
-                <span key={i}>{i + 1}</span>
-              ))}
-            </div>
-            <HighlightedCode lang={lang} code={content} />
-          </div>
-        ) : (
-          <div className="file-omitted review-omitted">{omittedNote}</div>
-        )}
-        <div className="review-foot">
-          {hasContent && (
+        <ReviewBody
+          file={file}
+          footerExtra={
+            <button type="button" className="aag-new-btn" onClick={onClose}>
+              Tutup
+            </button>
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+export function FileReviewWindow({
+  files,
+  activePath,
+  minimized,
+  onActivate,
+  onCloseFile,
+  onCloseAll,
+  onToggleMinimize,
+}: {
+  files: ChatFile[];
+  activePath: string;
+  minimized: boolean;
+  onActivate: (path: string) => void;
+  onCloseFile: (path: string) => void;
+  onCloseAll: () => void;
+  onToggleMinimize: () => void;
+}) {
+  const active =
+    files.find((f) => f.path === activePath) ?? files[files.length - 1];
+
+  // Esc menutup tab aktif (perilaku Esc modal lama, diperluas).
+  useEffect(() => {
+    if (minimized || !active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseFile(active.path);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [minimized, active, onCloseFile]);
+
+  if (files.length === 0 || !active) return null;
+
+  if (minimized) {
+    return (
+      <div className="review-dock" role="region" aria-label="Review file terminimalkan">
+        <span className="review-dock-label">
+          <FileCode size={14} /> {files.length} file
+        </span>
+        {files.map((f) => (
+          <span key={f.path} className="review-dock-chip">
             <button
               type="button"
-              className="aag-new-btn"
-              onClick={() => downloadFile(file)}
+              className="review-dock-open"
+              onClick={() => onActivate(f.path)}
+              title={`Buka review ${f.name}`}
             >
-              <Download size={14} /> Unduh file
+              {f.name}
             </button>
-          )}
-          <button type="button" className="aag-new-btn" onClick={onClose}>
-            Tutup
+            <button
+              type="button"
+              className="review-dock-x"
+              onClick={() => onCloseFile(f.path)}
+              title={`Tutup ${f.name}`}
+            >
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+        <button
+          type="button"
+          className="review-dock-btn"
+          onClick={onToggleMinimize}
+          title="Pulihkan jendela review"
+        >
+          <ChevronUp size={15} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="review-window" role="dialog" aria-label="Review file">
+      <div className="review-tabbar">
+        <div className="review-tabs" role="tablist">
+          {files.map((f) => (
+            <span
+              key={f.path}
+              className={`review-tab${f.path === active.path ? " is-active" : ""}`}
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={f.path === active.path}
+                className="review-tab-main"
+                onClick={() => onActivate(f.path)}
+                title={f.path}
+              >
+                {langFromName(f.name) === "text" ? (
+                  <FileText size={13} />
+                ) : (
+                  <FileCode size={13} />
+                )}
+                {f.name}
+              </button>
+              <button
+                type="button"
+                className="review-tab-x"
+                onClick={() => onCloseFile(f.path)}
+                title={`Tutup tab ${f.name}`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="review-win-actions">
+          <button
+            type="button"
+            className="file-card-btn"
+            onClick={onToggleMinimize}
+            title="Minimize jendela review"
+          >
+            <Minus size={15} />
+          </button>
+          <button
+            type="button"
+            className="file-card-btn"
+            onClick={onCloseAll}
+            title="Tutup semua review"
+          >
+            <X size={15} />
           </button>
         </div>
       </div>
+      <ReviewBody key={active.path} file={active} />
     </div>
   );
 }
