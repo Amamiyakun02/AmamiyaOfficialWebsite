@@ -5951,18 +5951,21 @@ code {
   background: #1a8dff;
 }
 
-/* ===== Ikon mengambang AI Assistant (21 Nov 2026) =====
+/* ===== Ikon mengambang + quick chat AI Assistant (21 Nov 2026) =====
    Tombol bulat kaca gelap berlogo vienna.svg, terpaku kanan bawah
    layar (di bawah drawer ponsel z-60/backdrop z-55 supaya tertutup
-   saat menu terbuka). Masuk sekali dengan fade lembut; hormati
-   prefers-reduced-motion. Lihat components/AgentFab.tsx. */
+   saat menu terbuka). Sore 21 Nov atas permintaan user: digeser
+   lebih ke kiri (right 36) + diperbesar (68px), dan kliknya membuka
+   panel QUICK CHAT tepat di atasnya (.agent-panel) yang memakai
+   ulang AssistantChat. Lihat components/AgentFab.tsx. */
 .agent-fab {
   position: fixed;
-  right: 22px;
-  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  right: 36px;
+  bottom: calc(36px + env(safe-area-inset-bottom, 0px));
   z-index: 50;
-  width: 58px;
-  height: 58px;
+  width: 68px;
+  height: 68px;
+  padding: 0;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -5971,19 +5974,20 @@ code {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
   transition: transform 0.18s, border-color 0.18s, background 0.18s;
   animation: agentFabIn 0.45s ease 0.9s backwards;
 }
 .agent-fab img {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   display: block;
 }
 .agent-fab:hover {
   transform: translateY(-2px);
   border-color: rgba(43, 147, 255, 0.55);
   background: rgba(16, 18, 24, 0.94);
-  text-decoration: none;
 }
 @keyframes agentFabIn {
   from {
@@ -5991,21 +5995,138 @@ code {
     transform: translateY(10px);
   }
 }
+/* Panel quick chat: kartu kaca gelap sejajar tepi kanan tombol,
+   duduk tepat di atasnya. Tertutup = pudar + geser turun + tak
+   terlihat (visibility menjaga fokus keyboard); isi chat tetap
+   terpasang supaya percakapan tidak hilang saat ditutup-buka. */
+.agent-panel {
+  position: fixed;
+  right: 36px;
+  bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  width: min(388px, calc(100vw - 24px));
+  height: min(620px, calc(100dvh - 150px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(11, 11, 14, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) scale(0.98);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease,
+    visibility 0s linear 0.22s;
+}
+.agent-panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.agent-panel-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  border-bottom: 1px solid #1d1d21;
+  background: rgba(255, 255, 255, 0.02);
+}
+.agent-panel-avatar {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+.agent-panel-title {
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.agent-panel-title strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.agent-panel-title span {
+  color: #9a9aa2;
+  font-size: 11.5px;
+}
+.agent-panel-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9a9aa2;
+  cursor: pointer;
+  text-decoration: none;
+}
+.agent-panel-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  text-decoration: none;
+}
+.agent-panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* AssistantChat di dalam panel: lebar penuh panel, kepala bawaan
+   komponen disisakan tombol "Sesi baru" saja (tautan kembali
+   "Semua tools" tak relevan di panel — header panel menggantikan
+   peran judul + navigasinya). */
+.agent-panel .chat-page {
+  max-width: none;
+  padding: 8px 12px 12px;
+}
+.agent-panel .chat-back {
+  display: none;
+}
+.agent-panel .chat-head {
+  justify-content: flex-end;
+  padding-bottom: 8px;
+}
+.agent-panel .chat-log {
+  padding: 12px 2px;
+}
 @media (max-width: 640px) {
   .agent-fab {
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    width: 54px;
-    height: 54px;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    width: 62px;
+    height: 62px;
   }
   .agent-fab img {
-    width: 29px;
-    height: 29px;
+    width: 34px;
+    height: 34px;
+  }
+  .agent-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+    height: min(600px, calc(100dvh - 130px));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .agent-fab {
     animation: none;
+    transition: none;
+  }
+  .agent-panel {
     transition: none;
   }
 }
