@@ -23,11 +23,28 @@ import AssistantChat from "@/components/AssistantChat";
      tutup. Saat panel terbuka ikon tombol berubah jadi X.
    - Tampil di semua halaman publik; disembunyikan di dashboard
      (punya AI Agent sendiri) dan di halaman Assistant itu sendiri.
+   - QUICK PROMPT HOVER (21 Nov, permintaan user): saat kursor
+     melayang di atas tombol (atau fokus keyboard), 3 chip prompt
+     cepat muncul di atasnya; klik chip membuka panel dan langsung
+     mengirim prompt itu lewat prop quickPrompt AssistantChat.
    ===================================================================== */
+
+// Tiga prompt cepat hover — diambil dari saran bawaan AssistantChat
+// (SUGGESTIONS) yang paling relevan untuk pengunjung portofolio.
+const QUICK_PROMPTS: string[] = [
+  "Ceritakan stack AI Anda.",
+  "Buat contoh API Python singkat.",
+  "Bagaimana cara kita bekerja sama?",
+];
+
 export default function AgentFab() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [qp, setQp] = useState<{ text: string; n: number } | null>(null);
+  // Chip quick prompt terlihat saat kursor melayang di pembungkus
+  // (state, bukan CSS :hover murni — supaya pasti dan teruji).
+  const [peek, setPeek] = useState(false);
 
   // Komponen ini hidup di layout (tidak ikut terpasang ulang saat
   // pindah halaman) — tutup panel tiap kali rute berubah.
@@ -44,7 +61,16 @@ export default function AgentFab() {
 
   const toggle = () => {
     setMounted(true);
+    // Menutup panel juga menyembunyikan chip sampai kursor keluar-
+    // masuk lagi (di layar sentuh tidak ada mouseleave alami).
+    if (open) setPeek(false);
     setOpen((v) => !v);
+  };
+
+  const pickPrompt = (text: string) => {
+    setMounted(true);
+    setOpen(true);
+    setQp({ text, n: Date.now() });
   };
 
   return (
@@ -88,30 +114,50 @@ export default function AgentFab() {
           </div>
           <div className="agent-panel-body">
             <Suspense fallback={null}>
-              <AssistantChat />
+              <AssistantChat quickPrompt={qp} />
             </Suspense>
           </div>
         </section>
       )}
-      <button
-        type="button"
-        className="agent-fab"
-        onClick={toggle}
-        aria-expanded={open}
-        aria-label={
-          open
-            ? "Tutup quick chat Vienna"
-            : "Buka quick chat Vienna AI Assistant"
-        }
-        title="Vienna AI Assistant"
+      <div
+        className={`agent-fab-wrap${peek ? " is-peek" : ""}`}
+        onMouseEnter={() => setPeek(true)}
+        onMouseLeave={() => setPeek(false)}
       >
-        {open ? (
-          <X size={30} />
-        ) : (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src="/vienna.svg" alt="" width={38} height={38} />
+        {!open && (
+          <div className="agent-qps" aria-label="Prompt cepat Vienna">
+            {QUICK_PROMPTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                className="agent-qp"
+                onClick={() => pickPrompt(p)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         )}
-      </button>
+        <button
+          type="button"
+          className="agent-fab"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-label={
+            open
+              ? "Tutup quick chat Vienna"
+              : "Buka quick chat Vienna AI Assistant"
+          }
+          title="Vienna AI Assistant"
+        >
+          {open ? (
+            <X size={30} />
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/vienna.svg" alt="" width={38} height={38} />
+          )}
+        </button>
+      </div>
     </>
   );
 }

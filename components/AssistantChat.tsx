@@ -264,7 +264,13 @@ function MessageText({ text }: { text: string }) {
   );
 }
 
-export default function AssistantChat() {
+export default function AssistantChat({
+  quickPrompt,
+}: {
+  // Prompt cepat dari chip hover tombol mengambang (AgentFab):
+  // tiap objek baru (n berubah) dikirim sekali sebagai pesan user.
+  quickPrompt?: { text: string; n: number } | null;
+} = {}) {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<Message[]>([]);
@@ -819,6 +825,18 @@ export default function AssistantChat() {
     window.history.replaceState(null, "", "/tools/assistant");
     void send(q);
   }, [hydrated, searchParams, send]);
+
+  // Prompt cepat dari chip hover FAB (quick chat mengambang):
+  // pola yang sama — kirim sekali per objek quickPrompt baru,
+  // sesudah riwayat termuat. Penjaga ref mencatat n terakhir yang
+  // sudah ditangani supaya render ulang tidak mengirim dobel.
+  const qpHandledRef = useRef(0);
+  useEffect(() => {
+    if (!hydrated || !quickPrompt) return;
+    if (qpHandledRef.current === quickPrompt.n) return;
+    qpHandledRef.current = quickPrompt.n;
+    void send(quickPrompt.text);
+  }, [hydrated, quickPrompt, send]);
 
   // Sesi baru = buang session_id lokal; backend membuat sesi baru
   // pada kiriman berikutnya. Tidak ada endpoint new-session lagi.
