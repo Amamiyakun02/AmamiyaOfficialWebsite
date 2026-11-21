@@ -5974,11 +5974,14 @@ code {
   }
 }
 /* Chip quick prompt hover (21 Nov): 3 pil prompt di atas FAB,
-   tersembunyi sampai kursor melayang di pembungkus (kelas .is-peek
-   dari state mouseenter/mouseleave AgentFab; :focus-within untuk
-   keyboard). padding-bottom wadah = jembatan hover 12px supaya
-   kursor bisa naik dari tombol ke chip tanpa keluar pembungkus;
-   chip masuk berurutan dengan jeda tipis per tingkat. */
+   muncul HANYA saat kursor melayang di pembungkus (kelas .is-peek
+   dari state mouseenter/mouseleave AgentFab). Pemicu :focus-within
+   sempat dipakai lalu DIBUANG atas koreksi user di hari yang sama:
+   sesudah tombol diklik (buka/tutup panel) fokus tertahan di
+   tombol dan chip jadi tertahan tampil. padding-bottom wadah =
+   jembatan hover 12px supaya kursor bisa naik dari tombol ke
+   chip tanpa keluar pembungkus; chip masuk berurutan dengan
+   jeda tipis per tingkat. */
 .agent-qps {
   display: flex;
   flex-direction: column;
@@ -5992,8 +5995,7 @@ code {
   transition: opacity 0.2s ease, transform 0.2s ease,
     visibility 0s linear 0.2s;
 }
-.agent-fab-wrap.is-peek .agent-qps,
-.agent-fab-wrap:focus-within .agent-qps {
+.agent-fab-wrap.is-peek .agent-qps {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -6022,12 +6024,10 @@ code {
   border-color: rgba(43, 147, 255, 0.45);
   color: #fff;
 }
-.agent-fab-wrap.is-peek .agent-qp:nth-child(2),
-.agent-fab-wrap:focus-within .agent-qp:nth-child(2) {
+.agent-fab-wrap.is-peek .agent-qp:nth-child(2) {
   transition-delay: 0.03s;
 }
-.agent-fab-wrap.is-peek .agent-qp:nth-child(3),
-.agent-fab-wrap:focus-within .agent-qp:nth-child(3) {
+.agent-fab-wrap.is-peek .agent-qp:nth-child(3) {
   transition-delay: 0.06s;
 }
 /* Panel quick chat: kartu kaca gelap sejajar tepi kanan tombol,

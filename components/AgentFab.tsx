@@ -23,10 +23,12 @@ import AssistantChat from "@/components/AssistantChat";
      tutup. Saat panel terbuka ikon tombol berubah jadi X.
    - Tampil di semua halaman publik; disembunyikan di dashboard
      (punya AI Agent sendiri) dan di halaman Assistant itu sendiri.
-   - QUICK PROMPT HOVER (21 Nov, permintaan user): saat kursor
-     melayang di atas tombol (atau fokus keyboard), 3 chip prompt
-     cepat muncul di atasnya; klik chip membuka panel dan langsung
+   - QUICK PROMPT HOVER (21 Nov, permintaan user): HANYA saat
+     kursor mouse melayang di atas tombol, 3 chip prompt cepat
+     muncul di atasnya; klik chip membuka panel dan langsung
      mengirim prompt itu lewat prop quickPrompt AssistantChat.
+     (Pemicu fokus keyboard dibuang atas koreksi user: chip jadi
+     tertahan tampil sesudah tombol diklik.)
    ===================================================================== */
 
 // Tiga prompt cepat hover — warisan bar QuickPrompt lama di
