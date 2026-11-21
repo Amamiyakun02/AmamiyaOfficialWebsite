@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import AgentFab from "@/components/AgentFab";
 
 // WAJIB untuk tampilan mobile yang benar: tanpa viewport ini browser HP
 // merender halaman pada lebar virtual ±980px lalu memperkecilnya paksa —
@@ -34,6 +35,7 @@ export default function RootLayout({
         <div className="app">
           <Navbar />
           {children}
+          <AgentFab />
         </div>
       </body>
     </html>

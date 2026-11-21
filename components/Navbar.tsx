@@ -3,12 +3,13 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Download } from "lucide-react";
 import { GithubIcon } from "./BrandIcons";
 import { scrollToSection } from "@/lib/scroll";
 
 // Tombol kanan navbar = ikon GitHub ke profil user (permintaan user
-// 16 Nov, menggantikan tombol "Coba Tools").
+// 16 Nov, menggantikan tombol "Coba Tools") + pil "Unduh CV" di
+// kirinya (pindahan dari dock hero, permintaan user 21 Nov).
 const GITHUB_URL = "https://github.com/Amamiyakun02";
 
 /* Navbar portofolio — sejak situs jadi SATU halaman, menu adalah
@@ -143,6 +144,10 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="nav-right">
+          <a className="nav-cv" href="/profesional-cv.pdf" download>
+            <Download size={15} />
+            Unduh CV
+          </a>
           <a
             className="nav-github"
             href={GITHUB_URL}
@@ -208,6 +213,14 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="nav-drawer-foot">
+          <a
+            className="nav-drawer-github"
+            href="/profesional-cv.pdf"
+            download
+            onClick={() => setOpen(false)}
+          >
+            <Download size={17} /> Unduh CV
+          </a>
           <a
             className="nav-drawer-github"
             href={GITHUB_URL}

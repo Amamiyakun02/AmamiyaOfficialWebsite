@@ -106,6 +106,36 @@ body {
 
 /* Tombol GitHub navbar (16 Nov 2026): ikon saja dalam lingkaran
    bergaris tipis, menggantikan pil biru "Coba Tools". */
+/* Pil "Unduh CV" navbar (21 Nov 2026, pindahan dari dock hero):
+   tinggi disamakan lingkaran GitHub (38px), gaya garis tipis yang
+   sama. Di ponsel disembunyikan — tempatnya di kaki drawer, di
+   samping tombol GitHub. */
+.nav-cv {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #2c2c33;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e6e6e9;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav-cv:hover {
+  border-color: #4a4a55;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  text-decoration: none;
+}
+@media (max-width: 640px) {
+  .nav-cv {
+    display: none;
+  }
+}
 .nav-github {
   display: inline-flex;
   align-items: center;
@@ -231,6 +261,14 @@ body {
   margin-top: auto;
   padding: 16px 18px 20px;
   border-top: 1px solid #1c1c20;
+  display: flex;
+  gap: 10px;
+}
+.nav-drawer-foot .nav-drawer-github {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 .nav-drawer-github {
   display: flex;
@@ -3596,16 +3634,17 @@ code {
    ke posisi semula yang sejajar lubang, sekalian membuat tombol
    duduk lebih rendah seperti diminta user. */
 .stage-title {
-  /* 81px di era pil terpisah; sejak dock kapsul (16 Nov) baris CTA
-     menyusut jadi margin 22 + tinggi 47 = 69 */
-  padding-top: 69px;
+  /* Kompensasi mengikuti tinggi baris CTA: era dock 3 segmen (16 Nov)
+     margin 22 + tinggi 47 = 69; sejak tombol tunggal diperbesar
+     (21 Nov) margin 22 + tinggi ±64 = 86. */
+  padding-top: 86px;
 }
 /* Tablet: tombol diminta user duduk LEBIH RENDAH (2 Nov malam) —
    margin tombol +30 sekaligus kompensasi +30 agar judul diam. */
 @media (min-width: 641px) and (max-width: 1080px) {
   .stage-title {
-    /* margin 52 + dock 47 = 99 (dulu 111 di era pil terpisah) */
-    padding-top: 99px;
+    /* margin 52 + tombol ±64 = 116 (era dock 3 segmen: 99) */
+    padding-top: 116px;
   }
   /* pemilih ganda: wajib mengalahkan aturan dasar .hero-ctas yang
      letaknya lebih bawah di berkas ini */
@@ -3620,8 +3659,8 @@ code {
    (terukur di rig). */
 @media (max-width: 640px) {
   .stage-title {
-    /* margin 14 + dock 39 = 53 (dulu 65 di era pil terpisah) */
-    padding-top: 53px;
+    /* margin 14 + tombol ±56 = 70 (era dock 3 segmen sebaris: 53) */
+    padding-top: 70px;
   }
 }
 /* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
@@ -3640,13 +3679,11 @@ code {
     animation: none !important;
   }
 }
-/* DOCK KACA SATU KAPSUL (16 Nov 2026, pilihan user): ketiga aksi
-   digabung dalam satu kapsul kaca gelap ber-blur kuat — pola grid
-   di belakangnya melembut, tidak lagi tembus tajam berebut
-   perhatian dengan label; tiap aksi jadi segmen dengan pemisah
-   garis tipis, hover menyorot segmen dengan biru lembut. Biru
-   solid penuh dihilangkan; aksi utama (Lihat Proyek) dibedakan
-   dari teks putih tegas + ikon biru. */
+/* KAPSUL KACA TOMBOL TUNGGAL (dock 3 segmen 16 Nov -> satu tombol
+   21 Nov 2026, permintaan user): kapsul kaca gelap ber-blur kuat
+   kini membungkus SATU tombol "Lihat Proyek" yang diperbesar
+   sebagai aksi utama tunggal hero. Unduh CV pindah ke navbar,
+   Assistant jadi ikon mengambang kanan bawah (.agent-fab). */
 .hero-ctas {
   display: flex;
   justify-content: center;
@@ -3656,7 +3693,7 @@ code {
   width: fit-content;
   justify-self: center;
   margin-top: 22px;
-  padding: 5px;
+  padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 999px;
   background: rgba(12, 12, 15, 0.55);
@@ -3669,42 +3706,27 @@ code {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   margin: 0;
-  padding: 8px 16px;
+  padding: 13px 34px;
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: #d9d9e0;
+  color: #fff;
   font: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16.5px;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.18s, color 0.18s;
 }
-/* Garis pemisah tipis antar segmen (di segmen ke-2 dan ke-3). */
-.hero-cta + .hero-cta::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 18px;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.1);
+.hero-cta svg {
+  color: #2b93ff;
 }
 .hero-cta:hover {
   background: rgba(0, 129, 251, 0.16);
   color: #fff;
-}
-.hero-cta.is-primary {
-  color: #fff;
-  font-weight: 700;
-}
-.hero-cta.is-primary svg {
-  color: #2b93ff;
 }
 .hero-cta:focus-visible {
   outline: 2px solid rgba(0, 129, 251, 0.65);
@@ -3713,28 +3735,16 @@ code {
 @media (max-width: 640px) {
   .hero-ctas {
     margin-top: 14px;
-    padding: 4px;
+    padding: 5px;
   }
   .hero-cta {
-    padding: 6px 9px;
-    font-size: 12px;
-    gap: 5px;
-  }
-  .hero-cta + .hero-cta::before {
-    height: 14px;
-  }
-  /* Ponsel sempit (≤380px): kapsul diperkecil lagi agar tetap
-     sebaris bertiga dengan margin yang wajar di layar 360/320. */
-  @media (max-width: 380px) {
-    .hero-cta {
-      padding: 6px 6px;
-      font-size: 11px;
-      gap: 4px;
-    }
+    padding: 11px 26px;
+    font-size: 15px;
+    gap: 8px;
   }
   .hero-cta svg {
-    width: 13px;
-    height: 13px;
+    width: 17px;
+    height: 17px;
     flex-shrink: 0;
   }
 }
@@ -5939,4 +5949,63 @@ code {
 }
 .errpage-btn.is-primary:hover {
   background: #1a8dff;
+}
+
+/* ===== Ikon mengambang AI Assistant (21 Nov 2026) =====
+   Tombol bulat kaca gelap berlogo vienna.svg, terpaku kanan bawah
+   layar (di bawah drawer ponsel z-60/backdrop z-55 supaya tertutup
+   saat menu terbuka). Masuk sekali dengan fade lembut; hormati
+   prefers-reduced-motion. Lihat components/AgentFab.tsx. */
+.agent-fab {
+  position: fixed;
+  right: 22px;
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 13, 16, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s, border-color 0.18s, background 0.18s;
+  animation: agentFabIn 0.45s ease 0.9s backwards;
+}
+.agent-fab img {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.agent-fab:hover {
+  transform: translateY(-2px);
+  border-color: rgba(43, 147, 255, 0.55);
+  background: rgba(16, 18, 24, 0.94);
+  text-decoration: none;
+}
+@keyframes agentFabIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@media (max-width: 640px) {
+  .agent-fab {
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: 54px;
+    height: 54px;
+  }
+  .agent-fab img {
+    width: 29px;
+    height: 29px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-fab {
+    animation: none;
+    transition: none;
+  }
 }
