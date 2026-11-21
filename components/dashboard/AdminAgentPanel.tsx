@@ -80,7 +80,11 @@ import { apiUrl } from "@/lib/api";
    melepas panel ini saat admin pindah tab (disembunyikan saja)
    sehingga stream yang berjalan tetap berlanjut di latar; dan
    saat panel dibuka, riwayat sesi aktif dimuat ulang dari
-   backend (rekonsiliasi) menggantikan salinan lokal yang basi
+   backend (rekonsiliasi) menggantikan salinan lokal yang basi.
+   Kartu file hasil agent dicatat juga di gudang file per sesi
+   (FILES_KEY) dan ditempel kembali setiap riwayat dimuat —
+   riwayat backend tidak membawa file, jadi tanpa gudang ini
+   kartu file hilang setiap berpindah sesi (perbaikan 21 Nov).
    — metadata lokal pesan yang cocok dipertahankan.
    ===================================================================== */
 
@@ -88,6 +92,7 @@ const CHAT_ENDPOINT = "/v1/opencode/chat/stream";
 const UPLOAD_ENDPOINT = "/v1/opencode/chat/upload";
 const SESSION_KEY = "admin_agent_session_id";
 const HISTORY_KEY = "admin_agent_chat_history";
+const FILES_KEY = "admin_agent_session_files";
 // Batas lampiran — cermin kontrak backend (backend yang
 // menegakkan; di sini untuk umpan balik cepat sebelum unggah).
 const MAX_ATTACH_FILES = 5;
@@ -221,6 +226,10 @@ type RawSessionMessage = {
   time?: { created?: number };
   content?: { type?: string; text?: string }[];
   parts?: { type?: string; text?: string }[];
+  // Backend kelak bisa mengirim files[] per pesan assistant
+  // (prompt serah-terima sesi Backend, 21 Nov 2026); bila ada,
+  // diteruskan apa adanya dan didahulukan atas gudang lokal.
+  files?: unknown;
 };
 
 /* Serve v2 mentah mengembalikan riwayat TERBARU-dulu, sedangkan
@@ -332,6 +341,85 @@ function pickFiles(raw: unknown): ChatFile[] {
       typeof (f as ChatFile).path === "string" &&
       typeof (f as ChatFile).size === "number",
   );
+}
+
+/* Gudang file per sesi (21 Nov 2026): kartu file hasil agent
+   semula hanya hidup di riwayat lokal — riwayat backend tidak
+   membawanya, jadi berpindah sesi atau penyelarasan saat
+   panel dibuka membuatnya hilang dari pesan (user merasakannya
+   sebagai "file ter-destroy"). Gudang ini menyimpan files[]
+   per sesi, dikunci teks pesan assistant-nya, untuk ditempel
+   kembali setiap kali riwayat sesi dimuat dari backend.
+   Batas wajar: maks 10 sesi × 20 pesan berfile; penulisan
+   yang gagal kuota membuang sesi terlama lalu mencoba sekali
+   lagi. Backend yang kelak mengirim files di riwayatnya
+   didahulukan — gudang hanya mengisi yang kosong. */
+type SessionFileStore = Record<
+  string,
+  { text: string; files: ChatFile[] }[]
+>;
+
+function loadFileStore(): SessionFileStore {
+  try {
+    const raw = localStorage.getItem(FILES_KEY);
+    const parsed = raw ? (JSON.parse(raw) as SessionFileStore) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function rememberSessionFiles(
+  sid: string,
+  text: string,
+  files: ChatFile[],
+): void {
+  if (!sid || !text || files.length === 0) return;
+  try {
+    const store = loadFileStore();
+    const list = store[sid] ?? [];
+    // Entri ditambah BERURUTAN (bukan diganti per teks): dua
+    // giliran bisa berbalas teks sama persis dengan file
+    // berbeda, dan penempelan kembali mengonsumsi entri
+    // seurutan teksnya. Duplikat persis (teks + daftar path
+    // sama — mis. dari penyelarasan berulang) dilewati.
+    const sig = files.map((f) => f.path).join("|");
+    const dup = list.some(
+      (e) =>
+        e.text === text &&
+        e.files.map((f) => f.path).join("|") === sig,
+    );
+    if (!dup) list.push({ text, files });
+    store[sid] = list.slice(-20);
+    const keys = Object.keys(store);
+    while (keys.length > 10) {
+      delete store[keys.shift() as string];
+    }
+    try {
+      localStorage.setItem(FILES_KEY, JSON.stringify(store));
+    } catch {
+      const ks = Object.keys(store);
+      if (ks.length > 1) {
+        delete store[ks[0]];
+        localStorage.setItem(FILES_KEY, JSON.stringify(store));
+      }
+    }
+  } catch {
+    /* abaikan */
+  }
+}
+
+function attachStoredFiles(sid: string, msgs: Message[]): Message[] {
+  const list = loadFileStore()[sid];
+  if (!list || list.length === 0) return msgs;
+  const used = new Set<number>();
+  return msgs.map((m) => {
+    if (m.sender !== "ai" || (m.files && m.files.length > 0)) return m;
+    const idx = list.findIndex((e, i) => !used.has(i) && e.text === m.text);
+    if (idx === -1) return m;
+    used.add(idx);
+    return { ...m, files: list[idx].files };
+  });
 }
 
 function resolveTokens(usage: BackendUsage | null, fallbackText: string) {
@@ -684,6 +772,14 @@ export default function AdminAgentPanel() {
       });
       setMessages(merged);
       persist(merged);
+      // File yang selamat lewat penggabungan ini (mis. dari
+      // riwayat lokal lama) ikut dicatat ke gudang sesi agar
+      // tetap menempel sesudah berpindah sesi.
+      for (const m of merged) {
+        if (m.sender === "ai" && m.files && m.files.length > 0) {
+          rememberSessionFiles(sid, m.text, m.files);
+        }
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
@@ -1069,6 +1165,16 @@ export default function AdminAgentPanel() {
               : m,
           );
           persist(withMeta);
+          if (streamFiles.length > 0) {
+            try {
+              const sidNow = localStorage.getItem(SESSION_KEY);
+              if (sidNow) {
+                rememberSessionFiles(sidNow, finalText, streamFiles);
+              }
+            } catch {
+              /* abaikan */
+            }
+          }
           return withMeta;
         });
         void loadSessions();
@@ -1427,14 +1533,17 @@ export default function AdminAgentPanel() {
       for (const m of orderSessionMessages(data.messages ?? [])) {
         const parsed = parseSessionMessage(m);
         if (!parsed) continue;
+        const backendFiles =
+          parsed.sender === "ai" ? pickFiles(m.files) : [];
         msgs.push({
           id: `hist_${msgs.length}`,
           sender: parsed.sender,
           text: parsed.text,
           timestamp: "",
+          ...(backendFiles.length > 0 ? { files: backendFiles } : {}),
         });
       }
-      return msgs;
+      return attachStoredFiles(sid, msgs);
     } catch {
       return null;
     }
