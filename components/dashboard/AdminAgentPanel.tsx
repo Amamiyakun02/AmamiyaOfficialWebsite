@@ -68,6 +68,12 @@ import { apiUrl } from "@/lib/api";
    catatan, bukan error diam). Review file: kartu file hasil
    agent punya tombol mata yang membuka FileReviewModal
    (kode ter-highlight + nomor baris + metadata lengkap).
+   Keep-alive + rekonsiliasi (21 Nov): DashboardShell TIDAK
+   melepas panel ini saat admin pindah tab (disembunyikan saja)
+   sehingga stream yang berjalan tetap berlanjut di latar; dan
+   saat panel dibuka, riwayat sesi aktif dimuat ulang dari
+   backend (rekonsiliasi) menggantikan salinan lokal yang basi
+   — metadata lokal pesan yang cocok dipertahankan.
    ===================================================================== */
 
 const CHAT_ENDPOINT = "/v1/opencode/chat/stream";
@@ -493,6 +499,61 @@ export default function AdminAgentPanel() {
     return () => {
       cancelled = true;
     };
+  }, [hydrated]);
+
+  // Muat ulang riwayat sesi aktif dari backend saat panel dibuka
+  // (permintaan user 21 Nov): salinan lokal bisa basi — jawaban
+  // yang selesai di serve saat panel tertutup, atau gelembung
+  // error sisa stream putus, harus digantikan isi sesi yang
+  // sebenarnya. Backend = sumber kebenaran; metadata lokal
+  // (footer model/token, kartu file, penanda lampiran, waktu)
+  // dipertahankan untuk pesan yang pengirim+teksnya cocok.
+  const reconciledRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated || reconciledRef.current) return;
+    reconciledRef.current = true;
+    let sid: string | null = null;
+    try {
+      sid = localStorage.getItem(SESSION_KEY);
+    } catch {
+      sid = null;
+    }
+    if (!sid) return;
+    const localAtStart = messagesRef.current;
+    void (async () => {
+      const fresh = await fetchSessionMessages(sid);
+      if (!fresh || fresh.length === 0) return;
+      // Panel sudah dipakai (user mengirim pesan lebih dulu) —
+      // jangan timpa percakapan yang sedang berjalan.
+      if (messagesRef.current !== localAtStart) return;
+      const local = localAtStart;
+      const same =
+        local.length === fresh.length &&
+        local.every(
+          (m, i) => m.sender === fresh[i].sender && m.text === fresh[i].text,
+        );
+      if (same) return;
+      let p = 0;
+      const merged = fresh.map((fm) => {
+        for (let i = p; i < local.length; i++) {
+          const lm = local[i];
+          if (lm.sender === fm.sender && lm.text === fm.text) {
+            p = i + 1;
+            return {
+              ...fm,
+              meta: lm.meta,
+              files: lm.files,
+              attachments: lm.attachments,
+              timestamp: lm.timestamp || fm.timestamp,
+            };
+          }
+        }
+        return fm;
+      });
+      setMessages(merged);
+      persist(merged);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
   const replyForm = useCallback(
@@ -1222,23 +1283,17 @@ export default function AdminAgentPanel() {
     persist(fresh);
   };
 
-  // Beralih ke sesi lama: muat riwayatnya dari backend (part teks).
-  const switchSession = async (sid: string) => {
-    if (busy || !sid) return;
-    try {
-      localStorage.setItem(SESSION_KEY, sid);
-    } catch {
-      /* abaikan */
-    }
-    setCurrentSession(sid);
-    setHitlCards([]);
-    setHitlAnswers({});
+  // Muat riwayat pesan satu sesi dari backend (part teks saja).
+  // null = gagal memuat; [] = sesi tanpa pesan teks.
+  const fetchSessionMessages = async (
+    sid: string,
+  ): Promise<Message[] | null> => {
     try {
       const res = await fetch(
         apiUrl(`/v1/opencode/sessions/${sid}/messages?role=admin`),
         { headers: authHeaders() },
       );
-      if (!res.ok) throw new Error("gagal memuat");
+      if (!res.ok) return null;
       const data = (await res.json()) as {
         messages?: {
           info?: { role?: string };
@@ -1260,6 +1315,26 @@ export default function AdminAgentPanel() {
           timestamp: "",
         });
       }
+      return msgs;
+    } catch {
+      return null;
+    }
+  };
+
+  // Beralih ke sesi lama: muat riwayatnya dari backend (part teks).
+  const switchSession = async (sid: string) => {
+    if (busy || !sid) return;
+    try {
+      localStorage.setItem(SESSION_KEY, sid);
+    } catch {
+      /* abaikan */
+    }
+    setCurrentSession(sid);
+    setHitlCards([]);
+    setHitlAnswers({});
+    try {
+      const msgs = await fetchSessionMessages(sid);
+      if (!msgs) throw new Error("gagal memuat");
       const shown = msgs.length > 0 ? msgs : [welcomeMessage()];
       setMessages(shown);
       persist(shown);

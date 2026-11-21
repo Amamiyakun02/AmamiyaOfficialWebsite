@@ -166,6 +166,19 @@ export default function DashboardShell() {
     window.history.replaceState(null, "", url);
   }, []);
 
+  // Panel AI Agent dipertahankan terpasang (keep-alive) setelah
+  // pertama kali dibuka: berpindah tab TIDAK membunuhnya, jadi
+  // stream jawaban yang sedang berjalan tetap berlanjut di latar
+  // dan sudah utuh saat admin kembali ke tab ini (permintaan
+  // user 21 Nov — sebelumnya panel ter-unmount dan jawabannya
+  // berhenti di tengah).
+  const [agentVisited, setAgentVisited] = useState<boolean>(
+    () => active === "agent",
+  );
+  useEffect(() => {
+    if (active === "agent") setAgentVisited(true);
+  }, [active]);
+
   // Bilah tab ponsel bergulir horizontal: pastikan tab aktif
   // (mis. dari ?tab= saat halaman dimuat/refresh) selalu masuk
   // pandangan, bukan tersembunyi di luar tepi kanan. Di desktop
@@ -326,8 +339,17 @@ export default function DashboardShell() {
               <ContentsPanel />
             ) : tab.id === "providers" ? (
               <AiProvidersPanel />
-            ) : (
-              <AdminAgentPanel />
+            ) : null}
+            {agentVisited && (
+              <div
+                style={
+                  tab.id === "agent"
+                    ? { display: "contents" }
+                    : { display: "none" }
+                }
+              >
+                <AdminAgentPanel />
+              </div>
             )}
           </section>
         </div>
