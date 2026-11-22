@@ -5,6 +5,39 @@ import ReactMarkdown from "react-markdown";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 import {
+  ADD,
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  CARD,
+  DCARD_ACTIONS,
+  DCARD_CONFIRM_TEXT,
+  DCARD_DESC,
+  DCARD_FOOT,
+  DCARD_HEAD,
+  DCARD_NAME,
+  DCARD_NOTE,
+  DCARD_SUB,
+  DICON_DANGER,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  EMPTY,
+  ERR,
+  FIELD,
+  FIELD_AREA,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  FIELD_SELECT,
+  FIELD_SPAN2,
+  GRID,
+  LIST,
+  MINI,
+  PATH,
+  SAVE,
+  SEARCH,
+  TOOLBAR,
+} from "./ui";
+import {
   Check,
   EyeOff,
   Pencil,
@@ -273,10 +306,10 @@ export default function ContentsPanel() {
   }
 
   return (
-    <div className="proj">
-      <div className="proj-toolbar">
+    <div className="mt-[18px]">
+      <div className={TOOLBAR}>
         <input
-          className="proj-search"
+          className={SEARCH}
           type="search"
           placeholder="Cari judul / slug…"
           value={q}
@@ -284,7 +317,7 @@ export default function ContentsPanel() {
           aria-label="Cari konten"
         />
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={type}
           onChange={(e) => setType(e.target.value)}
           aria-label="Filter tipe"
@@ -297,7 +330,7 @@ export default function ContentsPanel() {
           ))}
         </select>
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Filter status"
@@ -309,7 +342,7 @@ export default function ContentsPanel() {
             </option>
           ))}
         </select>
-        <button type="button" className="proj-add" onClick={openNew}>
+        <button type="button" className={ADD} onClick={openNew}>
           + Tambah Konten
         </button>
       </div>
@@ -324,14 +357,14 @@ export default function ContentsPanel() {
           }}
           footer={
             <>
-              {formError && <p className="proj-error">{formError}</p>}
-              <div className="proj-form-actions dash-modal-actions">
-                <button type="submit" className="proj-save" disabled={saving}>
+              {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
+              <div className="flex gap-2.5">
+                <button type="submit" className={SAVE} disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="proj-cancel"
+                  className={MINI}
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -341,10 +374,10 @@ export default function ContentsPanel() {
             </>
           }
         >
-          <div className="proj-grid">
-            <label className="proj-field proj-span2">
-              <span>Judul *</span>
-              <input
+          <div className={GRID}>
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Judul *</span>
+              <input className={FIELD_INPUT}
                 value={form.title}
                 onChange={(e) => {
                   const v = e.target.value;
@@ -360,9 +393,9 @@ export default function ContentsPanel() {
                 maxLength={200}
               />
             </label>
-            <label className="proj-field">
-              <span>Tipe</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Tipe</span>
+              <select className={FIELD_SELECT}
                 value={form.type}
                 onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
               >
@@ -373,9 +406,9 @@ export default function ContentsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field">
-              <span>Slug (otomatis bila dikosongkan)</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Slug (otomatis bila dikosongkan)</span>
+              <input className={FIELD_INPUT}
                 value={form.slug}
                 onChange={(e) => {
                   setSlugTouched(true);
@@ -385,9 +418,9 @@ export default function ContentsPanel() {
                 placeholder="judul-artikel-dengan-strip"
               />
             </label>
-            <label className="proj-field">
-              <span>Status</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Status</span>
+              <select className={FIELD_SELECT}
                 value={form.status}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, status: e.target.value }))
@@ -400,9 +433,9 @@ export default function ContentsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field proj-span2">
-              <span>Ringkasan</span>
-              <textarea
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Ringkasan</span>
+              <textarea className={FIELD_AREA}
                 rows={2}
                 value={form.summary}
                 onChange={(e) =>
@@ -410,12 +443,12 @@ export default function ContentsPanel() {
                 }
               />
             </label>
-            <div className="proj-field proj-span2">
-              <span className="cnt-body-label">
+            <div className={FIELD_SPAN2}>
+              <span className="flex items-center justify-between gap-2.5 text-xs font-semibold tracking-[0.03em] text-fog">
                 Isi (markdown)
                 <button
                   type="button"
-                  className="proj-mini"
+                  className={MINI}
                   onClick={() => setPreview((p) => !p)}
                 >
                   {preview ? "Tulis" : "Pratinjau"}
@@ -426,7 +459,7 @@ export default function ContentsPanel() {
                   <ReactMarkdown>{form.body || "*Belum ada isi.*"}</ReactMarkdown>
                 </div>
               ) : (
-                <textarea
+                <textarea className={FIELD_AREA}
                   rows={10}
                   value={form.body}
                   onChange={(e) =>
@@ -437,9 +470,9 @@ export default function ContentsPanel() {
                 />
               )}
             </div>
-            <label className="proj-field">
-              <span>Tag (pisahkan koma)</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Tag (pisahkan koma)</span>
+              <input className={FIELD_INPUT}
                 value={form.tags_text}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, tags_text: e.target.value }))
@@ -447,9 +480,9 @@ export default function ContentsPanel() {
                 placeholder="mis. fastapi, riset"
               />
             </label>
-            <label className="proj-field">
-              <span>Thumbnail (URL / path)</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Thumbnail (URL / path)</span>
+              <input className={FIELD_INPUT}
                 value={form.thumbnail}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, thumbnail: e.target.value }))
@@ -462,32 +495,30 @@ export default function ContentsPanel() {
         </FormModal>
       )}
 
-      {error && <p className="proj-error">{error}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
-        <p className="proj-empty">Memuat daftar konten…</p>
+        <p className={EMPTY}>Memuat daftar konten…</p>
       ) : items.length === 0 ? (
-        <p className="proj-empty">
+        <p className={EMPTY}>
           {q || type || status
             ? "Tidak ada konten yang cocok dengan filter."
             : "Belum ada konten. Tulis artikel pertamamu — yang berstatus published bisa dibaca publik lewat API konten."}
         </p>
       ) : (
-        <ul className="proj-list">
+        <ul className={LIST}>
           {items.map((c) => (
-                        <li key={c.id} className="dcard">
-              <div className="dcard-head">
-                <span className="dcard-name">{c.title}</span>
-                <span className="proj-badge">{c.type}</span>
+                        <li key={c.id} className={CARD}>
+              <div className={DCARD_HEAD}>
+                <span className={DCARD_NAME}>{c.title}</span>
+                <span className={`${BADGE} ${BADGE_PLAIN}`}>{c.type}</span>
                 <span
-                  className={`proj-badge proj-badge-${
-                    c.status === "published" ? "active" : "idea"
-                  }`}
+                  className={`${BADGE} ${BADGE_TONE[c.status === "published" ? "active" : "idea"]}`}
                 >
                   {c.status}
                 </span>
               </div>
-              <p className="dcard-sub">
-                <span className="proj-path">/contents/{c.slug}</span>
+              <p className={DCARD_SUB}>
+                <span className={PATH}>/contents/{c.slug}</span>
                 {c.published_at && (
                   <span>Terbit {fmtDateTime(c.published_at)}</span>
                 )}
@@ -495,26 +526,26 @@ export default function ContentsPanel() {
                   <span>Diubah {fmtDateTime(c.updated_at)}</span>
                 )}
               </p>
-              {c.summary && <p className="dcard-desc">{c.summary}</p>}
+              {c.summary && <p className={DCARD_DESC}>{c.summary}</p>}
               {c.tags.length > 0 && (
-                <div className="cnt-tags">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {c.tags.map((t) => (
-                    <span key={t} className="cnt-tag">
+                    <span key={t} className="rounded-full border border-[rgba(150,165,255,0.3)] bg-[rgba(120,140,255,0.12)] px-2 py-0.5 text-[11.5px] text-[#b9c6ff]">
                       #{t}
                     </span>
                   ))}
                 </div>
               )}
-              <div className="dcard-foot">
-                <span className="dcard-foot-note" />
+              <div className={DCARD_FOOT}>
+                <span className={DCARD_NOTE} />
                 {confirmId === c.id ? (
-                  <span className="dcard-confirm">
-                    <span className="dcard-confirm-text">
+                  <span className={DCARD_ACTIONS}>
+                    <span className={DCARD_CONFIRM_TEXT}>
                       Hapus konten ini?
                     </span>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Ya, hapus"
                       aria-label="Ya, hapus"
                       onClick={() => void remove(c)}
@@ -523,7 +554,7 @@ export default function ContentsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Batal"
                       aria-label="Batal"
                       onClick={() => setConfirmId(null)}
@@ -532,10 +563,10 @@ export default function ContentsPanel() {
                     </button>
                   </span>
                 ) : (
-                  <span className="dcard-actions">
+                  <span className={DCARD_ACTIONS}>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title={
                         c.status === "published"
                           ? "Tarik (jadikan draft)"
@@ -557,7 +588,7 @@ export default function ContentsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Ubah"
                       aria-label="Ubah"
                       onClick={() => openEdit(c)}
@@ -566,7 +597,7 @@ export default function ContentsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Hapus"
                       aria-label="Hapus"
                       onClick={() => setConfirmId(c.id)}

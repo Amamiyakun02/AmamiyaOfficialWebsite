@@ -4,6 +4,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 import {
+  BADGE,
+  BADGE_TONE,
+  CARD,
+  DICON_DANGER,
+  DICON_GOLD,
+  DICON_GOLD_STAR,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  DICON_STAR,
+  ERR,
+  FIELD_INPUT,
+  FIELD_SELECT,
+} from "./ui";
+import {
   Check,
   ChevronDown,
   ChevronUp,
@@ -50,36 +64,7 @@ type FormState = {
 };
 
 const STATUSES = ["idea", "active", "maintenance", "archived"] as const;
-/* Kelas utilitas Tailwind pengganti sistem proj, dcard, dan dicon-btn
-   (fase migrasi 3c) — nilai disalin persis dari aturan globals.css. */
-const CARD =
-  "relative mb-3 list-none overflow-hidden rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] pt-4 pb-0 last:mb-0 before:absolute before:top-0 before:right-0 before:left-0 before:h-[2px] before:content-['']";
-const DICON_LAYOUT =
-  "inline-flex cursor-pointer items-center justify-center border transition-all duration-[120ms] disabled:cursor-default disabled:opacity-45";
-const DICON_NEUTRAL =
-  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[#3d3d46] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-white";
-const DICON_DANGER =
-  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[rgba(248,113,113,0.55)] enabled:hover:bg-[rgba(248,113,113,0.07)] enabled:hover:text-[#f87171]";
-const DICON_STAR =
-  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[rgba(232,185,62,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#e8b93e]";
-const DICON_GOLD =
-  "border-[rgba(232,185,62,0.45)] bg-[rgba(232,185,62,0.08)] text-[#e8b93e] enabled:hover:border-[#3d3d46] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-white";
-const DICON_GOLD_STAR =
-  "border-[rgba(232,185,62,0.45)] bg-[rgba(232,185,62,0.08)] text-[#e8b93e] enabled:hover:border-[rgba(232,185,62,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#e8b93e]";
-const BADGE =
-  "rounded-full border px-[9px] py-[3px] text-[11px] font-bold tracking-[0.05em] uppercase";
-const BADGE_TONE: Record<string, string> = {
-  active: "border-[rgba(53,208,127,0.45)] text-[#35d07f]",
-  idea: "border-[rgba(227,179,65,0.45)] text-gold",
-  maintenance: "border-[rgba(88,166,255,0.45)] text-[#58a6ff]",
-  archived: "border-line text-[#8a8a92]",
-};
-const FIELD_INPUT =
-  "w-full rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none";
-const FIELD_SELECT =
-  "rounded-[10px] border border-line bg-[#0c0c0e] px-2.5 py-[9px] text-sm text-paper outline-none";
-const ERR =
-  "rounded-[10px] border border-[rgba(255,90,90,0.25)] bg-[rgba(255,90,90,0.08)] px-3 py-[9px] text-[13px] leading-[1.5] text-rose";
+
 
 
 const EMPTY_FORM: FormState = {

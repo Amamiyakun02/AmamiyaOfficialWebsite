@@ -4,6 +4,39 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 import {
+  ADD,
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  CARD,
+  DCARD_ACTIONS,
+  DCARD_CONFIRM_TEXT,
+  DCARD_DESC,
+  DCARD_FOOT,
+  DCARD_HEAD,
+  DCARD_NAME,
+  DCARD_NOTE,
+  DCARD_SUB,
+  DICON_DANGER,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  EMPTY,
+  ERR,
+  FIELD,
+  FIELD_AREA,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  FIELD_SELECT,
+  FIELD_SPAN2,
+  GRID,
+  LIST,
+  MINI,
+  PATH,
+  SAVE,
+  SEARCH,
+  TOOLBAR,
+} from "./ui";
+import {
   Check,
   Loader2,
   Pencil,
@@ -310,10 +343,10 @@ export default function IntegrationsPanel() {
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <div className="proj">
-      <div className="proj-toolbar">
+    <div className="mt-[18px]">
+      <div className={TOOLBAR}>
         <input
-          className="proj-search"
+          className={SEARCH}
           type="search"
           placeholder="Cari integrasi…"
           value={q}
@@ -321,7 +354,7 @@ export default function IntegrationsPanel() {
           aria-label="Cari integrasi"
         />
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Filter status"
@@ -333,7 +366,7 @@ export default function IntegrationsPanel() {
             </option>
           ))}
         </select>
-        <button type="button" className="proj-add" onClick={openNew}>
+        <button type="button" className={ADD} onClick={openNew}>
           + Tambah Integrasi
         </button>
       </div>
@@ -348,14 +381,14 @@ export default function IntegrationsPanel() {
           }}
           footer={
             <>
-              {formError && <p className="proj-error">{formError}</p>}
-              <div className="proj-form-actions dash-modal-actions">
-                <button type="submit" className="proj-save" disabled={saving}>
+              {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
+              <div className="flex gap-2.5">
+                <button type="submit" className={SAVE} disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="proj-cancel"
+                  className={MINI}
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -365,18 +398,18 @@ export default function IntegrationsPanel() {
             </>
           }
         >
-          <div className="proj-grid">
-            <label className="proj-field proj-span2">
-              <span>Nama *</span>
-              <input
+          <div className={GRID}>
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Nama *</span>
+              <input className={FIELD_INPUT}
                 value={form.name}
                 onChange={(e) => set("name")(e.target.value)}
                 maxLength={200}
               />
             </label>
-            <label className="proj-field">
-              <span>Status</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Status</span>
+              <select className={FIELD_SELECT}
                 value={form.status}
                 onChange={(e) => set("status")(e.target.value)}
               >
@@ -387,18 +420,18 @@ export default function IntegrationsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field proj-span2">
-              <span>Base URL *</span>
-              <input
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Base URL *</span>
+              <input className={FIELD_INPUT}
                 value={form.base_url}
                 onChange={(e) => set("base_url")(e.target.value)}
                 maxLength={500}
                 placeholder="https://api.contoh.com/"
               />
             </label>
-            <label className="proj-field">
-              <span>Jenis</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Jenis</span>
+              <select className={FIELD_SELECT}
                 value={form.kind}
                 onChange={(e) => set("kind")(e.target.value)}
               >
@@ -409,9 +442,9 @@ export default function IntegrationsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field">
-              <span>Tipe auth</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Tipe auth</span>
+              <select className={FIELD_SELECT}
                 value={form.auth_type}
                 onChange={(e) => set("auth_type")(e.target.value)}
               >
@@ -422,25 +455,25 @@ export default function IntegrationsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field">
-              <span>Nama env var untuk secret</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Nama env var untuk secret</span>
+              <input className={FIELD_INPUT}
                 value={form.auth_env_var}
                 onChange={(e) => set("auth_env_var")(e.target.value)}
                 maxLength={200}
                 placeholder="MIS. MIDTRANS_SERVER_KEY"
               />
             </label>
-            <p className="intg-hint proj-span2">
+            <p className="col-span-2 text-[12.5px] leading-[1.55] text-fog max-[640px]:col-span-1">
               Hanya NAMANYA yang disimpan di sini — nilai secret-nya tetap
               di .env backend dan tidak pernah ditampilkan. Untuk header
               sensitif (Authorization, X-API-Key) yang sudah tersimpan,
               nilai tampil sebagai *** dan tidak berubah bila dikirim apa
               adanya.
             </p>
-            <label className="proj-field proj-span2">
-              <span>Header tambahan (JSON)</span>
-              <textarea
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Header tambahan (JSON)</span>
+              <textarea className={FIELD_AREA}
                 rows={3}
                 value={form.headers_text}
                 onChange={(e) => set("headers_text")(e.target.value)}
@@ -448,9 +481,9 @@ export default function IntegrationsPanel() {
                 spellCheck={false}
               />
             </label>
-            <label className="proj-field proj-span2">
-              <span>Catatan</span>
-              <textarea
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Catatan</span>
+              <textarea className={FIELD_AREA}
                 rows={2}
                 value={form.notes}
                 onChange={(e) => set("notes")(e.target.value)}
@@ -460,34 +493,34 @@ export default function IntegrationsPanel() {
         </FormModal>
       )}
 
-      {error && <p className="proj-error">{error}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
-        <p className="proj-empty">Memuat daftar integrasi…</p>
+        <p className={EMPTY}>Memuat daftar integrasi…</p>
       ) : items.length === 0 ? (
-        <p className="proj-empty">
+        <p className={EMPTY}>
           {q || status
             ? "Tidak ada integrasi yang cocok dengan filter."
             : "Belum ada integrasi terdaftar."}
         </p>
       ) : (
-        <ul className="proj-list">
+        <ul className={LIST}>
           {items.map((i) => {
             const tr = testResults[i.id];
             return (
-                            <li key={i.id} className="dcard">
-                <div className="dcard-head">
-                  <span className="dcard-name">{i.name}</span>
-                  <span className="proj-badge">{i.kind}</span>
+                            <li key={i.id} className={CARD}>
+                <div className={DCARD_HEAD}>
+                  <span className={DCARD_NAME}>{i.name}</span>
+                  <span className={`${BADGE} ${BADGE_PLAIN}`}>{i.kind}</span>
                   <span
-                    className={`proj-badge proj-badge-${i.status === "active" ? "active" : "archived"}`}
+                    className={`${BADGE} ${BADGE_TONE[i.status === "active" ? "active" : "archived"]}`}
                   >
                     {i.status}
                   </span>
                 </div>
-                <p className="dcard-sub">
-                  <span className="proj-path">{i.base_url}</span>
+                <p className={DCARD_SUB}>
+                  <span className={PATH}>{i.base_url}</span>
                 </p>
-                <p className="dcard-sub">
+                <p className={DCARD_SUB}>
                   {i.auth_type === "none" ? (
                     <span>Auth: tanpa auth</span>
                   ) : (
@@ -496,11 +529,11 @@ export default function IntegrationsPanel() {
                       {i.auth_env_var ? ` · env ${i.auth_env_var} · ` : " · "}
                       {i.auth_env_var &&
                         (i.auth_env_present ? (
-                          <span className="intg-ok">
+                          <span className="text-[#35d07f]">
                             ✓ tersedia di backend
                           </span>
                         ) : (
-                          <span className="intg-bad">
+                          <span className="text-rose">
                             ✗ belum ada di env backend
                           </span>
                         ))}
@@ -510,47 +543,47 @@ export default function IntegrationsPanel() {
                     <span>Diubah {fmtDateTime(i.updated_at)}</span>
                   )}
                 </p>
-                {i.notes && <p className="dcard-desc">{i.notes}</p>}
-                <div className="dcard-foot">
-                  <span className="dcard-foot-note">
+                {i.notes && <p className={DCARD_DESC}>{i.notes}</p>}
+                <div className={DCARD_FOOT}>
+                  <span className={DCARD_NOTE}>
                     {i.last_tested_at || tr ? (
                       tr ? (
                         tr.ok ? (
-                          <span className="intg-ok">
+                          <span className="text-[#35d07f]">
                             ✓ Test barusan: HTTP {tr.status_code}
                             {tr.latency_ms != null
                               ? ` · ${tr.latency_ms} ms`
                               : ""}
                           </span>
                         ) : (
-                          <span className="intg-bad">
+                          <span className="text-rose">
                             ✗ Test barusan gagal
                             {tr.error ? `: ${tr.error}` : ""}
                           </span>
                         )
                       ) : i.last_test_ok ? (
-                        <span className="intg-ok">
+                        <span className="text-[#35d07f]">
                           ✓ Test terakhir berhasil ·{" "}
                           {fmtDateTime(i.last_tested_at)}
                         </span>
                       ) : (
-                        <span className="intg-bad">
+                        <span className="text-rose">
                           ✗ Test terakhir gagal ·{" "}
                           {fmtDateTime(i.last_tested_at)}
                         </span>
                       )
                     ) : (
-                      <span className="aip-dim">Belum pernah dites</span>
+                      <span className="text-[#6d6d78]">Belum pernah dites</span>
                     )}
                   </span>
                   {confirmId === i.id ? (
-                    <span className="dcard-confirm">
-                      <span className="dcard-confirm-text">
+                    <span className={DCARD_ACTIONS}>
+                      <span className={DCARD_CONFIRM_TEXT}>
                         Hapus integrasi ini?
                       </span>
                       <button
                         type="button"
-                        className="dicon-btn is-danger"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                         title="Ya, hapus"
                         aria-label="Ya, hapus"
                         onClick={() => void remove(i)}
@@ -559,7 +592,7 @@ export default function IntegrationsPanel() {
                       </button>
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Batal"
                         aria-label="Batal"
                         onClick={() => setConfirmId(null)}
@@ -568,10 +601,10 @@ export default function IntegrationsPanel() {
                       </button>
                     </span>
                   ) : (
-                    <span className="dcard-actions">
+                    <span className={DCARD_ACTIONS}>
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Test koneksi"
                         aria-label="Test koneksi"
                         disabled={testingId === i.id}
@@ -585,7 +618,7 @@ export default function IntegrationsPanel() {
                       </button>
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Ubah"
                         aria-label="Ubah"
                         onClick={() => openEdit(i)}
@@ -594,7 +627,7 @@ export default function IntegrationsPanel() {
                       </button>
                       <button
                         type="button"
-                        className="dicon-btn is-danger"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                         title="Hapus"
                         aria-label="Hapus"
                         onClick={() => setConfirmId(i.id)}
