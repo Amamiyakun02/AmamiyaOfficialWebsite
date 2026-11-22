@@ -256,8 +256,8 @@ export default function DashboardShell() {
 
   if (state !== "ok") {
     return (
-      <div className="dash-app dash-app-loading">
-        <p className="dash-checking">Memeriksa sesi…</p>
+      <div className="dash-app flex min-h-0 flex-1 items-center justify-center bg-[#08080a]">
+        <p className="text-sm text-fog">Memeriksa sesi…</p>
       </div>
     );
   }
@@ -267,23 +267,23 @@ export default function DashboardShell() {
 
   return (
     <div className={sideCollapsed ? "dash-app is-side-collapsed" : "dash-app"}>
-      <aside className="dash-side">
-        <div className="dash-brand">
+      <aside className={`relative z-[2] flex min-h-0 flex-col gap-[22px] overflow-y-auto border-r border-[#1d1d21] bg-[#050506] px-3.5 pt-5 pb-4 max-[920px]:min-w-0 max-[920px]:flex-row max-[920px]:flex-wrap max-[920px]:items-center max-[920px]:gap-x-3.5 max-[920px]:gap-y-2.5 max-[920px]:overflow-visible max-[920px]:border-r-0 max-[920px]:border-b max-[920px]:py-3 ${sideCollapsed ? "min-[921px]:px-2.5" : ""}`}>
+        <div className={`flex items-center gap-[11px] px-2 py-0.5 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-3 min-[921px]:px-0" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="dash-brand-mark"
+            className="flex-none rounded-lg border border-line"
             src="/favicon.png"
             alt=""
             width={30}
             height={30}
           />
-          <div className="dash-brand-text">
-            <span className="dash-brand-name">Amamiya</span>
-            <span className="dash-brand-sub">System Dashboard</span>
+          <div className={`flex flex-col leading-[1.25] ${sideCollapsed ? "min-[921px]:hidden" : ""}`}>
+            <span className="text-[14.5px] font-bold tracking-[-0.01em] text-[#f2f2f4]">Amamiya</span>
+            <span className="text-[11.5px] text-[#8a8a92]">System Dashboard</span>
           </div>
           <button
             type="button"
-            className="dash-icon-btn dash-side-toggle"
+            className={`ml-auto inline-flex h-[31px] w-[31px] flex-none cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-[#a7a7ae] hover:border-line hover:bg-[rgba(255,255,255,0.05)] hover:text-white ${sideCollapsed ? "min-[921px]:ml-0" : ""}`}
             onClick={toggleSide}
             title={sideCollapsed ? "Buka sidebar" : "Lipat sidebar"}
             aria-label={sideCollapsed ? "Buka sidebar" : "Lipat sidebar"}
@@ -296,8 +296,8 @@ export default function DashboardShell() {
           </button>
         </div>
 
-        <nav className="dash-nav" aria-label="Modul dashboard" ref={navRef}>
-          <div className="dash-nav-label">Modul</div>
+        <nav className="flex flex-col gap-0.5 max-[920px]:order-3 max-[920px]:w-full max-[920px]:min-w-0 max-[920px]:flex-row max-[920px]:gap-1 max-[920px]:overflow-x-auto max-[920px]:p-[4px_3px] max-[920px]:[scrollbar-width:none] max-[920px]:[&::-webkit-scrollbar]:hidden" aria-label="Modul dashboard" ref={navRef}>
+          <div className={`px-2.5 pb-2 text-[10.5px] font-bold tracking-[0.13em] text-[#62626b] uppercase max-[920px]:hidden ${sideCollapsed ? "min-[921px]:hidden" : ""}`}>Modul</div>
           {TABS.map((t) => {
             const Icon = t.icon;
             const on = t.id === active;
@@ -305,35 +305,35 @@ export default function DashboardShell() {
               <button
                 key={t.id}
                 type="button"
-                className={`dash-nav-item${on ? " dash-nav-on" : ""}`}
+                className={`group flex cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-2.5 py-2 text-left text-[13.5px] font-medium text-[#a7a7ae] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#e8e8ec] max-[920px]:flex-none max-[920px]:px-[11px] max-[920px]:py-[7px] ${sideCollapsed ? "min-[921px]:justify-center min-[921px]:px-0 min-[921px]:py-[9px]" : ""}${on ? " dash-nav-on" : ""}`}
                 aria-current={on ? "page" : undefined}
                 title={t.label}
                 onClick={() => selectTab(t.id)}
               >
-                <Icon size={17} className="dash-nav-icon" />
-                <span>{t.label}</span>
+                <Icon size={17} className="dash-nav-icon flex-none text-[#7c7c85] group-hover:text-[#a7a7ae]" />
+                <span className={sideCollapsed ? "min-[921px]:hidden" : undefined}>{t.label}</span>
               </button>
             );
           })}
         </nav>
 
-        <div className="dash-side-foot">
-          <a className="dash-site-link" href="/" title="Situs utama">
+        <div className="mt-auto flex flex-col gap-3 max-[920px]:mt-0 max-[920px]:ml-auto max-[920px]:flex-row max-[920px]:items-center max-[920px]:gap-2">
+          <a className={`flex items-center gap-[9px] rounded-lg px-2.5 py-2 text-[13.5px] font-medium text-[#a7a7ae] no-underline hover:bg-[rgba(255,255,255,0.04)] hover:text-[#e8e8ec] max-[920px]:hidden ${sideCollapsed ? "min-[921px]:justify-center min-[921px]:px-0" : ""}`} href="/" title="Situs utama">
             <House size={15} />
-            <span>Situs utama</span>
-            <ArrowUpRight size={13} className="dash-site-link-arrow" />
+            <span className={sideCollapsed ? "min-[921px]:hidden" : undefined}>Situs utama</span>
+            <ArrowUpRight size={13} className={`ml-auto text-[#62626b] ${sideCollapsed ? "min-[921px]:hidden" : ""}`} />
           </a>
-          <div className="dash-user-row">
-            <span className="dash-avatar" aria-hidden="true">
+          <div className={`flex items-center gap-2.5 border-t border-[#1d1d21] px-1.5 pt-[13px] pb-0.5 max-[920px]:border-t-0 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-[9px] min-[921px]:px-0" : ""}`}>
+            <span className="inline-flex h-[29px] w-[29px] flex-none items-center justify-center rounded-full border border-[#2a2a30] bg-[#17171b] text-[12.5px] font-bold text-[#e8e8ec]" aria-hidden="true">
               {(user || "A").charAt(0).toUpperCase()}
             </span>
-            <span className="dash-user-meta">
-              <b>{user || "Admin"}</b>
-              <i>Administrator</i>
+            <span className={`flex min-w-0 flex-col leading-[1.3] max-[920px]:hidden ${sideCollapsed ? "min-[921px]:hidden" : ""}`}>
+              <b className="truncate text-[13px] font-semibold text-[#f2f2f4]">{user || "Admin"}</b>
+              <i className="text-[11px] text-[#8a8a92] [font-style:normal]">Administrator</i>
             </span>
             <button
               type="button"
-              className="dash-icon-btn"
+              className={`ml-auto inline-flex h-[31px] w-[31px] flex-none cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-[#a7a7ae] hover:border-line hover:bg-[rgba(255,255,255,0.05)] hover:text-white ${sideCollapsed ? "min-[921px]:ml-0" : ""}`}
               onClick={logout}
               title="Keluar"
               aria-label="Keluar"
@@ -348,7 +348,9 @@ export default function DashboardShell() {
         <AmbientBackground />
         <div
           className={
-            tab.id === "agent" ? "dash-content is-agent" : "dash-content"
+            tab.id === "agent"
+              ? "mx-auto flex h-full w-full max-w-[1120px] flex-col px-[34px] pt-[18px] pb-4 max-[920px]:px-4 max-[920px]:pt-3.5 max-[920px]:pb-3"
+              : "mx-auto w-full max-w-[1120px] px-[34px] pt-[30px] pb-16 max-[920px]:px-4 max-[920px]:pt-[22px] max-[920px]:pb-[52px]"
           }
         >
           {/* Tab AI Agent memakai kepala chat-nya sendiri (judul
@@ -356,16 +358,16 @@ export default function DashboardShell() {
               (judul + deskripsi) disembunyikan khusus tab ini —
               permintaan user 18 Nov. */}
           {tab.id !== "agent" && (
-            <header className="dash-page-head">
-              <h1 className="dash-page-title">
-                <TabIcon size={25} className="dash-page-title-icon" />
+            <header className="mb-6">
+              <h1 className="flex items-center gap-3 text-[26px] font-bold tracking-[-0.01em] text-[#f2f2f4]">
+                <TabIcon size={25} className="flex-none text-accent3" />
                 {tab.label}
               </h1>
             </header>
           )}
 
           <section
-            className={tab.id === "agent" ? "dash-panel is-agent" : "dash-panel"}
+            className={tab.id === "agent" ? "flex min-h-0 min-w-0 flex-1 flex-col" : "min-w-0"}
           >
             {tab.id === "overview" ? (
               <OverviewPanel onNavigate={selectTab} />
