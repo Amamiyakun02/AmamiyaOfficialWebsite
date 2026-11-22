@@ -81,26 +81,26 @@ export default function McpPlayground() {
   };
 
   return (
-    <div className="mcp-page">
-      <div className="mcp-inner">
-        <Link href="/#tools" className="chat-back">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-[880px] px-4 pt-[18px] pb-14">
+        <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
           <ArrowLeft size={14} /> Kembali ke Tools
         </Link>
 
-        <div className="mcp-kicker">
+        <div className="mt-4 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-accent uppercase">
           <Bot size={15} />
           <span>Demo integrasi AI</span>
         </div>
-        <h1 className="mcp-title">MCP Playground</h1>
-        <p className="mcp-sub">
+        <h1 className="mt-1.5 text-[32px] font-extrabold text-[#f2f2f5]">MCP Playground</h1>
+        <p className="mt-2 max-w-[640px] text-sm leading-[1.6] text-fog">
           Coba 10 tool Agent MCP langsung di sini. Ini simulasi browser dari
           kontrak tool terketik yang sama dengan yang diekspos server Python
           via stdio — server penuh ada di GitHub.
         </p>
 
-        <div className="mcp-actions">
+        <div className="mt-4 flex flex-wrap gap-2">
           <a
-            className="mcp-btn"
+            className="inline-flex cursor-pointer items-center gap-[7px] rounded-xl border border-line bg-panel2 px-3.5 py-[9px] text-[13px] font-semibold text-[#e8e8ee] no-underline hover:border-steel"
             href="https://github.com/Amamiyakun02/AgentMCP"
             target="_blank"
             rel="noopener noreferrer"
@@ -109,7 +109,7 @@ export default function McpPlayground() {
           </a>
           <button
             type="button"
-            className="mcp-btn mcp-btn-primary"
+            className="inline-flex cursor-pointer items-center gap-[7px] rounded-xl border border-accent bg-accent px-3.5 py-[9px] text-[13px] font-semibold text-white no-underline hover:border-[#1a8fff] hover:bg-[#1a8fff]"
             onClick={copySnippet}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -117,35 +117,36 @@ export default function McpPlayground() {
           </button>
         </div>
 
-        <div className="mcp-snippet">
-          <div className="mcp-snippet-head">claude_desktop_config.json</div>
-          <pre>{MCP_CONNECT_SNIPPET}</pre>
+        <div className="mt-[18px] overflow-hidden rounded-[14px] border border-line bg-[#0a0a0c]">
+          <div className="border-b border-[#1d1d21] bg-panel2 px-3.5 py-[7px] text-[10px] font-bold tracking-[0.1em] text-accent2 uppercase">claude_desktop_config.json</div>
+          <pre className="m-0 overflow-x-auto p-3.5 font-mono text-xs leading-[1.55] text-[#d7d7de]">{MCP_CONNECT_SNIPPET}</pre>
         </div>
 
-        <div className="mcp-filters">
+        <div className="mt-5 flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <button
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className={`engine-pill${filter === f ? " is-active" : ""}`}
+              className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-40 ${filter === f ? "border-accent bg-accent text-white" : "border-line bg-panel2 text-[#c9c9d2]"}`}
             >
               {f}
             </button>
           ))}
         </div>
 
-        <div className="mcp-grid">
+        <div className="mt-3.5 grid grid-cols-1 gap-3.5 min-[760px]:grid-cols-2">
           {tools.map((tool) => (
-            <div key={tool.name} className="mcp-card">
-              <div className="mcp-card-head">
-                <span className="mcp-tool-name">{tool.name}</span>
-                <span className="mcp-badge">{tool.category}</span>
+            <div key={tool.name} className="rounded-2xl border border-line bg-panel p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[13.5px] font-bold text-accent2">{tool.name}</span>
+                <span className="rounded-full border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] px-2 py-[3px] text-[9px] font-bold tracking-[0.08em] text-accent2 uppercase">{tool.category}</span>
               </div>
-              <p className="mcp-desc">{tool.description.id}</p>
-              <div className="mcp-schema">{tool.schema}</div>
-              <div className="mcp-run-row">
+              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-fog">{tool.description.id}</p>
+              <div className="mt-2 font-mono text-[10.5px] leading-[1.5] break-all text-[#6d6d76]">{tool.schema}</div>
+              <div className="mt-3 flex gap-2">
                 <input
+                  className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0a0a0c] px-[11px] py-2 font-mono text-xs text-[#eeeef2] outline-none focus:border-line"
                   value={inputs[tool.name] ?? ""}
                   onChange={(e) =>
                     setInputs((prev) => ({
@@ -161,21 +162,21 @@ export default function McpPlayground() {
                 />
                 <button
                   type="button"
-                  className="mcp-run"
+                  className="inline-flex flex-shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] border-0 bg-accent px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-[#1a8fff]"
                   onClick={() => runTool(tool.name)}
                 >
                   <Play size={12} /> Run
                 </button>
               </div>
               {outputs[tool.name] !== undefined && (
-                <pre className="mcp-output">{outputs[tool.name]}</pre>
+                <pre className="mt-3 rounded-[10px] border border-line bg-[#070708] p-[11px_12px] font-mono text-[11.5px] whitespace-pre-wrap break-words text-[#6ee7b7]">{outputs[tool.name]}</pre>
               )}
             </div>
           ))}
         </div>
 
-        <p className="mcp-note">
-          <FlaskConical size={13} />
+        <p className="mt-[22px] flex gap-2 text-[11.5px] leading-[1.6] text-[#6d6d76]">
+          <FlaskConical size={13} className="mt-0.5 flex-shrink-0" />
           <span>
             Simulasi berjalan lokal di browser (math/text/clock sepenuhnya
             nyata; sys_ping mengarah ke /status untuk cek asli). Server MCP

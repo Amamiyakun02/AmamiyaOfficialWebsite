@@ -57,19 +57,19 @@ export default function FeedbackForm() {
   }
 
   return (
-    <div className="vd-page">
-      <div className="vd-inner">
-        <Link href="/#tools" className="chat-back">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-[1080px] px-4 pt-[18px] pb-14">
+        <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
           <ArrowLeft size={14} /> Kembali ke Tools
         </Link>
 
-        <div className="vd-head">
-          <span className="vd-head-icon">
+        <div className="mt-4 flex items-start gap-3.5">
+          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] text-accent2">
             <MessageSquare size={22} />
           </span>
           <div>
-            <h1 className="vd-title">Feedback</h1>
-            <p className="page-desc">
+            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#f2f2f5]">Feedback</h1>
+            <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
               Kirim ulasan dan masukan tentang situs dan tool-tool di
               sini — pesanmu masuk ke inbox-ku dan kubaca langsung.
             </p>
@@ -77,12 +77,12 @@ export default function FeedbackForm() {
         </div>
 
         {sent ? (
-          <div className="form-done">
-            <h2>Feedback Terkirim</h2>
-            <p>Terima kasih atas masukannya — sangat membantu.</p>
+          <div className="max-w-[720px] rounded-2xl border border-[rgba(52,211,153,0.35)] bg-[rgba(13,13,16,0.78)] p-[22px]">
+            <h2 className="m-0 mb-2 text-lg">Feedback Terkirim</h2>
+            <p className="m-0 mb-4 text-sm text-[#a7a7b0]">Terima kasih atas masukannya — sangat membantu.</p>
             <button
               type="button"
-              className="chip"
+              className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
               onClick={() => {
                 setSent(false);
                 setName("");
@@ -95,10 +95,11 @@ export default function FeedbackForm() {
             </button>
           </div>
         ) : (
-          <form className="contact-form" onSubmit={submit}>
-            <label>
+          <form className="flex max-w-[720px] flex-col gap-4" onSubmit={submit}>
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
               Nama Anda
               <input
+                className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -106,30 +107,31 @@ export default function FeedbackForm() {
                 autoComplete="name"
               />
             </label>
-            <label>
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
               Penilaianmu
-              <span className="fb-stars" role="radiogroup" aria-label="Rating">
+              <span className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     type="button"
                     role="radio"
                     aria-checked={rating === n}
-                    className={`fb-star${n <= rating ? " is-on" : ""}`}
+                    className={`inline-flex cursor-pointer border-0 bg-transparent p-[3px] ${n <= rating ? "text-[#e5b95f]" : "text-steel"}`}
                     onClick={() => setRating(n)}
                     title={`${n} dari 5`}
                   >
-                    <Star size={22} />
+                    <Star size={22} className={n <= rating ? "[fill:currentColor]" : undefined} />
                   </button>
                 ))}
-                <span className="fb-stars-note">
+                <span className="ml-2 text-[12.5px] text-fog">
                   {rating > 0 ? `${rating}/5` : "Pilih rating dulu"}
                 </span>
               </span>
             </label>
-            <label>
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
               Kategori
               <select
+                className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -140,9 +142,10 @@ export default function FeedbackForm() {
                 ))}
               </select>
             </label>
-            <label>
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
               Pesan / masukan
               <textarea
+                className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
@@ -150,10 +153,10 @@ export default function FeedbackForm() {
                 rows={6}
               />
             </label>
-            {error && <p className="form-error">{error}</p>}
+            {error && <p className="m-0 text-[13px] text-[#f87171]">{error}</p>}
             <button
               type="submit"
-              className="hero-btn hero-btn-primary"
+              className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-white no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#4a4a55] hover:bg-[#0064e0]"
               disabled={submitting || rating === 0}
             >
               {submitting ? "Mengirim..." : "Kirim Feedback"}
