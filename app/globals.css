@@ -1,3 +1,40 @@
+/* Tailwind CSS v4 (22 Nov 2026): hanya lapisan tema + utilitas.
+   Preflight SENGAJA tidak dipakai — reset bawaan situs di bawah
+   ini tetap yang berlaku, jadi pemasangan Tailwind tidak
+   mengubah satu piksel pun. Migrasi komponen ke kelas utilitas
+   berjalan bertahap per area; aturan vanilla di berkas ini
+   TIDAK dihapus (keputusan user 22 Nov) — komponen yang sudah
+   bermigrasi berhenti memakai nama kelas lamanya, sehingga
+   aturan lama menjadi tidak terpakai dengan sendirinya.
+   Yang memang tidak cocok menjadi utilitas (gaya canvas,
+   markdown chat, keyframes, selector kompleks) tetap vanilla. */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+@source "../app";
+@source "../components";
+@source "../lib";
+
+@theme {
+  --color-ink: #0a0a0b;
+  --color-panel: #101013;
+  --color-panel2: #141416;
+  --color-line: #26262b;
+  --color-line2: #232329;
+  --color-line3: #2c2c33;
+  --color-steel: #3a3a41;
+  --color-paper: #f2f2f4;
+  --color-fog: #9a9aa2;
+  --color-dim: #83838c;
+  --color-accent: #0081fb;
+  --color-accent2: #4da3ff;
+  --color-accent3: #5ea9ff;
+  --color-gold: #e3b341;
+  --color-rose: #ff8585;
+  --color-danger: #cf222e;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
   color-scheme: dark;
 }
