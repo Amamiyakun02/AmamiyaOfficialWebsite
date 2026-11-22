@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body>
-        <div className="app">
+        <div className="flex h-dvh flex-col">
           <Navbar />
           {children}
           <AgentFab />

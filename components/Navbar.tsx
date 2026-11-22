@@ -121,21 +121,30 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="navbar">
-        <div className="nav-left">
+      <header className="relative z-[5] flex flex-none items-center justify-between border-b border-[#1f1f23] bg-[rgba(13,13,15,0.94)] px-7 py-3 max-[760px]:px-[18px] max-[760px]:py-2.5">
+        <div className="flex items-center gap-[30px] max-[760px]:gap-[14px]">
           <Link
             href="/#home"
-            className="brand"
+            className="inline-flex items-center gap-[9px] text-[19px] font-bold tracking-[0.01em] text-white no-underline hover:underline max-[760px]:text-[17px]"
             onClick={(e) => go(e, "home")}
           >
-            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+            <img
+              src="/favicon.png"
+              alt=""
+              className="block h-[30px] w-auto max-[760px]:h-[26px]"
+            />{" "}
+            Amamiya
           </Link>
-          <nav>
+          <nav className="flex gap-6 max-[760px]:hidden">
             {LINKS.map((l) => (
               <Link
                 key={l.id}
                 href={`/#${l.id}`}
-                className={current === l.id ? "nav-active" : undefined}
+                className={`text-[15px] text-[#e6e6e9] no-underline hover:underline${
+                  current === l.id
+                    ? " text-white underline decoration-accent underline-offset-[5px]"
+                    : ""
+                }`}
                 onClick={(e) => go(e, l.id)}
               >
                 {l.label}
@@ -143,13 +152,17 @@ export default function Navbar() {
             ))}
           </nav>
         </div>
-        <div className="nav-right">
-          <a className="nav-cv" href="/profesional-cv.pdf" download>
+        <div className="flex items-center gap-3">
+          <a
+            className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#e6e6e9] no-underline hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
+            href="/profesional-cv.pdf"
+            download
+          >
             <Download size={15} />
             Unduh CV
           </a>
           <a
-            className="nav-github"
+            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-line3 bg-white/[0.03] text-[#e6e6e9] hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white"
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
@@ -159,7 +172,7 @@ export default function Navbar() {
           </a>
           <button
             type="button"
-            className="nav-burger"
+            className="hidden cursor-pointer items-center justify-center rounded-[9px] border border-[#2a2a31] bg-transparent p-2 text-[#e6e6e9] max-[760px]:inline-flex"
             aria-label="Buka menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}
@@ -172,37 +185,51 @@ export default function Navbar() {
       {/* Sidebar mobile gaya docs: panel polos bergeser dari kiri,
           daftar tautan vertikal, item aktif beraksen garis kiri. */}
       <div
-        className={`nav-backdrop${open ? " is-open" : ""}`}
+        className={`fixed inset-0 z-[55] bg-[rgba(4,4,6,0.55)] transition-opacity duration-[280ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] min-[761px]:hidden motion-reduce:transition-none ${
+          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        }`}
         onClick={() => setOpen(false)}
         aria-hidden="true"
       />
-      <aside className={`nav-drawer${open ? " is-open" : ""}`} aria-hidden={!open}>
-        <div className="nav-drawer-head">
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-[60] flex w-[min(300px,84vw)] flex-col border-r border-[#1f1f23] bg-[#0e0e11] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.24,1)] min-[761px]:hidden motion-reduce:transition-none ${
+          open
+            ? "pointer-events-auto translate-x-0 shadow-[24px_0_48px_rgba(0,0,0,0.45)]"
+            : "pointer-events-none -translate-x-[105%]"
+        }`}
+        aria-hidden={!open}
+      >
+        <div className="flex items-center justify-between border-b border-[#1c1c20] px-[18px] py-[13px]">
           <Link
             href="/#home"
-            className="brand"
+            className="inline-flex items-center gap-[9px] text-[17px] font-bold tracking-[0.01em] text-white no-underline"
             onClick={(e) => {
               go(e, "home");
               setOpen(false);
             }}
           >
-            <img src="/favicon.png" alt="" className="brand-logo" /> Amamiya
+            <img src="/favicon.png" alt="" className="block h-[26px] w-auto" />{" "}
+            Amamiya
           </Link>
           <button
             type="button"
-            className="nav-drawer-close"
+            className="inline-flex cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent p-[7px] text-fog hover:bg-white/[0.05] hover:text-white"
             aria-label="Tutup menu"
             onClick={() => setOpen(false)}
           >
             <X size={20} />
           </button>
         </div>
-        <nav className="nav-drawer-list">
+        <nav className="flex flex-col overflow-y-auto py-2.5">
           {LINKS.map((l) => (
             <Link
               key={l.id}
               href={`/#${l.id}`}
-              className={`nav-drawer-link${current === l.id ? " is-active" : ""}`}
+              className={`block px-5 py-[11px] text-[15.5px] no-underline hover:bg-white/[0.04] hover:text-white ${
+                current === l.id
+                  ? "bg-[rgba(0,129,251,0.1)] text-white shadow-[inset_2.5px_0_0_#0081fb]"
+                  : "text-[#c6c6cd]"
+              }`}
               onClick={(e) => {
                 go(e, l.id);
                 setOpen(false);
@@ -212,9 +239,9 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="nav-drawer-foot">
+        <div className="mt-auto flex gap-[10px] border-t border-[#1c1c20] px-[18px] pt-4 pb-5">
           <a
-            className="nav-drawer-github"
+            className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
             href="/profesional-cv.pdf"
             download
             onClick={() => setOpen(false)}
@@ -222,7 +249,7 @@ export default function Navbar() {
             <Download size={17} /> Unduh CV
           </a>
           <a
-            className="nav-drawer-github"
+            className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
