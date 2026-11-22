@@ -118,7 +118,7 @@ export default function AgentFab() {
           </div>
           <div className="agent-panel-body">
             <Suspense fallback={null}>
-              <AssistantChat quickPrompt={qp} />
+              <AssistantChat quickPrompt={qp} embedded />
             </Suspense>
           </div>
         </section>

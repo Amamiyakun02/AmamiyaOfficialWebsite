@@ -249,13 +249,13 @@ function MessageText({ text }: { text: string }) {
         if (i % 2 === 1) {
           const code = seg.replace(/^[a-zA-Z0-9_-]*\n/, "");
           return (
-            <pre key={i} className="msg-code">
+            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#0a0a0c] px-3 py-2.5 text-[13px] whitespace-pre">
               {code}
             </pre>
           );
         }
         return (
-          <span key={i} className="msg-plain">
+          <span key={i} className="break-anywhere whitespace-pre-wrap">
             {seg}
           </span>
         );
@@ -266,10 +266,16 @@ function MessageText({ text }: { text: string }) {
 
 export default function AssistantChat({
   quickPrompt,
+  embedded = false,
 }: {
   // Prompt cepat dari chip hover tombol mengambang (AgentFab):
   // tiap objek baru (n berubah) dikirim sekali sebagai pesan user.
   quickPrompt?: { text: string; n: number } | null;
+  // embedded = dirender di dalam panel quick-chat AgentFab: gaya
+  // konteks panel yang dulu datang dari penimpa CSS
+  // ".agent-panel .chat-*" kini dinyatakan langsung di sini
+  // (lebar penuh panel, tautan kembali hilang, kepala rata kanan).
+  embedded?: boolean;
 } = {}) {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -869,12 +875,12 @@ export default function AssistantChat({
   // Satu baris kartu HITL di aliran chat (dipakai terselip sesudah
   // pesan penjangkarnya maupun di akhir untuk kartu pemulihan).
   const renderHitlCard = (card: HitlCard) => (
-    <div key={card.id} className="msg msg-ai">
+    <div key={card.id} className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
-      <div className="msg-col">
+      <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+      <div className="flex min-w-0 flex-col items-start">
         {card.status === "cancelled" ? (
-          <div className="hitl-card is-cancelled">
+          <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8b8b94]">
             {card.kind === "form"
               ? "Pertanyaan ini sudah tidak berlaku."
               : "Permintaan persetujuan ini sudah tidak berlaku."}
@@ -882,11 +888,11 @@ export default function AssistantChat({
         ) : card.kind === "form" && card.form ? (
           <div
             className={
-              card.status === "answered" ? "hitl-card is-answered" : "hitl-card"
+              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#34d399] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
             }
           >
-            <div className="hitl-head">
-              <MessageCircle size={15} />
+            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#f2f2f4]">
+              <MessageCircle size={15} className="flex-none text-accent3" />
               <span>{card.form.title || "Pertanyaan dari agent"}</span>
             </div>
             {card.form.fields.map((f) => {
@@ -924,14 +930,14 @@ export default function AssistantChat({
                   ? value
                   : "";
               return (
-                <div key={f.key} className="hitl-field">
-                  <div className="hitl-field-title">{f.title}</div>
+                <div key={f.key} className="mb-3.5">
+                  <div className="mb-[3px] text-[13.5px] font-semibold text-[#e6e6e9]">{f.title}</div>
                   {f.description && (
-                    <div className="hitl-field-desc">{f.description}</div>
+                    <div className="mb-2 text-[12.5px] leading-[1.5] text-fog">{f.description}</div>
                   )}
                   {f.options && f.options.length > 0 ? (
                     <>
-                      <div className="hitl-options">
+                      <div className="flex flex-col gap-[7px]">
                         {f.options.map((o) => {
                           const selected = isMulti
                             ? selectedArr.includes(o.value)
@@ -943,8 +949,8 @@ export default function AssistantChat({
                               disabled={locked}
                               className={
                                 selected
-                                  ? "hitl-option is-selected"
-                                  : "hitl-option"
+                                  ? "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-accent bg-[rgba(0,129,251,0.14)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-75"
+                                  : "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-line3 bg-[rgba(255,255,255,0.03)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-75"
                               }
                               onClick={() => {
                                 if (isMulti) {
@@ -971,11 +977,11 @@ export default function AssistantChat({
                                 }
                               }}
                             >
-                              <span className="hitl-option-label">
+                              <span className="text-[13.5px] font-semibold">
                                 {o.label}
                               </span>
                               {o.description && (
-                                <span className="hitl-option-desc">
+                                <span className="text-xs text-fog">
                                   {o.description}
                                 </span>
                               )}
@@ -987,7 +993,7 @@ export default function AssistantChat({
                         selectedArr.some(
                           (v) => !f.options?.some((o) => o.value === v),
                         ) && (
-                          <div className="hitl-custom-list">
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             {selectedArr
                               .filter(
                                 (v) =>
@@ -997,7 +1003,7 @@ export default function AssistantChat({
                                 <button
                                   key={v}
                                   type="button"
-                                  className="hitl-custom-chip"
+                                  className="inline-flex cursor-pointer items-center gap-[5px] rounded-full border border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.14)] px-[9px] py-[3px] text-[12.5px] text-[#cfe4ff] disabled:cursor-default disabled:opacity-75"
                                   disabled={locked}
                                   onClick={() =>
                                     updateMulti((arr) =>
@@ -1013,7 +1019,7 @@ export default function AssistantChat({
                       {f.custom &&
                         (isMulti ? (
                           <input
-                            className="hitl-input hitl-custom-input"
+                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
                             placeholder="atau tulis jawabanmu sendiri, Enter untuk menambahkan…"
                             defaultValue=""
@@ -1029,7 +1035,7 @@ export default function AssistantChat({
                           />
                         ) : (
                           <input
-                            className="hitl-input hitl-custom-input"
+                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
                             placeholder="atau tulis jawabanmu sendiri…"
                             value={customValue}
@@ -1051,7 +1057,7 @@ export default function AssistantChat({
                     </>
                   ) : f.type === "textarea" ? (
                     <textarea
-                      className="hitl-input"
+                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70"
                       rows={3}
                       disabled={locked}
                       value={value}
@@ -1069,7 +1075,7 @@ export default function AssistantChat({
                     />
                   ) : (
                     <input
-                      className="hitl-input"
+                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70"
                       disabled={locked}
                       value={value}
                       onChange={(e) => setField(e.target.value)}
@@ -1088,7 +1094,7 @@ export default function AssistantChat({
               );
             })}
             {card.status === "answered" ? (
-              <div className="hitl-done">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
                 <Check size={14} /> Sudah dijawab — agent melanjutkan
                 pekerjaannya.
               </div>
@@ -1097,17 +1103,17 @@ export default function AssistantChat({
                 {card.form.fields.some(
                   (f) => !f.options?.length || f.custom,
                 ) && (
-                  <div className="hitl-hint">
+                  <div className="mb-[9px] text-xs text-fog">
                     Tekan Enter untuk mengirim jawaban.
                   </div>
                 )}
-                <div className="hitl-actions">
+                <div className="mt-1 flex flex-wrap gap-2">
                   {card.form.fields.some(
                     (f) => f.type === "multiselect",
                   ) && (
                     <button
                       type="button"
-                      className="hitl-btn hitl-btn-primary"
+                      className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-white enabled:hover:border-[#0064e0] enabled:hover:bg-[#0064e0] disabled:cursor-default disabled:opacity-50"
                       disabled={
                         card.status !== "pending" ||
                         !formComplete(card.form, hitlAnswers[card.id] ?? {})
@@ -1119,7 +1125,7 @@ export default function AssistantChat({
                   )}
                   <button
                     type="button"
-                    className="hitl-btn"
+                    className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#e6e6e9]"
                     disabled={card.status === "sending"}
                     onClick={() => void cancelForm(card)}
                   >
@@ -1128,29 +1134,29 @@ export default function AssistantChat({
                 </div>
               </>
             )}
-            {card.error && <div className="hitl-error">{card.error}</div>}
+            {card.error && <div className="mt-[9px] text-[12.5px] text-[#f87171]">{card.error}</div>}
           </div>
         ) : card.kind === "permission" && card.permission ? (
           <div
             className={
-              card.status === "answered" ? "hitl-card is-answered" : "hitl-card"
+              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#34d399] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
             }
           >
-            <div className="hitl-head">
-              <ShieldAlert size={15} />
+            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#f2f2f4]">
+              <ShieldAlert size={15} className="flex-none text-accent3" />
               <span>Persetujuan aksi</span>
             </div>
-            <div className="hitl-action">{card.permission.action}</div>
+            <div className="mb-1.5 font-semibold break-anywhere text-[#e6e6e9]">{card.permission.action}</div>
             {card.permission.resources &&
               card.permission.resources.length > 0 && (
-                <ul className="hitl-resources">
+                <ul className="m-0 mb-1.5 pl-[18px] text-[12.5px] break-anywhere text-fog">
                   {card.permission.resources.map((r) => (
                     <li key={r}>{r}</li>
                   ))}
                 </ul>
               )}
             {card.status === "answered" ? (
-              <div className="hitl-done">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
                 <Check size={14} /> Keputusan terkirim:{" "}
                 {card.decision === "once"
                   ? "diizinkan sekali"
@@ -1160,10 +1166,10 @@ export default function AssistantChat({
                 .
               </div>
             ) : (
-              <div className="hitl-actions">
+              <div className="mt-1 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="hitl-btn hitl-btn-primary"
+                  className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-white enabled:hover:border-[#0064e0] enabled:hover:bg-[#0064e0] disabled:cursor-default disabled:opacity-50"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "once")}
                 >
@@ -1171,7 +1177,7 @@ export default function AssistantChat({
                 </button>
                 <button
                   type="button"
-                  className="hitl-btn"
+                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#e6e6e9]"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "always")}
                 >
@@ -1179,7 +1185,7 @@ export default function AssistantChat({
                 </button>
                 <button
                   type="button"
-                  className="hitl-btn hitl-btn-danger"
+                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#f87171]"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "reject")}
                 >
@@ -1187,7 +1193,7 @@ export default function AssistantChat({
                 </button>
               </div>
             )}
-            {card.error && <div className="hitl-error">{card.error}</div>}
+            {card.error && <div className="mt-[9px] text-[12.5px] text-[#f87171]">{card.error}</div>}
           </div>
         ) : null}
       </div>
@@ -1195,18 +1201,18 @@ export default function AssistantChat({
   );
 
   return (
-    <div className="chat-page">
-      <div className="chat-head">
-        <Link href="/#tools" className="chat-back">
+    <div className={embedded ? "flex min-h-0 w-full flex-1 flex-col px-3 pt-2 pb-3" : "mx-auto flex min-h-0 w-full max-w-[880px] flex-1 flex-col px-4 pt-3.5 pb-4 max-[760px]:px-3 max-[760px]:pt-2.5 max-[760px]:pb-3"}>
+      <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#1d1d21] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#1d1d21] pb-3"}>
+        <Link href="/#tools" className={embedded ? "hidden" : "mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white max-[760px]:mr-0"}>
           <ArrowLeft size={16} /> Semua tools
         </Link>
-        <button type="button" className="chat-clear" onClick={clearChat} title="Mulai sesi baru">
+        <button type="button" className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-transparent px-3 py-1.5 text-[13px] text-fog hover:border-steel hover:text-white" onClick={clearChat} title="Mulai sesi baru">
           <Trash2 size={15} /> Sesi baru
         </button>
       </div>
 
       <div
-        className="chat-log"
+        className={embedded ? "flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto px-0.5 py-3" : "flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto px-0.5 py-[18px]"}
         ref={logRef}
         onScroll={(e) => {
           const el = e.currentTarget;
@@ -1215,13 +1221,13 @@ export default function AssistantChat({
       >
         {messages.map((m, i) => (
           <Fragment key={m.id ?? i}>
-          <div className={m.sender === "user" ? "msg msg-user" : "msg msg-ai"}>
+          <div className={m.sender === "user" ? "flex max-w-[85%] self-end max-[760px]:max-w-[92%]" : "flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]"}>
             {m.sender === "ai" && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
+              <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
             )}
-            <div className="msg-col">
-              <div className="msg-bubble">
+            <div className={m.sender === "user" ? "flex min-w-0 flex-col items-end" : "flex min-w-0 flex-col items-start"}>
+              <div className={m.sender === "user" ? "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-white" : "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#eeeef2]"}>
                 {m.sender === "ai" ? (
                   <ChatMarkdown text={m.text} streaming={m.id === streamId} />
                 ) : (
@@ -1230,7 +1236,7 @@ export default function AssistantChat({
                 {m.id === streamId && <span className="msg-caret" aria-hidden="true" />}
               </div>
               <FileCards files={m.files} />
-              <div className="msg-meta">
+              <div className="mt-[5px] text-[11.5px] text-[#77777f]">
                 <span>{m.timestamp}</span>
                 {m.meta && (
                   <span>
@@ -1268,11 +1274,15 @@ export default function AssistantChat({
           </Fragment>
         ))}
         {waiting && !toolName && (
-          <div className="msg msg-ai">
+          <div className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="msg-avatar" src="/vienna.svg" alt="" width={26} height={26} />
-            <div className="msg-col">
-              <div className="msg-bubble msg-typing">
+            <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+            <div className="flex min-w-0 flex-col items-start">
+              {/* Kelas msg-typing dipertahankan sebagai kait CSS
+                  vanilla untuk animasi titik ketik (.msg-typing .dot,
+                  keyframes + tunda per titik) — gaya kotaknya sendiri
+                  sudah dinyatakan utilitas di sini. */}
+              <div className="msg-typing inline-flex items-center gap-[5px] rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#eeeef2]">
                 <span className="dot" />
                 <span className="dot" />
                 <span className="dot" />
@@ -1284,7 +1294,7 @@ export default function AssistantChat({
         {/* Status tool yang sedang berjalan (event meta.tool) —
             baris kecil, hilang saat teks berikutnya/done tiba. */}
         {toolName && busy && (
-          <div className="tool-status" role="status">
+          <div className="-mt-0.5 mb-1.5 flex items-center gap-[7px] pl-9 text-[12.5px] text-fog" role="status">
             <LoaderCircle size={13} className="tool-status-spin" />
             <span>{toolLabel(toolName)}</span>
           </div>
@@ -1299,16 +1309,16 @@ export default function AssistantChat({
           .map((card) => renderHitlCard(card))}
 
         {busy && hitlCards.some((c) => c.status === "pending") && (
-          <div className="hitl-waiting">
+          <div className="mt-0.5 mb-1.5 ml-10 flex items-center gap-2 text-[13px] text-fog">
             <Hourglass size={14} /> Agent menunggu jawabanmu…
           </div>
         )}
       </div>
 
       {messages.length <= 1 && (
-        <div className="chat-suggest">
+        <div className="flex flex-wrap gap-2 pt-1 pb-2.5">
           {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" className="qp-chip" onClick={() => void send(s)} disabled={busy}>
+            <button key={s} type="button" className="cursor-pointer rounded-full border border-line bg-panel2 px-3 py-1.5 text-[13px] text-[#c9c9d2] hover:border-accent hover:text-white disabled:cursor-default disabled:opacity-50" onClick={() => void send(s)} disabled={busy}>
               {s}
             </button>
           ))}
@@ -1316,13 +1326,14 @@ export default function AssistantChat({
       )}
 
       <form
-        className="chat-input-row"
+        className="flex items-end gap-2.5 rounded-[14px] border border-line bg-panel p-2 pl-3.5 focus-within:border-line"
         onSubmit={(e) => {
           e.preventDefault();
           void send(input);
         }}
       >
         <textarea
+          className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent px-0 py-[7px] [font-family:inherit] text-[15px] leading-[1.45] text-[#eeeef2] outline-none placeholder:text-fog"
           ref={inputRef}
           value={input}
           onChange={(e) => {
@@ -1343,7 +1354,7 @@ export default function AssistantChat({
           rows={1}
           maxLength={4000}
         />
-        <button type="submit" className="qp-send" disabled={busy || !input.trim()} aria-label="Kirim pesan">
+        <button type="submit" className="inline-flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-white disabled:cursor-default disabled:opacity-45" disabled={busy || !input.trim()} aria-label="Kirim pesan">
           <SendHorizontal size={17} />
         </button>
       </form>
