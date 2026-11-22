@@ -95,26 +95,26 @@ const PLATFORM_META: Record<
 > = {
   youtube: {
     label: "YouTube",
-    badgeClass: "vd-badge-youtube",
-    chipClass: "vd-chip-youtube",
+    badgeClass: "bg-[#dc2626] text-white",
+    chipClass: "text-[#ff6b5e]",
     Icon: ({ size = 11 }) => <YoutubeIcon width={size} height={size} />,
   },
   instagram: {
     label: "Instagram",
-    badgeClass: "vd-badge-instagram",
-    chipClass: "vd-chip-instagram",
+    badgeClass: "bg-[#db2777] text-white",
+    chipClass: "text-[#f06ba8]",
     Icon: ({ size = 11 }) => <InstagramIcon width={size} height={size} />,
   },
   threads: {
     label: "Threads",
-    badgeClass: "vd-badge-threads",
-    chipClass: "vd-chip-threads",
+    badgeClass: "bg-[#f4f4f5] text-[#18181b]",
+    chipClass: "text-[#e8e8ee]",
     Icon: ({ size = 11 }) => <AtSign size={size} />,
   },
   facebook: {
     label: "Facebook",
-    badgeClass: "vd-badge-facebook",
-    chipClass: "vd-chip-facebook",
+    badgeClass: "bg-[#2563eb] text-white",
+    chipClass: "text-accent3",
     Icon: ({ size = 11 }) => <FacebookIcon width={size} height={size} />,
   },
 };
@@ -253,29 +253,29 @@ export default function VideoDownloader() {
   const platMeta = info ? PLATFORM_META[info.platform] : null;
 
   return (
-    <div className="vd-page">
-      <div className="vd-inner">
-        <Link href="/#tools" className="chat-back">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-[1080px] px-4 pt-[18px] pb-14">
+        <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
           <ArrowLeft size={14} /> Kembali ke Tools
         </Link>
 
-        <div className="vd-head">
-          <span className="vd-head-icon">
+        <div className="mt-4 flex items-start gap-3.5">
+          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] text-accent2">
             <Clapperboard size={26} />
           </span>
           <div>
-            <h1 className="vd-title">Video Downloader</h1>
-            <p className="vd-sub">
+            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#f2f2f5]">Video Downloader</h1>
+            <p className="mt-[5px] max-w-[560px] text-[13.5px] leading-[1.6] text-fog">
               Unduh video dari YouTube, Instagram, Threads &amp; Facebook
               sebagai MP4 atau MP3. Tempel tautan, pratinjau, lalu simpan.
             </p>
-            <div className="vd-chips">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {(
                 Object.keys(PLATFORM_META) as MediaInfo["platform"][]
               ).map((p) => {
                 const { label, Icon, chipClass } = PLATFORM_META[p];
                 return (
-                  <span key={p} className={`vd-chip ${chipClass}`}>
+                  <span key={p} className={`inline-flex items-center gap-[5px] rounded-lg border border-line bg-[#0a0a0c] px-[9px] py-1 text-[10px] font-bold ${chipClass}`}>
                     <Icon size={11} />
                     {label}
                   </span>
@@ -285,15 +285,16 @@ export default function VideoDownloader() {
           </div>
         </div>
 
-        <div className="vd-grid">
+        <div className="mt-[22px] grid grid-cols-1 items-start gap-[18px] min-[960px]:grid-cols-[5fr_7fr]">
           {/* Kolom kiri: URL + opsi */}
-          <div className="vd-col">
-            <div className="vd-card">
-              <label className="vd-label" htmlFor="vd-url">
+          <div className="flex min-w-0 flex-col gap-3.5">
+            <div className="rounded-2xl border border-line bg-panel p-[18px]">
+              <label className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[0.07em] text-fog uppercase" htmlFor="vd-url">
                 <Link2 size={12} /> Video URL
               </label>
-              <div className="vd-url-row">
+              <div className="flex flex-col gap-2 min-[560px]:flex-row">
                 <input
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#0a0a0c] px-[13px] py-[11px] text-[12.5px] text-[#eeeef2] outline-none placeholder:text-[#5c5c66] focus:border-line"
                   id="vd-url"
                   type="url"
                   value={url}
@@ -308,7 +309,7 @@ export default function VideoDownloader() {
                   type="button"
                   onClick={handleCheck}
                   disabled={checking || !url.trim()}
-                  className="vd-btn vd-btn-check"
+                  className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] flex-shrink-0 bg-accent px-4 py-[11px] text-white enabled:hover:bg-[#1a8fff]"
                 >
                   {checking ? (
                     <>
@@ -325,9 +326,9 @@ export default function VideoDownloader() {
               </div>
 
               {info && (
-                <div className="vd-opts">
+                <div className="mt-[18px] grid grid-cols-2 gap-3">
                   <div>
-                    <span className="vd-label">
+                    <span className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[0.07em] text-fog uppercase">
                       {format === "mp3" ? (
                         <Music size={12} />
                       ) : (
@@ -335,13 +336,13 @@ export default function VideoDownloader() {
                       )}
                       Format
                     </span>
-                    <div className="vd-seg">
+                    <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-[#0a0a0c] p-1">
                       {(["mp4", "mp3"] as const).map((f) => (
                         <button
                           key={f}
                           type="button"
                           onClick={() => setFormat(f)}
-                          className={format === f ? "is-active" : undefined}
+                          className={`cursor-pointer rounded-lg border-0 bg-transparent px-0 py-2 text-xs font-extrabold tracking-[0.06em] uppercase hover:text-white ${format === f ? "bg-accent text-white" : "text-fog"}`}
                         >
                           {f}
                         </button>
@@ -349,12 +350,12 @@ export default function VideoDownloader() {
                     </div>
                   </div>
                   <div>
-                    <span className="vd-label">Kualitas</span>
+                    <span className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[0.07em] text-fog uppercase">Kualitas</span>
                     <select
                       value={quality}
                       onChange={(e) => setQuality(e.target.value)}
                       disabled={format === "mp3"}
-                      className="vd-select"
+                      className="w-full rounded-xl border border-line bg-[#0a0a0c] px-3 py-2.5 text-[12.5px] text-[#eeeef2] outline-none focus:border-line disabled:opacity-40"
                       aria-label="Kualitas"
                     >
                       {format === "mp3" ? (
@@ -372,12 +373,12 @@ export default function VideoDownloader() {
               )}
 
               {info && !info.too_long && (
-                <div className="vd-actions">
+                <div className="mt-[18px] flex flex-col gap-2.5">
                   <button
                     type="button"
                     onClick={handleDownload}
                     disabled={downloading}
-                    className="vd-btn vd-btn-download"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] w-full bg-accent px-4 py-[13px] text-white enabled:hover:bg-[#1a8fff]"
                   >
                     {downloading ? (
                       <>
@@ -400,12 +401,12 @@ export default function VideoDownloader() {
                     type="button"
                     onClick={handleReset}
                     disabled={downloading || checking}
-                    className="vd-btn vd-btn-reset"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
                   >
                     Tautan Baru
                   </button>
                   {fromCache !== null && (
-                    <p className="vd-cache-note">
+                    <p className="text-center text-[11px] text-[#6d6d76]">
                       {fromPlatform ? `${fromPlatform} · ` : ""}
                       {fromCache ? "dari cache — instan" : "baru diunduh"}
                     </p>
@@ -413,8 +414,8 @@ export default function VideoDownloader() {
                 </div>
               )}
 
-              <p className="vd-hint">
-                <Globe size={11} />
+              <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-[1.55] text-[#6d6d76]">
+                <Globe size={11} className="mt-0.5 flex-shrink-0" />
                 <span>
                   Konten privat atau yang butuh login tidak bisa diunduh.
                   Postingan publik paling aman.
@@ -423,56 +424,56 @@ export default function VideoDownloader() {
             </div>
 
             {error && (
-              <div className="vd-error" role="alert">
-                <AlertTriangle size={16} />
+              <div className="flex items-start gap-2.5 rounded-2xl border border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.06)] px-4 py-3.5 text-[#fda4af]" role="alert">
+                <AlertTriangle size={16} className="mt-px flex-shrink-0 text-[#fb7185]" />
                 <div>
-                  <h4>Error</h4>
-                  <p>{error}</p>
+                  <h4 className="mb-0.5 text-[11px] font-extrabold tracking-[0.07em] text-[#fda4af] uppercase">Error</h4>
+                  <p className="text-xs leading-[1.55] text-[#fb8fa3]">{error}</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Kolom kanan: pratinjau */}
-          <div className="vd-col">
+          <div className="flex min-w-0 flex-col gap-3.5">
             {!info ? (
-              <div className="vd-empty">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line px-6 py-12 text-center text-[#6d6d76]">
                 <Clapperboard size={40} strokeWidth={1.2} />
-                <p>
+                <p className="max-w-[300px] text-xs leading-[1.6]">
                   Tempel tautan video di atas lalu tekan Cek Video untuk
                   melihat judul, durasi, dan kualitas yang tersedia.
                 </p>
               </div>
             ) : (
-              <div className="vd-preview">
+              <div className="overflow-hidden rounded-2xl border border-line bg-panel">
                 {info.thumbnail && (
-                  <div className="vd-thumb">
+                  <div className="relative aspect-[16/9] bg-[#0a0a0c]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={info.thumbnail} alt={info.title} />
+                    <img className="block h-full w-full object-cover" src={info.thumbnail} alt={info.title} />
                     {platMeta && (
-                      <span className={`vd-badge ${platMeta.badgeClass}`}>
+                      <span className={`absolute top-3 left-3 inline-flex items-center gap-[5px] rounded-lg px-2.5 py-[5px] text-[10px] font-extrabold tracking-[0.06em] uppercase ${platMeta.badgeClass}`}>
                         <platMeta.Icon size={11} />
                         {platMeta.label}
                       </span>
                     )}
                     {info.is_shorts && (
-                      <span className="vd-badge vd-badge-shorts">Shorts</span>
+                      <span className="absolute top-3 right-3 inline-flex items-center gap-[5px] rounded-lg bg-[rgba(0,0,0,0.7)] px-2.5 py-[5px] text-[10px] font-extrabold tracking-[0.06em] text-white uppercase">Shorts</span>
                     )}
-                    <span className="vd-duration">
+                    <span className="absolute right-3 bottom-3 rounded-lg bg-[rgba(0,0,0,0.8)] px-2 py-1 font-mono text-[11px] font-bold text-white">
                       {info.duration_formatted}
                     </span>
                   </div>
                 )}
-                <div className="vd-preview-body">
-                  <h2>{info.title}</h2>
-                  <div className="vd-meta">
+                <div className="p-[18px]">
+                  <h2 className="text-[16.5px] leading-[1.45] font-bold text-[#f2f2f5]">{info.title}</h2>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[11.5px] text-fog">
                     {info.uploader && (
-                      <span>
+                      <span className="inline-flex items-center gap-1.5">
                         <User size={12} />
                         {info.uploader}
                       </span>
                     )}
-                    <span>
+                    <span className="inline-flex items-center gap-1.5">
                       <Clock size={12} />
                       {info.duration_formatted}
                     </span>
