@@ -15,6 +15,14 @@ import {
   X,
 } from "lucide-react";
 import { HighlightedCode } from "@/components/ChatMarkdown";
+import { DICON_LAYOUT, DICON_NEUTRAL } from "./dashboard/ui";
+
+const FC_BTN =
+  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-line3 bg-[#17171b] text-[#c9c9d2] hover:border-steel hover:text-white";
+const CODEWRAP =
+  "mx-5 mt-3 mb-1 flex min-h-0 items-start overflow-auto rounded-[10px] border border-line bg-[#0a0a0c] [&_.msg-code]:m-0 [&_.msg-code]:flex-1 [&_.msg-code]:border-none [&_.msg-code]:rounded-none [&_.msg-code]:bg-transparent [&_.msg-code]:leading-[1.55] [&_.msg-code]:overflow-visible";
+const MODAL_X = `${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`;
+
 
 /* =====================================================================
    Kartu lampiran file hasil kerja agent (kedua chat). Kontrak
@@ -109,20 +117,20 @@ function FileCard({
         ? "File biner — pratinjau tidak tersedia"
         : "Pratinjau tidak tersedia";
   return (
-    <div className="file-card">
-      <div className="file-card-head">
-        <Icon size={16} className="file-card-icon" />
-        <div className="file-card-info">
-          <div className="file-card-name">
+    <div className="rounded-[10px] border border-line bg-panel px-[11px] py-[9px]">
+      <div className="flex items-start gap-[9px]">
+        <Icon size={16} className="mt-0.5 flex-none text-[#7db4ff]" />
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] break-anywhere text-white [font-family:ui-monospace,SFMono-Regular,Menlo,monospace]">
             {file.name}
-            <span className="file-card-size">{formatSize(file.size)}</span>
+            <span className="ml-[7px] text-[11.5px] whitespace-nowrap text-fog">{formatSize(file.size)}</span>
           </div>
-          <div className="file-card-path">{file.path}</div>
+          <div className="text-[11.5px] break-anywhere text-[#75757e]">{file.path}</div>
         </div>
         {onReview && (
           <button
             type="button"
-            className="file-card-btn"
+            className={FC_BTN}
             onClick={() => onReview(file)}
             title="Review file ini (kode + metadata lengkap)"
           >
@@ -133,19 +141,19 @@ function FileCard({
           <>
             <button
               type="button"
-              className="file-card-btn"
+              className={FC_BTN}
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               title={open ? "Tutup pratinjau" : "Lihat pratinjau"}
             >
               <ChevronDown
                 size={15}
-                className={open ? "file-chev is-open" : "file-chev"}
+                className={`transition-transform duration-[180ms] [transition-timing-function:ease] ${open ? "rotate-180" : ""}`}
               />
             </button>
             <button
               type="button"
-              className="file-card-btn"
+              className={FC_BTN}
               onClick={() => downloadFile(file)}
               title={`Unduh ${file.name}`}
             >
@@ -155,11 +163,11 @@ function FileCard({
         )}
       </div>
       {hasContent && open && (
-        <div className="file-preview">
+        <div className="mt-2 max-h-[320px] overflow-y-auto rounded-lg [&_.msg-code]:m-0">
           <HighlightedCode lang={lang} code={file.content as string} />
         </div>
       )}
-      {!hasContent && <div className="file-omitted">{omittedNote}</div>}
+      {!hasContent && <div className="mt-1.5 text-[12.5px] text-fog italic">{omittedNote}</div>}
     </div>
   );
 }
@@ -173,7 +181,7 @@ export default function FileCards({
 }) {
   if (!files || files.length === 0) return null;
   return (
-    <div className="file-cards">
+    <div className="mt-2 flex flex-col gap-2">
       {files.map((f, i) => (
         <FileCard
           key={`${f.path}-${i}`}
@@ -210,7 +218,7 @@ export default function FileCards({
    modal dan di kartu file, jadi area review dibuat lega
    khusus untuk membaca kode. Unduh tetap bisa dari kartu
    file di chat. */
-function ReviewBody({ file }: { file: ChatFile }) {
+function ReviewBody({ file, inWindow }: { file: ChatFile; inWindow?: boolean }) {
   const hasContent = typeof file.content === "string";
   const content = hasContent ? (file.content as string) : "";
   const rawLines = hasContent ? content.split("\n") : [];
@@ -228,11 +236,11 @@ function ReviewBody({ file }: { file: ChatFile }) {
         : "Konten tidak disertakan backend";
 
   if (!hasContent) {
-    return <div className="file-omitted review-omitted">{omittedNote}</div>;
+    return <div className="mx-5 mt-3 mb-1 text-[12.5px] text-fog italic">{omittedNote}</div>;
   }
   return (
-    <div className="review-codewrap">
-      <div className="review-gutter" aria-hidden="true">
+    <div className={inWindow ? `${CODEWRAP} flex-1` : CODEWRAP}>
+      <div className="flex flex-none flex-col border-r border-line py-2.5 pr-2.5 pl-3 text-right text-[13px] leading-[1.55] text-[#5c5c66] select-none [font-family:ui-monospace,SFMono-Regular,Menlo,monospace]" aria-hidden="true">
         {Array.from({ length: lineCount }, (_, i) => (
           <span key={i}>{i + 1}</span>
         ))}
@@ -262,16 +270,16 @@ export function FileReviewModal({
   }, [onClose]);
 
   return (
-    <div className="dash-modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(4,4,6,0.66)] px-4 py-6 backdrop-blur-[3px]" onClick={onClose}>
       <div
-        className="dash-modal review-modal"
+        className="flex max-h-[calc(100dvh-48px)] w-[min(920px,100%)] flex-col rounded-2xl border border-[#2a2a30] bg-panel shadow-[0_24px_64px_rgba(0,0,0,0.55)] animate-[dash-modal-in_0.16s_ease] motion-reduce:animate-none"
         role="dialog"
         aria-modal="true"
         aria-label={`Review ${file.name}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="dash-modal-head">
-          <span className="dash-modal-title">
+        <div className="flex items-center justify-between gap-3 px-5 pt-4">
+          <span>
             {langFromName(file.name) === "text" ? (
               <FileText size={16} />
             ) : (
@@ -281,7 +289,7 @@ export function FileReviewModal({
           </span>
           <button
             type="button"
-            className="dicon-btn"
+            className={MODAL_X}
             onClick={onClose}
             title="Tutup review"
           >
@@ -365,7 +373,7 @@ export function FileReviewWindow({
       if (!pos) return;
       e.preventDefault();
       e.stopPropagation();
-      const win = (e.currentTarget as HTMLElement).closest(".review-window");
+      const win = (e.currentTarget as HTMLElement).closest("[data-review-window]");
       if (!win) return;
       const rect = win.getBoundingClientRect();
       const startX = e.clientX;
@@ -398,7 +406,8 @@ export function FileReviewWindow({
 
   return (
     <div
-      className="review-window"
+      data-review-window=""
+      className="fixed z-[60] flex max-h-[88vh] w-[min(920px,96vw)] flex-col overflow-hidden rounded-2xl border border-line bg-panel shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
       role="dialog"
       aria-label={`Review ${file.name}`}
       style={{
@@ -410,20 +419,20 @@ export function FileReviewWindow({
       }}
       onPointerDown={onFocus}
     >
-      <div className="review-win-head" onPointerDown={onHeadPointerDown}>
-        <span className="review-win-title">
+      <div className="flex cursor-grab items-center gap-2.5 border-b border-[#1e1e22] px-3 py-2.5 select-none [touch-action:none] active:cursor-grabbing" onPointerDown={onHeadPointerDown}>
+        <span className="flex min-w-0 flex-1 items-center gap-[7px] text-[0.86rem] font-bold text-white">
           {langFromName(file.name) === "text" ? (
             <FileText size={15} />
           ) : (
             <FileCode size={15} />
           )}
           {file.name}
-          <span className="review-win-path">{file.path}</span>
+          <span className="truncate text-[0.72rem] font-medium text-[#8a8a93]">{file.path}</span>
         </span>
-        <span className="review-win-actions">
+        <span className="flex flex-none gap-0.5">
           <button
             type="button"
-            className="file-card-btn"
+            className={FC_BTN}
             onClick={onToggleMinimize}
             title={minimized ? "Pulihkan jendela" : "Minimize"}
           >
@@ -431,7 +440,7 @@ export function FileReviewWindow({
           </button>
           <button
             type="button"
-            className="file-card-btn"
+            className={FC_BTN}
             onClick={onClose}
             title="Tutup review"
           >
@@ -439,21 +448,21 @@ export function FileReviewWindow({
           </button>
         </span>
       </div>
-      {!minimized && <ReviewBody file={file} />}
+      {!minimized && <ReviewBody file={file} inWindow />}
       {!minimized && (
         <>
           <div
-            className="review-resize-r"
+            className="absolute top-0 right-0 z-[2] h-full w-[7px] cursor-ew-resize [touch-action:none]"
             onPointerDown={startResize("r")}
             aria-hidden="true"
           />
           <div
-            className="review-resize-b"
+            className="absolute bottom-0 left-0 z-[2] h-[7px] w-full cursor-ns-resize [touch-action:none]"
             onPointerDown={startResize("b")}
             aria-hidden="true"
           />
           <div
-            className="review-resize-br"
+            className="absolute right-0 bottom-0 z-[3] h-[18px] w-[18px] cursor-nwse-resize [touch-action:none] after:absolute after:right-1 after:bottom-1 after:h-2 after:w-2 after:rounded-br-[4px] after:border-r-2 after:border-b-2 after:border-[#3d3d45] after:content-['']"
             onPointerDown={startResize("br")}
             title="Seret untuk mengubah ukuran"
           />
