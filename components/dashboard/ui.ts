@@ -22,6 +22,9 @@ export const DICON_GOLD =
 export const DICON_GOLD_STAR =
   "border-[rgba(232,185,62,0.45)] bg-[rgba(232,185,62,0.08)] text-[#e8b93e] enabled:hover:border-[rgba(232,185,62,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#e8b93e]";
 
+export const DICON_CROWN =
+  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[rgba(167,139,250,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#a78bfa]";
+
 export const BADGE =
   "rounded-full border px-[9px] py-[3px] text-[11px] font-bold tracking-[0.05em] uppercase";
 export const BADGE_TONE: Record<string, string> = {

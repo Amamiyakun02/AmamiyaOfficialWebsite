@@ -4,6 +4,40 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 import {
+  ADD,
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  CARD,
+  DCARD_ACTIONS,
+  DCARD_CONFIRM_TEXT,
+  DCARD_DESC,
+  DCARD_FOOT,
+  DCARD_HEAD,
+  DCARD_NAME,
+  DCARD_NOTE,
+  DCARD_SUB,
+  DICON_CROWN,
+  DICON_DANGER,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  DICON_STAR,
+  EMPTY,
+  ERR,
+  FIELD,
+  FIELD_AREA,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  FIELD_SELECT,
+  FIELD_SPAN2,
+  GRID,
+  LIST,
+  MINI,
+  SAVE,
+  SEARCH,
+  TOOLBAR,
+} from "./ui";
+import {
   Check,
   Crown,
   Loader2,
@@ -468,12 +502,12 @@ export default function AiProvidersPanel() {
     provider: Provider | null,
   ) => (
     <div
-      className={role === "admin" ? "aip-strip aip-strip-admin" : "aip-strip"}
+      className={`mb-4 rounded-[14px] border bg-[rgba(0,129,251,0.05)] px-4 py-3.5 ${role === "admin" ? "border-[rgba(167,139,250,0.35)]" : "border-[rgba(0,129,251,0.28)]"}`}
     >
-      <div className="aip-strip-head">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="aip-strip-label">{label}</div>
-          <div className="aip-current">
+          <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#8a8a92]">{label}</div>
+          <div className="mt-1 text-[15.5px] font-semibold text-paper [font-family:ui-monospace,monospace]">
             {provider
               ? `${provider.provider_key}/${provider.default_model ?? "—"}`
               : "Belum ada provider default"}
@@ -482,7 +516,7 @@ export default function AiProvidersPanel() {
         {publishArmRole !== role && (
           <button
             type="button"
-            className="proj-add"
+            className={ADD}
             onClick={() => {
               setPublishArmRole(role);
               setPublishError(null);
@@ -493,7 +527,7 @@ export default function AiProvidersPanel() {
         )}
       </div>
       {publishArmRole === role && (
-        <div className="aip-confirm">
+        <div className="mt-3 border-t border-dashed border-[rgba(0,129,251,0.3)] pt-3 text-[13.5px] leading-[1.6] text-[#c9c9cf]">
           <p>
             Publish menulis ulang config opencode{" "}
             {role === "admin" ? "administrator" : "publik (anonim)"} dari
@@ -505,10 +539,10 @@ export default function AiProvidersPanel() {
               : ""}
             . Lanjutkan?
           </p>
-          <div className="aip-confirm-actions">
+          <div className="mt-2.5 flex gap-2.5">
             <button
               type="button"
-              className="proj-save"
+              className={SAVE}
               disabled={publishingRole !== null}
               onClick={() => void publish(role)}
             >
@@ -516,7 +550,7 @@ export default function AiProvidersPanel() {
             </button>
             <button
               type="button"
-              className="proj-cancel"
+              className={MINI}
               disabled={publishingRole !== null}
               onClick={() => setPublishArmRole(null)}
             >
@@ -529,9 +563,9 @@ export default function AiProvidersPanel() {
   );
 
   return (
-    <div className="proj">
+    <div className="mt-[18px]">
       {/* Dua strip status + Publish: agent publik & administrator */}
-      <div className="aip-strips">
+      <div className="flex flex-col gap-3">
         {renderStrip(
           "public",
           "Model agent publik (anonim) saat ini",
@@ -545,67 +579,67 @@ export default function AiProvidersPanel() {
       </div>
 
       {missingKey.length > 0 && (
-        <p className="aip-missing">
+        <p className="mt-3 text-[12.5px] leading-[1.55] text-gold">
           ⚠ Key belum terisi di .env untuk:{" "}
           {missingKey.map((p) => `${p.name} (${p.auth_env_var})`).join(", ")}.
         </p>
       )}
 
-      {publishError && <p className="proj-error">{publishError}</p>}
+      {publishError && <p className={`${ERR} mt-3`}>{publishError}</p>}
 
       {publishResult && (
-        <div className="aip-result">
-          <div className="aip-result-head">
+        <div className="mt-3 rounded-xl border border-[rgba(53,208,127,0.3)] bg-[rgba(53,208,127,0.06)] px-[15px] py-[13px] text-[13.5px] leading-[1.6] text-[#c9c9cf]">
+          <div className="flex items-center justify-between gap-2.5 text-paper">
             <b>
               Publish {publishResult.role === "admin" ? "administrator" : "publik"}{" "}
               berhasil.
             </b>
             <button
               type="button"
-              className="proj-mini"
+              className={MINI}
               onClick={() => setPublishResult(null)}
             >
               Tutup
             </button>
           </div>
-          <p className="aip-result-row">
+          <p className="mt-1.5">
             Model terpasang:{" "}
-            <span className="aip-mono">{publishResult.model ?? "—"}</span>
+            <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-paper">{publishResult.model ?? "—"}</span>
           </p>
           {publishResult.providers_diterbitkan.length > 0 && (
-            <p className="aip-result-row">
+            <p className="mt-1.5">
               Provider diterbitkan:{" "}
               {publishResult.providers_diterbitkan.join(", ")}
             </p>
           )}
           {publishResult.files.length > 0 && (
-            <p className="aip-result-row">
+            <p className="mt-1.5">
               File ditulis:{" "}
-              <span className="aip-mono">{publishResult.files.join(", ")}</span>
+              <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-paper">{publishResult.files.join(", ")}</span>
             </p>
           )}
           {publishResult.dilewati.length > 0 && (
-            <p className="aip-result-row">
+            <p className="mt-1.5">
               Dilewati: {publishResult.dilewati.join(", ")}
             </p>
           )}
           {publishResult.catatan && (
-            <p className="aip-result-row">Catatan: {publishResult.catatan}</p>
+            <p className="mt-1.5">Catatan: {publishResult.catatan}</p>
           )}
         </div>
       )}
 
       {/* Toolbar */}
-      <div className="proj-toolbar">
+      <div className={TOOLBAR}>
         <input
-          className="proj-search"
+          className={SEARCH}
           type="search"
           placeholder="Cari provider…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Filter status"
@@ -614,7 +648,7 @@ export default function AiProvidersPanel() {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <button type="button" className="proj-add" onClick={openNew}>
+        <button type="button" className={ADD} onClick={openNew}>
           + Tambah Provider
         </button>
       </div>
@@ -631,14 +665,14 @@ export default function AiProvidersPanel() {
           }}
           footer={
             <>
-              {formError && <p className="proj-error">{formError}</p>}
-              <div className="proj-form-actions dash-modal-actions">
-                <button type="submit" className="proj-save" disabled={saving}>
+              {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
+              <div className="flex gap-2.5">
+                <button type="submit" className={SAVE} disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="proj-cancel"
+                  className={MINI}
                   onClick={() => setEditing(null)}
                 >
                   Batal
@@ -647,30 +681,30 @@ export default function AiProvidersPanel() {
             </>
           }
         >
-          <div className="proj-grid">
-            <label className="proj-field">
-              <span>Nama *</span>
-              <input
+          <div className={GRID}>
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Nama *</span>
+              <input className={FIELD_INPUT}
                 value={form.name}
                 onChange={(e) => set("name")(e.target.value)}
                 placeholder="mis. Inception (Mercury)"
               />
             </label>
-            <label className="proj-field">
-              <span>Provider Key (slug) *</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Provider Key (slug) *</span>
+              <input className={FIELD_INPUT}
                 value={form.provider_key}
                 onChange={(e) => set("provider_key")(e.target.value)}
                 placeholder="mis. inception"
               />
-              <small className="intg-hint">
+              <small className="text-[12.5px] leading-[1.55] text-fog">
                 Huruf kecil, angka, dan strip saja — menjadi awalan model di
                 opencode, mis. inception/mercury-3.
               </small>
             </label>
-            <label className="proj-field">
-              <span>Adapter</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Adapter</span>
+              <select className={FIELD_SELECT}
                 value={form.adapter}
                 onChange={(e) => set("adapter")(e.target.value)}
               >
@@ -678,40 +712,40 @@ export default function AiProvidersPanel() {
                 <option value="openai-compatible">openai-compatible</option>
               </select>
             </label>
-            <label className="proj-field">
-              <span>
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>
                 Package{form.adapter === "openai-compatible" ? " *" : ""}
               </span>
-              <input
+              <input className={FIELD_INPUT}
                 value={form.package}
                 onChange={(e) => set("package")(e.target.value)}
                 placeholder="mis. @opencode/ai/providers/openai"
               />
             </label>
-            <label className="proj-field proj-span2">
-              <span>
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>
                 Base URL{form.adapter === "openai-compatible" ? " *" : ""}
               </span>
-              <input
+              <input className={FIELD_INPUT}
                 value={form.base_url}
                 onChange={(e) => set("base_url")(e.target.value)}
                 placeholder="mis. https://api.lyber.ai/v1"
               />
               {form.adapter === "openai-compatible" && (
-                <small className="intg-hint">
+                <small className="text-[12.5px] leading-[1.55] text-fog">
                   Base URL dan Package wajib untuk adapter
                   openai-compatible.
                 </small>
               )}
             </label>
-            <label className="proj-field proj-span2">
-              <span>Nama variabel .env untuk API key</span>
-              <input
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Nama variabel .env untuk API key</span>
+              <input className={FIELD_INPUT}
                 value={form.auth_env_var}
                 onChange={(e) => set("auth_env_var")(e.target.value)}
                 placeholder="mis. INCEPTION_API_KEY"
               />
-              <small className="intg-hint">
+              <small className="text-[12.5px] leading-[1.55] text-fog">
                 Isi NAMA variabel di file .env server, BUKAN nilai API
                 key-nya. Nilai key tetap di .env, tidak pernah masuk
                 database maupun formulir ini.
@@ -720,40 +754,38 @@ export default function AiProvidersPanel() {
                   (editingProvider.auth_env_present ? (
                     <>
                       {" "}
-                      <span className="intg-ok">
+                      <span className="text-[#35d07f]">
                         ✓ Variabel tersimpan terisi di backend.
                       </span>
                     </>
                   ) : (
                     <>
                       {" "}
-                      <span className="intg-bad">
+                      <span className="text-rose">
                         ✗ Variabel tersimpan belum ada di env backend.
                       </span>
                     </>
                   ))}
               </small>
             </label>
-            <div className="proj-field proj-span2">
-              <span>Models</span>
-              <div className="aip-models">
+            <div className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Models</span>
+              <div className="flex flex-col gap-2">
                 {form.models.map((m, idx) => (
-                  <div className="aip-model-row" key={idx}>
-                    <input
-                      className="aip-model-input"
+                  <div className="flex gap-2" key={idx}>
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.id}
                       onChange={(e) => setModel(idx, "id", e.target.value)}
                       placeholder="id model — mis. mercury-3"
                     />
-                    <input
-                      className="aip-model-input"
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.name}
                       onChange={(e) => setModel(idx, "name", e.target.value)}
                       placeholder="Nama tampil — mis. Mercury 3"
                     />
                     <button
                       type="button"
-                      className="proj-mini"
+                      className={MINI}
                       onClick={() => removeModel(idx)}
                     >
                       Hapus
@@ -763,7 +795,7 @@ export default function AiProvidersPanel() {
                 <div>
                   <button
                     type="button"
-                    className="proj-mini"
+                    className={MINI}
                     onClick={addModel}
                   >
                     + Tambah model
@@ -771,9 +803,9 @@ export default function AiProvidersPanel() {
                 </div>
               </div>
             </div>
-            <label className="proj-field">
-              <span>Model default</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Model default</span>
+              <select className={FIELD_SELECT}
                 value={form.default_model}
                 onChange={(e) => set("default_model")(e.target.value)}
               >
@@ -788,9 +820,9 @@ export default function AiProvidersPanel() {
                   ))}
               </select>
             </label>
-            <label className="proj-field">
-              <span>Status</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Status</span>
+              <select className={FIELD_SELECT}
                 value={form.status}
                 onChange={(e) => set("status")(e.target.value)}
               >
@@ -798,8 +830,8 @@ export default function AiProvidersPanel() {
                 <option value="inactive">Inactive</option>
               </select>
             </label>
-            <label className="aip-check proj-span2">
-              <input
+            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#c9c9cf] max-[640px]:col-span-1">
+              <input className="mt-[3px]"
                 type="checkbox"
                 checked={form.is_default}
                 onChange={(e) =>
@@ -811,8 +843,8 @@ export default function AiProvidersPanel() {
                 provider ini sesudah Publish.
               </span>
             </label>
-            <label className="aip-check proj-span2">
-              <input
+            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#c9c9cf] max-[640px]:col-span-1">
+              <input className="mt-[3px]"
                 type="checkbox"
                 checked={form.is_default_admin}
                 onChange={(e) =>
@@ -827,9 +859,9 @@ export default function AiProvidersPanel() {
                 memakai provider ini sesudah Publish administrator.
               </span>
             </label>
-            <label className="proj-field proj-span2">
-              <span>Catatan</span>
-              <textarea
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Catatan</span>
+              <textarea className={FIELD_AREA}
                 rows={2}
                 value={form.notes}
                 onChange={(e) => set("notes")(e.target.value)}
@@ -839,93 +871,89 @@ export default function AiProvidersPanel() {
         </FormModal>
       )}
 
-      {error && <p className="proj-error">{error}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
-        <p className="proj-empty">Memuat daftar provider…</p>
+        <p className={EMPTY}>Memuat daftar provider…</p>
       ) : items.length === 0 ? (
-        <p className="proj-empty">
+        <p className={EMPTY}>
           {q || status
             ? "Tidak ada provider yang cocok dengan filter."
             : "Belum ada provider terdaftar."}
         </p>
       ) : (
-        <ul className="proj-list">
+        <ul className={LIST}>
           {items.map((p) => {
             const tr = testResults[p.id];
             return (
               <li
                 key={p.id}
-                className={
-                  "dcard" +
-                  (p.is_default ? " is-defpub" : "") +
-                  (p.is_default_admin ? " is-defadm" : "")
-                }
+                className={`${CARD} ${p.is_default && p.is_default_admin ? "before:bg-[linear-gradient(90deg,#e8b93e,#a78bfa)]" : p.is_default ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : p.is_default_admin ? "before:bg-[linear-gradient(90deg,#a78bfa,rgba(167,139,250,0))]" : ""}`}
               >
-                <div className="dcard-head">
-                  <span className="dcard-name">{p.name}</span>
-                  <span className="proj-badge">{p.adapter}</span>
+                <div className={DCARD_HEAD}>
+                  <span className={DCARD_NAME}>{p.name}</span>
+                  <span className={`${BADGE} ${BADGE_PLAIN}`}>{p.adapter}</span>
                   <span
-                    className={`proj-badge proj-badge-${p.status === "active" ? "active" : "archived"}`}
+                    className={`${BADGE} ${BADGE_TONE[p.status === "active" ? "active" : "archived"]}`}
                   >
                     {p.status}
                   </span>
                   {p.is_default && (
-                    <span className="proj-badge proj-badge-top">
+                    <span className={`${BADGE} border-[rgba(227,179,65,0.55)] text-gold`}>
                       ★ Default publik
                     </span>
                   )}
                   {p.is_default_admin && (
-                    <span className="proj-badge aip-badge-admin">
+                    <span className={`${BADGE} border-[rgba(167,139,250,0.45)] text-[#c4b5fd]`}>
                       ★ Default admin
                     </span>
                   )}
                   {p.auth_env_var ? (
                     <span
-                      className={`proj-badge ${p.auth_env_present ? "aip-badge-key-ok" : "aip-badge-key-no"}`}
+                      className={`${BADGE} ${p.auth_env_present ? BADGE_TONE.active : "border-[rgba(255,133,133,0.5)] text-rose"}`}
                     >
                       {p.auth_env_present
                         ? "Key terisi"
                         : "Key belum ada di .env"}
                     </span>
                   ) : (
-                    <span className="proj-badge">Tanpa env key</span>
+                    <span className={`${BADGE} ${BADGE_PLAIN}`}>Tanpa env key</span>
                   )}
                 </div>
-                <p className="dcard-sub">
-                  <span className="aip-mono">{p.provider_key}</span>
+                <p className={DCARD_SUB}>
+                  <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-paper">{p.provider_key}</span>
                   {p.base_url && (
-                    <span className="aip-mono">{p.base_url}</span>
+                    <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-paper">{p.base_url}</span>
                   )}
                   {p.package && (
-                    <span className="aip-mono aip-dim">{p.package}</span>
+                    <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-[#6d6d78]">{p.package}</span>
                   )}
                 </p>
-                <div className="aip-card-model">
-                  <span className="aip-card-model-label">Model default</span>
-                  <span className="aip-mono aip-card-model-id">
+                <div className="mt-3 flex items-baseline gap-2.5 rounded-[10px] border border-[#222228] bg-[rgba(255,255,255,0.03)] px-3 py-2">
+                  <span className="flex-none text-[10.5px] tracking-[0.08em] uppercase text-[#8a8a96]">Model default</span>
+                  <span className="[font-family:ui-monospace,monospace] text-[13.5px] text-white">
                     {p.default_model ?? "—"}
                   </span>
-                  <span className="aip-card-model-count">
+                  <span className="ml-auto text-xs text-[#8a8a96]">
                     {p.models?.length ?? 0} model
                     {p.updated_at
                       ? ` · diubah ${fmtDateTime(p.updated_at)}`
                       : ""}
                   </span>
                 </div>
-                {p.notes && <p className="dcard-desc">{p.notes}</p>}
-                <div className="dcard-foot">
-                  <span className="dcard-foot-note">
+                {p.notes && <p className={DCARD_DESC}>{p.notes}</p>}
+                <div className={DCARD_FOOT}>
+                  <span className={DCARD_NOTE}>
                     {p.last_tested_at || tr ? (
                       tr ? (
                         tr.ok ? (
-                          <span className="intg-ok">
+                          <span className="text-[#35d07f]">
                             ✓ Test barusan: HTTP {tr.status_code}
                             {tr.latency_ms != null
                               ? ` · ${tr.latency_ms} ms`
                               : ""}
                           </span>
                         ) : (
-                          <span className="intg-bad">
+                          <span className="text-rose">
                             ✗ Test barusan gagal
                             {tr.error ? `: ${tr.error}` : ""}
                             {tr.status_code != null
@@ -934,28 +962,28 @@ export default function AiProvidersPanel() {
                           </span>
                         )
                       ) : p.last_test_ok ? (
-                        <span className="intg-ok">
+                        <span className="text-[#35d07f]">
                           ✓ Test terakhir berhasil ·{" "}
                           {fmtDateTime(p.last_tested_at)}
                         </span>
                       ) : (
-                        <span className="intg-bad">
+                        <span className="text-rose">
                           ✗ Test terakhir gagal ·{" "}
                           {fmtDateTime(p.last_tested_at)}
                         </span>
                       )
                     ) : (
-                      <span className="aip-dim">Belum pernah dites</span>
+                      <span className="text-[#6d6d78]">Belum pernah dites</span>
                     )}
                   </span>
                   {confirmId === p.id ? (
-                    <span className="dcard-confirm">
-                      <span className="dcard-confirm-text">
+                    <span className={DCARD_ACTIONS}>
+                      <span className={DCARD_CONFIRM_TEXT}>
                         Hapus {p.name}?
                       </span>
                       <button
                         type="button"
-                        className="dicon-btn is-danger"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                         title="Ya, hapus (soft delete)"
                         aria-label="Ya, hapus"
                         onClick={() => void remove(p)}
@@ -964,7 +992,7 @@ export default function AiProvidersPanel() {
                       </button>
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Batal"
                         aria-label="Batal"
                         onClick={() => setConfirmId(null)}
@@ -973,10 +1001,10 @@ export default function AiProvidersPanel() {
                       </button>
                     </span>
                   ) : (
-                    <span className="dcard-actions">
+                    <span className={DCARD_ACTIONS}>
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Tes koneksi"
                         aria-label="Tes koneksi"
                         disabled={testingId === p.id}
@@ -991,7 +1019,7 @@ export default function AiProvidersPanel() {
                       {!p.is_default && (
                         <button
                           type="button"
-                          className="dicon-btn is-star"
+                          className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_STAR}`}
                           title="Jadikan default publik"
                           aria-label="Jadikan default publik"
                           disabled={defaultingId === p.id}
@@ -1003,7 +1031,7 @@ export default function AiProvidersPanel() {
                       {!p.is_default_admin && (
                         <button
                           type="button"
-                          className="dicon-btn is-crown"
+                          className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_CROWN}`}
                           title="Jadikan default admin"
                           aria-label="Jadikan default admin"
                           disabled={defaultingId === p.id}
@@ -1014,7 +1042,7 @@ export default function AiProvidersPanel() {
                       )}
                       <button
                         type="button"
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         title="Ubah"
                         aria-label="Ubah"
                         onClick={() => openEdit(p)}
@@ -1023,7 +1051,7 @@ export default function AiProvidersPanel() {
                       </button>
                       <button
                         type="button"
-                        className="dicon-btn is-danger"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                         title="Hapus"
                         aria-label="Hapus"
                         onClick={() => setConfirmId(p.id)}
