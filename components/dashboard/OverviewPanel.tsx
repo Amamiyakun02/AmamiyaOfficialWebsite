@@ -395,14 +395,14 @@ export default function OverviewPanel({
           ? "Error"
           : "Tidak terjangkau";
     return (
-      <div className="ov-inst-row">
+      <div className="flex items-start gap-2.5 py-2 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#1d1d22]">
         <span
-          className={`ov-dot${st?.status === "ok" ? " is-ok" : st?.status === "error" ? " is-error" : " is-down"}`}
+          className={`mt-[5px] h-[9px] w-[9px] flex-none rounded-full ${st?.status === "ok" ? "bg-[#3fb96f] shadow-[0_0_8px_rgba(63,185,111,0.55)]" : st?.status === "error" ? "bg-[#d9a13b]" : "bg-[#d65757]"}`}
           aria-hidden="true"
         />
-        <div className="ov-inst-meta">
-          <b>{label}</b>
-          <span>
+        <div className="flex min-w-0 flex-col gap-px">
+          <b className="text-[13px] text-[#f2f2f4]">{label}</b>
+          <span className="text-xs break-anywhere text-[#8b8b93]">
             {statusText}
             {" · "}
             {st?.default_model || prov?.default_model || "model belum diketahui"}
@@ -474,9 +474,9 @@ export default function OverviewPanel({
   ];
 
   return (
-    <div className="ov">
-      <div className="ov-toolbar">
-        <span className="ov-updated">
+    <div>
+      <div className="mb-3.5 flex items-center justify-between">
+        <span className="text-xs text-[#8b8b93]">
           {loading
             ? "Memuat statistik…"
             : updatedAt
@@ -488,7 +488,7 @@ export default function OverviewPanel({
         </span>
         <button
           type="button"
-          className="ov-refresh"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#26262c] bg-[rgba(255,255,255,0.04)] px-2.5 py-1.5 text-xs font-semibold text-[#cfcfd6] enabled:hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-default disabled:opacity-60"
           onClick={() => void load()}
           disabled={loading}
           title="Muat ulang statistik"
@@ -498,20 +498,20 @@ export default function OverviewPanel({
         </button>
       </div>
 
-      <div className="ov-kpis">
-        <div className="ov-card ov-kpi">
-          <span className="ov-kpi-icon"><MessagesSquare size={17} /></span>
-          <b className="ov-kpi-value">{kpiSessions !== null ? fmtNum(kpiSessions) : "—"}</b>
-          <span className="ov-kpi-label">Sesi AI tercatat</span>
-          <span className="ov-kpi-sub">
+      <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-0.5">
+          <span className="mb-1.5 text-[#8ab6ff]"><MessagesSquare size={17} /></span>
+          <b className="text-[26px] leading-[1.1] font-bold text-[#f2f2f4]">{kpiSessions !== null ? fmtNum(kpiSessions) : "—"}</b>
+          <span className="text-[13px] font-semibold text-[#cfcfd6]">Sesi AI tercatat</span>
+          <span className="text-xs text-[#8b8b93]">
             {kpiPub !== null ? `${kpiPub} publik · ${kpiAdm} admin` : "belum termuat"}
           </span>
         </div>
-        <div className="ov-card ov-kpi">
-          <span className="ov-kpi-icon"><Send size={17} /></span>
-          <b className="ov-kpi-value">{kpiRequests !== null ? fmtNum(kpiRequests) : "—"}</b>
-          <span className="ov-kpi-label">Total request</span>
-          <span className="ov-kpi-sub">
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-0.5">
+          <span className="mb-1.5 text-[#8ab6ff]"><Send size={17} /></span>
+          <b className="text-[26px] leading-[1.1] font-bold text-[#f2f2f4]">{kpiRequests !== null ? fmtNum(kpiRequests) : "—"}</b>
+          <span className="text-[13px] font-semibold text-[#cfcfd6]">Total request</span>
+          <span className="text-xs text-[#8b8b93]">
             {ai
               ? `${fmtNum(ai.requests_today)} request hari ini`
               : kpiSessions !== null
@@ -519,11 +519,11 @@ export default function OverviewPanel({
                 : "belum termuat"}
           </span>
         </div>
-        <div className="ov-card ov-kpi">
-          <span className="ov-kpi-icon"><Coins size={17} /></span>
-          <b className="ov-kpi-value">{kpiTokens !== null ? fmtTokens(kpiTokens) : "—"}</b>
-          <span className="ov-kpi-label">Token terpakai</span>
-          <span className="ov-kpi-sub">
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-0.5">
+          <span className="mb-1.5 text-[#8ab6ff]"><Coins size={17} /></span>
+          <b className="text-[26px] leading-[1.1] font-bold text-[#f2f2f4]">{kpiTokens !== null ? fmtTokens(kpiTokens) : "—"}</b>
+          <span className="text-[13px] font-semibold text-[#cfcfd6]">Token terpakai</span>
+          <span className="text-xs text-[#8b8b93]">
             {ai
               ? `hari ini ${fmtTokens(ai.tokens_today)}`
               : kpiRequests
@@ -531,35 +531,35 @@ export default function OverviewPanel({
                 : "belum ada request"}
           </span>
         </div>
-        <div className="ov-card ov-kpi">
-          <span className="ov-kpi-icon"><CircleDollarSign size={17} /></span>
-          <b className="ov-kpi-value">{kpiCost !== null ? fmtCost(kpiCost) : "—"}</b>
-          <span className="ov-kpi-label">Estimasi biaya</span>
-          <span className="ov-kpi-sub">kumulatif semua sesi</span>
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-0.5">
+          <span className="mb-1.5 text-[#8ab6ff]"><CircleDollarSign size={17} /></span>
+          <b className="text-[26px] leading-[1.1] font-bold text-[#f2f2f4]">{kpiCost !== null ? fmtCost(kpiCost) : "—"}</b>
+          <span className="text-[13px] font-semibold text-[#cfcfd6]">Estimasi biaya</span>
+          <span className="text-xs text-[#8b8b93]">kumulatif semua sesi</span>
         </div>
       </div>
 
       {ai && (
-        <div className="ov-ministats">
-          <div className="ov-card ov-mini">
-            <span className="ov-mini-label"><Send size={13} /> Request hari ini</span>
-            <b className="ov-mini-value">{fmtNum(ai.requests_today)}</b>
+        <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8b8b93]"><Send size={13} /> Request hari ini</span>
+            <b className="text-xl leading-[1.15] font-bold text-[#f2f2f4]">{fmtNum(ai.requests_today)}</b>
           </div>
-          <div className="ov-card ov-mini">
-            <span className="ov-mini-label"><Coins size={13} /> Token hari ini</span>
-            <b className="ov-mini-value">{fmtTokens(ai.tokens_today)}</b>
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8b8b93]"><Coins size={13} /> Token hari ini</span>
+            <b className="text-xl leading-[1.15] font-bold text-[#f2f2f4]">{fmtTokens(ai.tokens_today)}</b>
           </div>
-          <div className="ov-card ov-mini">
-            <span className="ov-mini-label"><MessagesSquare size={13} /> Sesi aktif hari ini</span>
-            <b className="ov-mini-value">{fmtNum(ai.sessions_active_today)}</b>
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8b8b93]"><MessagesSquare size={13} /> Sesi aktif hari ini</span>
+            <b className="text-xl leading-[1.15] font-bold text-[#f2f2f4]">{fmtNum(ai.sessions_active_today)}</b>
           </div>
-          <div className="ov-card ov-mini">
-            <span className="ov-mini-label"><TriangleAlert size={13} /> Giliran gagal</span>
-            <b className="ov-mini-value">{fmtNum(ai.turns_failed_total)}</b>
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8b8b93]"><TriangleAlert size={13} /> Giliran gagal</span>
+            <b className="text-xl leading-[1.15] font-bold text-[#f2f2f4]">{fmtNum(ai.turns_failed_total)}</b>
           </div>
-          <div className="ov-card ov-mini">
-            <span className="ov-mini-label"><Timer size={13} /> Rata-rata durasi</span>
-            <b className="ov-mini-value">{fmtDuration(ai.avg_turn_duration_ms)}</b>
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8b8b93]"><Timer size={13} /> Rata-rata durasi</span>
+            <b className="text-xl leading-[1.15] font-bold text-[#f2f2f4]">{fmtDuration(ai.avg_turn_duration_ms)}</b>
           </div>
         </div>
       )}
@@ -567,55 +567,55 @@ export default function OverviewPanel({
       {inbox && (
         <button
           type="button"
-          className={`ov-inbox-card${inbox.unread > 0 ? " has-unread" : ""}`}
+          className={`mb-3.5 flex w-full cursor-pointer items-center gap-[13px] rounded-[14px] border bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-3.5 text-left text-[#f2f2f4] ${inbox.unread > 0 ? "border-[rgba(0,129,251,0.55)] shadow-[0_0_0_1px_rgba(0,129,251,0.25)]" : "border-[#26262c] hover:border-[#3a3a44]"}`}
           onClick={() => onNavigate("inbox")}
         >
-          <span className="ov-inbox-icon">
+          <span className="inline-flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] bg-[rgba(0,129,251,0.14)] text-accent3">
             <Mail size={19} />
           </span>
-          <span className="ov-inbox-text">
-            <b>
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <b className="text-[15px] font-[650]">
               {inbox.unread > 0
                 ? `${inbox.unread} pesan belum dibaca`
                 : "Tidak ada pesan baru"}
             </b>
-            <i>
+            <i className="truncate text-[12.5px] text-fog [font-style:normal]">
               {inbox.total} pesan masuk dari Contact &amp; Feedback
               {inbox.latestName ? ` · terbaru dari ${inbox.latestName}` : ""}
             </i>
           </span>
-          <ArrowUpRight size={16} className="ov-inbox-arrow" />
+          <ArrowUpRight size={16} className="flex-none text-[#75757e]" />
         </button>
       )}
 
-      <div className="ov-grid2">
-        <div className="ov-card">
-          <h3 className="ov-card-title">Agent &amp; Model Aktif</h3>
+      <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+          <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Agent &amp; Model Aktif</h3>
           {instRow("Agent Publik (Assistant)", "public", defPub)}
           {instRow("Agent Administrator", "admin", defAdm)}
-          <p className="ov-note">
+          <p className="mt-2.5 text-xs leading-[1.5] text-[#8b8b93]">
             Model default diatur di tab AI Provider lalu di-Publish ke
             config opencode.
           </p>
         </div>
 
-        <div className="ov-card">
-          <h3 className="ov-card-title">Penggunaan per model</h3>
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+          <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Penggunaan per model</h3>
           {byModel.length === 0 ? (
-            <p className="ov-empty">Belum ada sesi tercatat.</p>
+            <p className="text-[13px] leading-[1.55] text-[#8b8b93]">Belum ada sesi tercatat.</p>
           ) : (
             byModel.map((m) => (
-              <div key={m.model} className="ov-model-row">
-                <div className="ov-model-head">
-                  <span className="ov-model-name">{m.model}</span>
-                  <span className="ov-model-stat">
+              <div key={m.model} className="mb-2.5 last:mb-0">
+                <div className="mb-[5px] flex justify-between gap-3 text-xs">
+                  <span className="font-semibold break-anywhere text-[#e8e8ec]">{m.model}</span>
+                  <span className="whitespace-nowrap text-[#8b8b93]">
                     {fmtTokens(m.tokens)} token · {m.requests} req · {m.sessions} sesi
                     {m.cost_usd ? ` · ${fmtCost(m.cost_usd)}` : ""}
                   </span>
                 </div>
-                <div className="ov-bar-track">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#1d1d22]">
                   <div
-                    className="ov-bar-fill"
+                    className="h-full rounded-full bg-[linear-gradient(90deg,#0081fb,#6ab0ff)]"
                     style={{
                       width: `${kpiTokens ? Math.max(2, (m.tokens / kpiTokens) * 100) : 0}%`,
                     }}
@@ -627,55 +627,55 @@ export default function OverviewPanel({
         </div>
       </div>
 
-      <div className="ov-grid2">
-        <div className="ov-card">
-          <h3 className="ov-card-title">
+      <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+          <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">
             {ai ? "Request per hari (7 hari terakhir)" : "Sesi aktif 7 hari terakhir"}
           </h3>
           {ai ? (
-            <div className="ov-bars" role="img" aria-label="Grafik request per hari">
+            <div className="flex h-[108px] items-end gap-2" role="img" aria-label="Grafik request per hari">
               {dailyReq.map((d) => (
                 <div
                   key={d.date}
-                  className="ov-bar-col"
+                  className="flex h-full flex-1 flex-col items-center justify-end gap-1"
                   title={`${d.date}: ${d.requests} request · ${fmtTokens(d.tokens)} token · ${fmtCost(d.cost_usd)}`}
                 >
-                  <span className="ov-bar-value">{d.requests}</span>
+                  <span className="text-[11px] font-bold text-[#cfcfd6]">{d.requests}</span>
                   <div
-                    className="ov-bar"
+                    className="w-full max-w-[38px] rounded-t-md rounded-b-[3px] bg-[linear-gradient(180deg,#6ab0ff,#0081fb)]"
                     style={{ height: `${Math.max(4, (d.requests / maxReq) * 64)}px` }}
                   />
-                  <span className="ov-bar-label">
+                  <span className="text-[11px] text-[#8b8b93]">
                     {new Date(`${d.date}T00:00:00`).toLocaleDateString("id-ID", { weekday: "short" })}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="ov-bars" role="img" aria-label="Grafik sesi aktif per hari">
+            <div className="flex h-[108px] items-end gap-2" role="img" aria-label="Grafik sesi aktif per hari">
               {fbDays.map((d, i) => (
-                <div key={i} className="ov-bar-col">
-                  <span className="ov-bar-value">{d.count}</span>
+                <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+                  <span className="text-[11px] font-bold text-[#cfcfd6]">{d.count}</span>
                   <div
-                    className="ov-bar"
+                    className="w-full max-w-[38px] rounded-t-md rounded-b-[3px] bg-[linear-gradient(180deg,#6ab0ff,#0081fb)]"
                     style={{ height: `${Math.max(4, (d.count / maxDay) * 64)}px` }}
                   />
-                  <span className="ov-bar-label">{d.label}</span>
+                  <span className="text-[11px] text-[#8b8b93]">{d.label}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="ov-card">
-          <h3 className="ov-card-title">Tool paling sering dipakai</h3>
+        <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+          <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Tool paling sering dipakai</h3>
           {byTool.length === 0 ? (
-            <p className="ov-empty">Belum ada pemakaian tool tercatat.</p>
+            <p className="text-[13px] leading-[1.55] text-[#8b8b93]">Belum ada pemakaian tool tercatat.</p>
           ) : (
-            <div className="ov-chips">
+            <div className="flex flex-wrap gap-[7px]">
               {byTool.map((t) => (
-                <span key={t.tool} className="ov-chip">
-                  {t.tool} <b>{t.count}×</b>
+                <span key={t.tool} className="rounded-full border border-[#26262c] bg-[rgba(255,255,255,0.04)] px-2.5 py-1 text-xs text-[#cfcfd6]">
+                  {t.tool} <b className="text-[#8ab6ff]">{t.count}×</b>
                 </span>
               ))}
             </div>
@@ -684,27 +684,27 @@ export default function OverviewPanel({
       </div>
 
       {ai && (
-        <div className="ov-grid2">
-          <div className="ov-card">
-            <h3 className="ov-card-title">Rincian token per jenis</h3>
+        <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+            <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Rincian token per jenis</h3>
             {tokenSplitTotal === 0 ? (
-              <p className="ov-empty">
+              <p className="text-[13px] leading-[1.55] text-[#8b8b93]">
                 Belum ada pencatatan per giliran — rincian ini terisi
                 sejak pencatatan ai_turns aktif (18 Nov 2026 malam).
               </p>
             ) : (
               tokenSplit.map((t) => (
-                <div key={t.label} className="ov-model-row">
-                  <div className="ov-model-head">
-                    <span className="ov-model-name">{t.label}</span>
-                    <span className="ov-model-stat">
+                <div key={t.label} className="mb-2.5 last:mb-0">
+                  <div className="mb-[5px] flex justify-between gap-3 text-xs">
+                    <span className="font-semibold break-anywhere text-[#e8e8ec]">{t.label}</span>
+                    <span className="whitespace-nowrap text-[#8b8b93]">
                       {fmtTokens(t.value)} token ·{" "}
                       {((t.value / tokenSplitTotal) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%
                     </span>
                   </div>
-                  <div className="ov-bar-track">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#1d1d22]">
                     <div
-                      className="ov-bar-fill"
+                      className="h-full rounded-full bg-[linear-gradient(90deg,#0081fb,#6ab0ff)]"
                       style={{ width: `${Math.max(2, (t.value / tokenSplitTotal) * 100)}%` }}
                     />
                   </div>
@@ -713,9 +713,9 @@ export default function OverviewPanel({
             )}
           </div>
 
-          <div className="ov-card">
-            <h3 className="ov-card-title">Tentang data ini</h3>
-            <p className="ov-note">
+          <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
+            <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Tentang data ini</h3>
+            <p className="mt-2.5 text-xs leading-[1.5] text-[#8b8b93]">
               Total sesi, request, token &amp; biaya adalah akumulasi
               sepanjang masa dari catatan audit sesi. Angka harian,
               rincian token per jenis, giliran gagal, dan durasi
@@ -728,56 +728,56 @@ export default function OverviewPanel({
         </div>
       )}
 
-      <h3 className="ov-section-title">Modul</h3>
-      <div className="ov-modules">
+      <h3 className="mt-[18px] mb-2.5 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Modul</h3>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
         {modules.map((m) => {
           const Icon = m.icon;
           return (
             <button
               key={m.id}
               type="button"
-              className="ov-card ov-module"
+              className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 flex cursor-pointer flex-col gap-0.5 text-left [font:inherit] hover:border-[#34343d]"
               onClick={() => onNavigate(m.id)}
             >
-              <span className="ov-module-head">
+              <span className="mb-1.5 inline-flex items-center gap-[7px] text-xs font-semibold text-[#8b8b93]">
                 <Icon size={16} />
                 <span>{m.label}</span>
               </span>
-              <b className="ov-module-value">{m.value}</b>
-              <span className="ov-module-sub">{m.sub}</span>
+              <b className="text-[22px] leading-[1.1] font-bold text-[#f2f2f4]">{m.value}</b>
+              <span className="text-xs text-[#8b8b93]">{m.sub}</span>
             </button>
           );
         })}
       </div>
 
-      <h3 className="ov-section-title">Sesi terbaru</h3>
-      <div className="ov-card ov-sessions">
+      <h3 className="mt-[18px] mb-2.5 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">Sesi terbaru</h3>
+      <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4 py-1.5">
         {recent === null ? (
-          <p className="ov-empty">Memuat…</p>
+          <p className="text-[13px] leading-[1.55] text-[#8b8b93]">Memuat…</p>
         ) : recent.length === 0 ? (
-          <p className="ov-empty">
+          <p className="text-[13px] leading-[1.55] text-[#8b8b93]">
             Belum ada sesi tercatat. Sesi Assistant publik dan AI Agent
             admin akan muncul di sini setelah giliran chat pertama selesai.
           </p>
         ) : (
           recent.slice(0, 6).map((s) => (
-            <div key={s.id} className="ov-session-row">
+            <div key={s.id} className="flex items-start gap-3 py-2.5 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#1d1d22]">
               <span
-                className={`ov-role${s.role === "admin" ? " is-admin" : ""}`}
+                className={`mt-px flex-none rounded-full border px-[9px] py-0.5 text-[11px] font-bold tracking-[0.03em] ${s.role === "admin" ? "border-[rgba(139,92,246,0.35)] bg-[rgba(139,92,246,0.12)] text-[#c4a6ff]" : "border-[rgba(0,129,251,0.3)] bg-[rgba(0,129,251,0.12)] text-[#8ab6ff]"}`}
               >
                 {s.role === "admin" ? "Admin" : "Publik"}
               </span>
-              <div className="ov-session-main">
-                <span className="ov-session-prompt">
+              <div className="flex min-w-0 flex-1 flex-col gap-px">
+                <span className="truncate text-[13px] whitespace-nowrap text-[#e8e8ec]">
                   {s.last_prompt || s.first_prompt || "(tanpa prompt tercatat)"}
                 </span>
-                <span className="ov-session-meta">
+                <span className="text-xs break-anywhere text-[#8b8b93]">
                   {s.model || "model ?"} · {s.prompt_count} request ·{" "}
                   {fmtTokens(s.total_tokens)} token
                   {s.admin_user ? ` · oleh ${s.admin_user}` : ""}
                 </span>
               </div>
-              <span className="ov-session-time">{relTime(s.updated_at)}</span>
+              <span className="flex-none text-xs text-[#8b8b93]">{relTime(s.updated_at)}</span>
             </div>
           ))
         )}
