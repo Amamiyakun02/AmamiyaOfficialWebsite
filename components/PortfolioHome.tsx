@@ -78,7 +78,10 @@ export default function PortfolioHome() {
       {/* Section 3: studi kasus — hanya ada bila proyek dipilih, dan
           hanya merender SATU proyek terpilih */}
       {selectedId && (
-        <section id="case-study" className="lz-section">
+        <section
+          id="case-study"
+          className="relative scroll-mt-[70px] border-t border-[#141417]"
+        >
           <ProjectDetailSection
             projectId={selectedId}
             onClose={() => setSelectedId(null)}
@@ -101,11 +104,11 @@ export default function PortfolioHome() {
         <ContactSection />
       </LazySection>
 
-      <footer className="site-footer">
+      <footer className="mx-auto flex w-[min(1200px,100%)] flex-wrap justify-between gap-2.5 border-t border-[#141417] px-7 pt-[26px] pb-9 text-[12.5px] text-[#8b8b94] max-[760px]:px-[18px]">
         <span>
           © {new Date().getFullYear()} Amamiya
         </span>
-        <span className="footer-motto">
+        <span className="italic">
           Built once, useful forever.
         </span>
       </footer>

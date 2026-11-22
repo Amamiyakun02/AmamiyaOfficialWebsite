@@ -35,51 +35,76 @@ export default function AboutSection() {
   const shown =
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
   return (
-    <div className="section-inner">
+    <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="About" />
-      <p className="page-desc">
+      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
         Sekali buat, berguna selamanya.
       </p>
 
-      <h2 className="sec-title">Keahlian</h2>
-      <div className="chips-row">
+      <h2 className="mt-10 mb-4 text-xl font-bold">Keahlian</h2>
+      <div className="mt-[26px] mb-[22px] flex flex-wrap gap-2">
         {CATS.map((c) => (
           <button
             key={c}
             type="button"
-            className={cat === c ? "chip chip-on" : "chip"}
+            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#4a4a55] ${
+              cat === c
+                ? "border-accent bg-accent text-white"
+                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#d7d7dd]"
+            }`}
             onClick={() => setCat(c)}
           >
             {c === "All" ? "Semua" : c}
           </button>
         ))}
       </div>
-      <div className="skill-grid">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3.5">
         {shown.map((s) => (
-          <article key={s.name} className="skill-card">
-            <div className="skill-top">
-              <h3>{s.name}</h3>
-              <span className="skill-level">{s.level}%</span>
+          <article
+            key={s.name}
+            className="rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] p-4"
+          >
+            <div className="flex items-baseline justify-between">
+              <h3 className="m-0 text-[14.5px] font-bold">{s.name}</h3>
+              <span className="text-xs font-bold text-accent3">
+                {s.level}%
+              </span>
             </div>
-            <div className="skill-bar">
-              <span style={{ width: `${s.level}%` }} />
+            <div className="my-2.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+              <span
+                className="block h-full rounded-full bg-[linear-gradient(90deg,#0081fb,#38bdf8)]"
+                style={{ width: `${s.level}%` }}
+              />
             </div>
-            <p>{s.desc.id}</p>
-            <span className="proj-cat">{s.category}</span>
+            <p className="m-0 mb-2.5 text-[12.5px] leading-[1.55] text-[#a7a7b0]">
+              {s.desc.id}
+            </p>
+            <span className="text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
+              {s.category}
+            </span>
           </article>
         ))}
       </div>
 
-      <h2 className="sec-title">Pengalaman</h2>
-      <div className="timeline">
+      <h2 className="mt-10 mb-4 text-xl font-bold">Pengalaman</h2>
+      <div className="flex flex-col gap-3.5">
         {TIMELINE.map((t) => (
-          <article key={t.title} className="tl-item">
-            <span className="tl-year">{t.year}</span>
+          <article
+            key={t.title}
+            className="flex gap-[18px] rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] px-[18px] py-4 max-[760px]:flex-col max-[760px]:gap-1.5"
+          >
+            <span className="w-[118px] flex-none pt-0.5 text-[12.5px] font-bold text-accent3">
+              {t.year}
+            </span>
             <div>
-              <h3>{t.title}</h3>
-              <p className="tl-sub">{t.subtitle}</p>
-              <p>{t.desc}</p>
+              <h3 className="m-0 mb-1 text-[15px]">{t.title}</h3>
+              <p className="m-0 mb-1 text-[13px] leading-[1.6] font-semibold text-[#d7d7dd]">
+                {t.subtitle}
+              </p>
+              <p className="m-0 text-[13px] leading-[1.6] text-[#a7a7b0]">
+                {t.desc}
+              </p>
             </div>
           </article>
         ))}

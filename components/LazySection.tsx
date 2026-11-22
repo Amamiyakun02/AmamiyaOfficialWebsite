@@ -40,13 +40,18 @@ export default function LazySection({
     <section
       id={id}
       ref={ref}
-      className="lz-section"
+      className={`relative scroll-mt-[70px]${
+        id === "projects" ? "" : " border-t border-[#141417]"
+      }`}
       style={on ? undefined : { minHeight }}
     >
       {on ? (
         children
       ) : (
-        <div className="lz-placeholder" aria-hidden="true">
+        <div
+          className="absolute inset-0 grid place-items-center"
+          aria-hidden="true"
+        >
           <span className="lz-pulse" />
         </div>
       )}

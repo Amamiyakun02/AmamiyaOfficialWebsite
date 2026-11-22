@@ -42,12 +42,16 @@ function StaticProjects({
       : projectsData.filter((p) => p.category === filter);
   return (
     <>
-      <div className="chips-row">
+      <div className="mt-[26px] mb-[22px] flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}
             type="button"
-            className={filter === f ? "chip chip-on" : "chip"}
+            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#4a4a55] ${
+              filter === f
+                ? "border-accent bg-accent text-white"
+                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#d7d7dd]"
+            }`}
             onClick={() => setFilter(f)}
           >
             {f}
@@ -55,42 +59,82 @@ function StaticProjects({
         ))}
       </div>
 
-      <div className="proj-grid">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
         {shown.map((p) => {
           const Icon = p.icon;
           return (
-            <article key={p.id} className="proj-card">
-              <div className="proj-card-top">
-                <span className="proj-icon">
+            <article
+              key={p.id}
+              className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#3d3d47]"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.12)] text-accent3">
                   <Icon size={20} />
                 </span>
-                {p.featured && <span className="proj-featured">★ Unggulan</span>}
-                <span className="proj-cat">{p.category}</span>
+                {p.featured && (
+                  <span className="text-[11px] font-bold tracking-[0.03em] text-[#fbbf24]">
+                    ★ Unggulan
+                  </span>
+                )}
+                <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
+                  {p.category}
+                </span>
               </div>
-              <h3>
-                <button type="button" className="link-btn title-btn" onClick={() => onSelect(p.id)}>{p.title}</button>
+              <h3 className="mt-[14px] mb-[6px] text-[17px] font-bold">
+                <button
+                  type="button"
+                  className="cursor-pointer border-0 bg-transparent p-0 text-left [font-family:inherit] text-[17px] font-bold text-paper hover:text-accent3"
+                  onClick={() => onSelect(p.id)}
+                >
+                  {p.title}
+                </button>
               </h3>
-              <p className="proj-tagline">{p.tagline.id}</p>
-              <p className="proj-desc">{p.description.id}</p>
-              <div className="tech-row">
+              <p className="m-0 mb-2 text-[13.5px] font-semibold text-[#d7d7dd]">
+                {p.tagline.id}
+              </p>
+              <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#a7a7b0]">
+                {p.description.id}
+              </p>
+              <div className="mt-[14px] flex flex-wrap gap-1.5">
                 {p.tech.slice(0, 4).map((t) => (
-                  <span key={t} className="tech-chip">
+                  <span
+                    key={t}
+                    className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]"
+                  >
                     {t}
                   </span>
                 ))}
                 {p.tech.length > 4 && (
-                  <span className="tech-chip">+{p.tech.length - 4}</span>
+                  <span className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]">
+                    +{p.tech.length - 4}
+                  </span>
                 )}
               </div>
-              <div className="proj-links">
-                <button type="button" className="link-btn" onClick={() => onSelect(p.id)}>Studi kasus →</button>
+              <div className="mt-4 flex gap-4 text-[13px] font-semibold">
+                <button
+                  type="button"
+                  className="cursor-pointer border-0 bg-transparent p-0 text-left [font-family:inherit] text-[13px] font-semibold text-accent3 hover:underline"
+                  onClick={() => onSelect(p.id)}
+                >
+                  Studi kasus →
+                </button>
                 {p.githubUrl && (
-                  <a href={p.githubUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className="text-accent3 no-underline hover:underline"
+                    href={p.githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     GitHub
                   </a>
                 )}
                 {p.liveUrl && (
-                  <a href={p.liveUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className="text-accent3 no-underline hover:underline"
+                    href={p.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Live
                   </a>
                 )}
@@ -106,61 +150,90 @@ function StaticProjects({
 export function PublicProjectCard({ p }: { p: PublicProject }) {
   const tech = techList(p.tech_stack);
   return (
-    <article className="proj-card">
+    <article className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#3d3d47]">
       {p.demo_video_thumbnail && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          className="proj-card-thumb"
+          className="mb-3 block h-[140px] w-full rounded-[10px] border border-line2 object-cover"
           src={p.demo_video_thumbnail}
           alt=""
           loading="lazy"
         />
       )}
-      <div className="proj-card-top">
-        <span className="proj-icon">
+      <div className="flex items-center gap-2.5">
+        <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.12)] text-accent3">
           <Layers size={20} />
         </span>
         {p.is_featured && (
-          <span className="proj-featured">
+          <span className="text-[11px] font-bold tracking-[0.03em] text-[#fbbf24]">
             ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
           </span>
         )}
-        <span className="proj-cat">
+        <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
           {STATUS_LABEL[p.status] ?? p.status}
         </span>
       </div>
-      <h3>{p.name}</h3>
-      {p.description && <p className="proj-desc">{p.description}</p>}
+      <h3 className="mt-[14px] mb-[6px] text-[17px] font-bold">{p.name}</h3>
+      {p.description && (
+        <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#a7a7b0]">
+          {p.description}
+        </p>
+      )}
       {tech.length > 0 && (
-        <div className="tech-row">
+        <div className="mt-[14px] flex flex-wrap gap-1.5">
           {tech.slice(0, 4).map((t) => (
-            <span key={t} className="tech-chip">
+            <span
+              key={t}
+              className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]"
+            >
               {t}
             </span>
           ))}
           {tech.length > 4 && (
-            <span className="tech-chip">+{tech.length - 4}</span>
+            <span className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]">
+              +{tech.length - 4}
+            </span>
           )}
         </div>
       )}
-      <div className="proj-links">
+      <div className="mt-4 flex gap-4 text-[13px] font-semibold">
         {p.repo_url && (
-          <a href={p.repo_url} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.repo_url}
+            target="_blank"
+            rel="noreferrer"
+          >
             GitHub
           </a>
         )}
         {p.links?.demo && (
-          <a href={p.links.demo} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.links.demo}
+            target="_blank"
+            rel="noreferrer"
+          >
             Live
           </a>
         )}
         {p.links?.docs && (
-          <a href={p.links.docs} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.links.docs}
+            target="_blank"
+            rel="noreferrer"
+          >
             Docs
           </a>
         )}
         {p.demo_video_url && (
-          <a href={p.demo_video_url} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.demo_video_url}
+            target="_blank"
+            rel="noreferrer"
+          >
             Video demo
           </a>
         )}
@@ -196,18 +269,24 @@ export default function ProjectsSection({
   }, []);
 
   return (
-    <div className="section-inner">
+    <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Projects" />
-      <p className="page-desc">
+      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
         Project unggulan yang kupilih langsung dari dashboard-ku — empat
         terbaik yang sedang dan sudah kubangun. Daftar lengkapnya ada di
         halaman Projects.
       </p>
 
       {phase === "loading" && (
-        <div className="proj-grid" aria-hidden="true">
+        <div
+          className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1"
+          aria-hidden="true"
+        >
           {[0, 1, 2, 3].map((i) => (
-            <article key={i} className="proj-card proj-skeleton">
+            <article
+              key={i}
+              className="flex min-h-[150px] flex-col gap-3 rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px]"
+            >
               <div className="sk-line sk-w40" />
               <div className="sk-line sk-w80" />
               <div className="sk-line sk-w100" />
@@ -221,11 +300,11 @@ export default function ProjectsSection({
 
       {phase === "live" &&
         (items.length === 0 ? (
-          <p className="page-desc">
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
             Belum ada project unggulan yang di-pin dari dashboard.
           </p>
         ) : (
-          <div className="proj-grid">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
             {items.map((p) => (
               <PublicProjectCard key={p.id} p={p} />
             ))}
@@ -233,8 +312,11 @@ export default function ProjectsSection({
         ))}
 
       {phase === "live" && (
-        <div className="more-projects-row">
-          <Link className="more-projects-btn" href="/projects">
+        <div className="mt-[22px] flex justify-center">
+          <Link
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,129,251,0.55)] bg-[rgba(0,129,251,0.12)] px-[26px] py-[11px] text-[14.5px] font-bold text-[#7db9ff] no-underline transition-[background,border-color,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-accent hover:bg-[rgba(0,129,251,0.22)] hover:text-[#cfe6ff]"
+            href="/projects"
+          >
             More Projects →
           </Link>
         </div>

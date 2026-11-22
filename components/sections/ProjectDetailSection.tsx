@@ -16,85 +16,108 @@ export default function ProjectDetailSection({
   if (!p) return null;
   const Icon = p.icon;
   return (
-    <div className="section-inner">
-      <div className="detail-head">
-        <span className="proj-icon proj-icon-lg">
+    <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
+      <div className="flex items-start gap-4">
+        <span className="inline-grid h-[52px] w-[52px] flex-none place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.12)] text-accent3">
           <Icon size={26} />
         </span>
         <div>
           <SectionTitle text={p.title} />
-          <p className="page-desc">{p.tagline.id}</p>
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+            {p.tagline.id}
+          </p>
         </div>
         <button
           type="button"
-          className="chip detail-close"
+          className="ml-auto flex-none cursor-pointer self-start rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
           onClick={onClose}
           aria-label="Tutup studi kasus"
         >
           ✕ Tutup
         </button>
       </div>
-      <div className="tech-row">
+      <div className="mt-[14px] flex flex-wrap gap-1.5">
         {p.tech.map((t) => (
-          <span key={t} className="tech-chip">
+          <span key={t} className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]">
             {t}
           </span>
         ))}
       </div>
-      <div className="proj-links detail-links">
+      <div className="mt-[14px] flex gap-4 text-[13px] font-semibold">
         {p.githubUrl && (
-          <a href={p.githubUrl} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.githubUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
             GitHub →
           </a>
         )}
         {p.liveUrl && (
-          <a href={p.liveUrl} target="_blank" rel="noreferrer">
+          <a
+            className="text-accent3 no-underline hover:underline"
+            href={p.liveUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
             Kunjungi Live →
           </a>
         )}
       </div>
 
       {p.metrics.length > 0 && (
-        <div className="metric-row">
+        <div className="mt-7 flex flex-wrap gap-3.5">
           {p.metrics.map((m) => (
-            <div key={m.label.id} className="metric">
-              <span className="metric-value">{m.value}</span>
-              <span className="metric-label">{m.label.id}</span>
+            <div
+              key={m.label.id}
+              className="flex min-w-[130px] flex-1 flex-col gap-1 rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] px-4 py-3.5"
+            >
+              <span className="text-xl font-extrabold text-white">
+                {m.value}
+              </span>
+              <span className="text-xs text-[#8b8b94]">{m.label.id}</span>
             </div>
           ))}
         </div>
       )}
 
-      <section className="detail-sec">
-        <h2>Masalah</h2>
-        <p>{p.problem.id}</p>
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Masalah</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#c6c6cd]">{p.problem.id}</p>
       </section>
-      <section className="detail-sec">
-        <h2>Arsitektur</h2>
-        <p>{p.architecture.id}</p>
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Arsitektur</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#c6c6cd]">{p.architecture.id}</p>
       </section>
-      <section className="detail-sec">
-        <h2>Tumpukan Teknologi</h2>
-        <div className="stack-cols">
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Tumpukan Teknologi</h2>
+        <div className="grid grid-cols-3 gap-4 max-[760px]:grid-cols-1">
           <div>
-            <h3>Frontend</h3>
-            <ul>
+            <h3 className="m-0 mb-2 text-[13px] tracking-[0.08em] text-[#8b8b94] uppercase">
+              Frontend
+            </h3>
+            <ul className="m-0 pl-[18px] text-sm leading-[1.8] text-[#c6c6cd]">
               {p.frontend.map((x) => (
                 <li key={x}>{x}</li>
               ))}
             </ul>
           </div>
           <div>
-            <h3>Backend</h3>
-            <ul>
+            <h3 className="m-0 mb-2 text-[13px] tracking-[0.08em] text-[#8b8b94] uppercase">
+              Backend
+            </h3>
+            <ul className="m-0 pl-[18px] text-sm leading-[1.8] text-[#c6c6cd]">
               {p.backend.map((x) => (
                 <li key={x}>{x}</li>
               ))}
             </ul>
           </div>
           <div>
-            <h3>Infra</h3>
-            <ul>
+            <h3 className="m-0 mb-2 text-[13px] tracking-[0.08em] text-[#8b8b94] uppercase">
+              Infra
+            </h3>
+            <ul className="m-0 pl-[18px] text-sm leading-[1.8] text-[#c6c6cd]">
               {p.infra.map((x) => (
                 <li key={x}>{x}</li>
               ))}
@@ -103,34 +126,34 @@ export default function ProjectDetailSection({
         </div>
       </section>
       {p.apiEndpoints.length > 0 && (
-        <section className="detail-sec">
-          <h2>Endpoint API</h2>
-          <ul className="endpoint-list">
+        <section className="mt-[34px]">
+          <h2 className="m-0 mb-2.5 text-lg font-bold">Endpoint API</h2>
+          <ul className="m-0 list-none pl-0 text-sm leading-[1.8] text-[#c6c6cd]">
             {p.apiEndpoints.map((e) => (
               <li key={e}>
-                <code>{e}</code>
+                <code className="text-[13px]">{e}</code>
               </li>
             ))}
           </ul>
         </section>
       )}
-      <section className="detail-sec">
-        <h2>Cuplikan Kode</h2>
-        <pre className="code-block">
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Cuplikan Kode</h2>
+        <pre className="m-0 overflow-x-auto rounded-xl border border-line2 bg-[#0d0d10] p-4 text-[12.5px] leading-[1.6] text-[#d7d7dd]">
           <code>{p.codeSnippet.code}</code>
         </pre>
       </section>
-      <section className="detail-sec">
-        <h2>Langkah Demo</h2>
-        <p>{p.demoSteps.id}</p>
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Langkah Demo</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#c6c6cd]">{p.demoSteps.id}</p>
       </section>
-      <section className="detail-sec">
-        <h2>Hasil</h2>
-        <p>{p.results.id}</p>
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Hasil</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#c6c6cd]">{p.results.id}</p>
       </section>
-      <section className="detail-sec">
-        <h2>Trade-off</h2>
-        <p>{p.tradeoffs.id}</p>
+      <section className="mt-[34px]">
+        <h2 className="m-0 mb-2.5 text-lg font-bold">Trade-off</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#c6c6cd]">{p.tradeoffs.id}</p>
       </section>
     </div>
   );

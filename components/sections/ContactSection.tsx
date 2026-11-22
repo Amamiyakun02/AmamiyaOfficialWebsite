@@ -85,24 +85,24 @@ export default function ContactSection() {
   }
 
   return (
-    <div className="section-inner">
+    <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Contact" />
-      <p className="page-desc">
+      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
         Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,
         atau sekadar menyapa.
       </p>
 
-      <div className="contact-layout">
+      <div className="mt-7 grid grid-cols-[minmax(0,720px)_minmax(0,1fr)] items-start gap-[44px] max-[900px]:grid-cols-1 max-[900px]:gap-[34px]">
         <div>
       {sent ? (
-        <div className="form-done">
-          <h2>Pesan Terkirim</h2>
-          <p>
+        <div className="max-w-[720px] rounded-2xl border border-[rgba(52,211,153,0.35)] bg-[rgba(13,13,16,0.78)] p-[22px]">
+          <h2 className="m-0 mb-2 text-lg">Pesan Terkirim</h2>
+          <p className="m-0 mb-4 text-sm text-[#a7a7b0]">
             Terima kasih sudah menghubungi. Saya akan membalas secepatnya.
           </p>
           <button
             type="button"
-            className="chip"
+            className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
             onClick={() => {
               setSent(false);
               setName("");
@@ -114,10 +114,11 @@ export default function ContactSection() {
           </button>
         </div>
       ) : (
-        <form className="contact-form" onSubmit={submit}>
-          <label>
+        <form className="flex max-w-[720px] flex-col gap-4" onSubmit={submit}>
+          <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
             Nama Anda
             <input
+              className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -125,9 +126,10 @@ export default function ContactSection() {
               autoComplete="name"
             />
           </label>
-          <label>
+          <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
             Email Anda
             <input
+              className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -135,9 +137,10 @@ export default function ContactSection() {
               autoComplete="email"
             />
           </label>
-          <label>
+          <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
             Pesan Anda
             <textarea
+              className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               required
@@ -145,32 +148,49 @@ export default function ContactSection() {
               rows={6}
             />
           </label>
-          {error && <p className="form-error">{error}</p>}
-          <button type="submit" className="hero-btn hero-btn-primary" disabled={submitting}>
+          {error && (
+            <p className="m-0 text-[13px] text-[#f87171]">{error}</p>
+          )}
+          <button
+            type="submit"
+            className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-white no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#4a4a55] hover:bg-[#0064e0]"
+            disabled={submitting}
+          >
             {submitting ? "Mengirim..." : "Kirim Pesan"}
           </button>
         </form>
       )}
         </div>
 
-        <aside className="contact-social">
-          <h3 className="social-title">Terhubung</h3>
-          <div className="social-list">
+        <aside>
+          <h3 className="mt-1 mb-3.5 text-[15px] font-bold text-paper">
+            Terhubung
+          </h3>
+          <div className="flex flex-col gap-2.5">
             {SOCIALS.map(({ name, handle, href }) => (
               <a
                 key={name}
-                className="social-btn"
+                className="flex items-center gap-3 rounded-xl border border-line2 bg-[rgba(13,13,16,0.78)] px-3.5 py-[11px] text-paper no-underline hover:border-[#3d3d46] hover:bg-[rgba(22,22,27,0.9)]"
                 href={href}
                 {...(href.startsWith("http")
                   ? { target: "_blank", rel: "noreferrer" }
                   : {})}
               >
-                <span className="social-ic">{SOCIAL_ICONS[name]}</span>
-                <span>
-                  <span className="social-name">{name}</span>
-                  <span className="social-handle">{handle}</span>
+                <span className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-[9px] bg-[rgba(0,129,251,0.12)] text-accent3">
+                  {SOCIAL_ICONS[name]}
                 </span>
-                <ArrowUpRight size={16} className="social-arrow" />
+                <span>
+                  <span className="block text-[14.5px] leading-[1.3] font-semibold">
+                    {name}
+                  </span>
+                  <span className="block text-[12.5px] text-[#8b8b94]">
+                    {handle}
+                  </span>
+                </span>
+                <ArrowUpRight
+                  size={16}
+                  className="ml-auto flex-none text-[#8b8b94]"
+                />
               </a>
             ))}
           </div>
