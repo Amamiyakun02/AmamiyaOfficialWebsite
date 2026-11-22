@@ -4,6 +4,37 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
 import {
+  ADD,
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  CARD,
+  DCARD_ACTIONS,
+  DCARD_CONFIRM_TEXT,
+  DCARD_FOOT,
+  DCARD_HEAD,
+  DCARD_NAME,
+  DCARD_NOTE,
+  DCARD_SUB,
+  DICON_DANGER,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  EMPTY,
+  ERR,
+  FIELD,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  FIELD_SELECT,
+  FIELD_SPAN2,
+  GRID,
+  LIST,
+  MINI,
+  PATH,
+  SAVE,
+  SEARCH,
+  TOOLBAR,
+} from "./ui";
+import {
   Ban,
   Check,
   KeyRound,
@@ -286,10 +317,10 @@ export default function UsersPanel() {
   );
 
   return (
-    <div className="proj">
-      <div className="proj-toolbar">
+    <div className="mt-[18px]">
+      <div className={TOOLBAR}>
         <input
-          className="proj-search"
+          className={SEARCH}
           type="search"
           placeholder="Cari username / email…"
           value={q}
@@ -297,7 +328,7 @@ export default function UsersPanel() {
           aria-label="Cari user"
         />
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={project}
           onChange={(e) => setProject(e.target.value)}
           aria-label="Filter project"
@@ -310,7 +341,7 @@ export default function UsersPanel() {
           ))}
         </select>
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Filter status"
@@ -322,7 +353,7 @@ export default function UsersPanel() {
             </option>
           ))}
         </select>
-        <button type="button" className="proj-add" onClick={openNew}>
+        <button type="button" className={ADD} onClick={openNew}>
           + Tambah User
         </button>
       </div>
@@ -337,14 +368,14 @@ export default function UsersPanel() {
           }}
           footer={
             <>
-              {formError && <p className="proj-error">{formError}</p>}
-              <div className="proj-form-actions dash-modal-actions">
-                <button type="submit" className="proj-save" disabled={saving}>
+              {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
+              <div className="flex gap-2.5">
+                <button type="submit" className={SAVE} disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="proj-cancel"
+                  className={MINI}
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -354,10 +385,10 @@ export default function UsersPanel() {
             </>
           }
         >
-          <div className="proj-grid">
-            <label className="proj-field">
-              <span>Project *</span>
-              <input
+          <div className={GRID}>
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Project *</span>
+              <input className={FIELD_INPUT}
                 value={form.project}
                 onChange={(e) => set("project")(e.target.value)}
                 list="usr-projects"
@@ -369,17 +400,17 @@ export default function UsersPanel() {
                 ))}
               </datalist>
             </label>
-            <label className="proj-field">
-              <span>Username *</span>
-              <input
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Username *</span>
+              <input className={FIELD_INPUT}
                 value={form.username}
                 onChange={(e) => set("username")(e.target.value)}
                 maxLength={50}
               />
             </label>
-            <label className="proj-field proj-span2">
-              <span>Email *</span>
-              <input
+            <label className={FIELD_SPAN2}>
+              <span className={FIELD_LABEL}>Email *</span>
+              <input className={FIELD_INPUT}
                 type="email"
                 value={form.email}
                 onChange={(e) => set("email")(e.target.value)}
@@ -387,9 +418,9 @@ export default function UsersPanel() {
               />
             </label>
             {editing === "new" && (
-              <label className="proj-field proj-span2">
-                <span>Password awal * (min. 8 karakter)</span>
-                <input
+              <label className={FIELD_SPAN2}>
+                <span className={FIELD_LABEL}>Password awal * (min. 8 karakter)</span>
+                <input className={FIELD_INPUT}
                   type="password"
                   value={form.password}
                   onChange={(e) => set("password")(e.target.value)}
@@ -397,9 +428,9 @@ export default function UsersPanel() {
                 />
               </label>
             )}
-            <label className="proj-field">
-              <span>Role</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Role</span>
+              <select className={FIELD_SELECT}
                 value={form.role}
                 onChange={(e) => set("role")(e.target.value)}
               >
@@ -410,9 +441,9 @@ export default function UsersPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field">
-              <span>Status</span>
-              <select
+            <label className={FIELD}>
+              <span className={FIELD_LABEL}>Status</span>
+              <select className={FIELD_SELECT}
                 value={form.status}
                 onChange={(e) => set("status")(e.target.value)}
               >
@@ -424,7 +455,7 @@ export default function UsersPanel() {
               </select>
             </label>
             {editing !== "new" && (
-              <p className="intg-hint proj-span2">
+              <p className="col-span-2 text-[12.5px] leading-[1.55] text-fog max-[640px]:col-span-1">
                 Password tidak diubah dari form ini — gunakan tombol Reset
                 Password pada kartu user.
               </p>
@@ -433,36 +464,34 @@ export default function UsersPanel() {
         </FormModal>
       )}
 
-      {resetMsg && <p className="usr-msg">{resetMsg}</p>}
-      {error && <p className="proj-error">{error}</p>}
+      {resetMsg && <p className="m-0 mb-3 text-[13.5px] text-[#35d07f]">{resetMsg}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
-        <p className="proj-empty">Memuat daftar user…</p>
+        <p className={EMPTY}>Memuat daftar user…</p>
       ) : items.length === 0 ? (
-        <p className="proj-empty">
+        <p className={EMPTY}>
           {q || project || status
             ? "Tidak ada user yang cocok dengan filter."
             : "Belum ada user terdaftar. Tambah user pertama untuk aplikasi konsumenmu (mis. ViennaAssistantMobile)."}
         </p>
       ) : (
-        <ul className="proj-list">
+        <ul className={LIST}>
           {items.map((u) => (
-                        <li key={u.id} className="dcard">
-              <div className="dcard-head">
-                <span className="dcard-name">{u.username}</span>
-                <span className="proj-badge">{u.role}</span>
+                        <li key={u.id} className={CARD}>
+              <div className={DCARD_HEAD}>
+                <span className={DCARD_NAME}>{u.username}</span>
+                <span className={`${BADGE} ${BADGE_PLAIN}`}>{u.role}</span>
                 <span
-                  className={`proj-badge proj-badge-${
-                    u.status === "active" ? "active" : "archived"
-                  }`}
+                  className={`${BADGE} ${BADGE_TONE[u.status === "active" ? "active" : "archived"]}`}
                 >
                   {u.status}
                 </span>
               </div>
-              <p className="dcard-sub">
-                <span className="proj-path">{u.project}</span>
+              <p className={DCARD_SUB}>
+                <span className={PATH}>{u.project}</span>
                 <span>{u.email}</span>
               </p>
-              <p className="dcard-sub">
+              <p className={DCARD_SUB}>
                 <span>
                   Login terakhir:{" "}
                   {u.last_login_at
@@ -474,8 +503,9 @@ export default function UsersPanel() {
                 )}
               </p>
               {resetId === u.id && (
-                <div className="usr-reset">
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <input
+                    className="flex-[1_1_220px] rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.05)] px-2.5 py-[7px] text-[13.5px] text-[#f2f2f2]"
                     type="password"
                     placeholder="Password baru (min. 8 karakter)"
                     value={resetPw}
@@ -484,7 +514,7 @@ export default function UsersPanel() {
                   />
                   <button
                     type="button"
-                    className="proj-mini"
+                    className={MINI}
                     disabled={busyId === u.id}
                     onClick={() => void doReset(u)}
                   >
@@ -492,7 +522,7 @@ export default function UsersPanel() {
                   </button>
                   <button
                     type="button"
-                    className="proj-mini"
+                    className={MINI}
                     onClick={() => {
                       setResetId(null);
                       setResetPw("");
@@ -502,14 +532,14 @@ export default function UsersPanel() {
                   </button>
                 </div>
               )}
-              <div className="dcard-foot">
-                <span className="dcard-foot-note" />
+              <div className={DCARD_FOOT}>
+                <span className={DCARD_NOTE} />
                 {confirmId === u.id ? (
-                  <span className="dcard-confirm">
-                    <span className="dcard-confirm-text">Hapus user ini?</span>
+                  <span className={DCARD_ACTIONS}>
+                    <span className={DCARD_CONFIRM_TEXT}>Hapus user ini?</span>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Ya, hapus"
                       aria-label="Ya, hapus"
                       onClick={() => void remove(u)}
@@ -518,7 +548,7 @@ export default function UsersPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Batal"
                       aria-label="Batal"
                       onClick={() => setConfirmId(null)}
@@ -527,10 +557,10 @@ export default function UsersPanel() {
                     </button>
                   </span>
                 ) : (
-                  <span className="dcard-actions">
+                  <span className={DCARD_ACTIONS}>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Reset password"
                       aria-label="Reset password"
                       onClick={() => {
@@ -543,7 +573,7 @@ export default function UsersPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title={
                         u.status === "active" ? "Suspend user" : "Aktifkan user"
                       }
@@ -561,7 +591,7 @@ export default function UsersPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Ubah"
                       aria-label="Ubah"
                       onClick={() => openEdit(u)}
@@ -570,7 +600,7 @@ export default function UsersPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Hapus"
                       aria-label="Hapus"
                       onClick={() => setConfirmId(u.id)}

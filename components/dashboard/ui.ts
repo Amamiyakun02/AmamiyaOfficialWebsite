@@ -6,6 +6,9 @@
 export const CARD =
   "relative mb-3 list-none overflow-hidden rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] pt-4 pb-0 last:mb-0 before:absolute before:top-0 before:right-0 before:left-0 before:h-[2px] before:content-['']";
 
+export const CARD_UNREAD =
+  "relative mb-3 list-none overflow-hidden rounded-[14px] border border-[rgba(0,129,251,0.45)] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] pt-4 pb-0 last:mb-0 before:absolute before:top-0 before:right-0 before:left-0 before:h-[2px] before:content-['']";
+
 export const DICON_LAYOUT =
   "inline-flex cursor-pointer items-center justify-center border transition-all duration-[120ms] disabled:cursor-default disabled:opacity-45";
 export const DICON_NEUTRAL =

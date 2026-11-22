@@ -2,6 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import {
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  EMPTY,
+  ERR,
+  FIELD_SELECT,
+  LIST,
+  MINI,
+  SEARCH,
+  TOOLBAR,
+} from "./ui";
 
 /* Modul 2 System Dashboard — Logs & pantau sistem (spec vault §4).
    - Vault  : entri ~/agent_knowledge/_log.md (read-only), filter
@@ -41,6 +53,25 @@ function fmtUptime(s: number): string {
   if (h > 0) return `${h} jam ${m} menit`;
   return `${m} menit`;
 }
+
+
+const LOG_BADGE: Record<string, string> = {
+  ingest: "border-[rgba(88,166,255,0.45)] text-[#58a6ff]",
+  maintenance: "border-[rgba(227,179,65,0.45)] text-gold",
+  query: "border-[rgba(53,208,127,0.45)] text-[#35d07f]",
+  create: "border-[rgba(188,140,255,0.45)] text-[#bc8cff]",
+};
+const LVL_TONE: Record<string, string> = {
+  INFO: "text-[#58a6ff]",
+  WARNING: "text-gold",
+  ERROR: "text-rose",
+};
+const SUBTAB =
+  "cursor-pointer rounded-lg border px-[15px] py-[7px] text-[13.5px]";
+const SUBTAB_OFF =
+  "border-line bg-[rgba(16,16,19,0.7)] text-[#c9c9cf] hover:border-steel hover:text-white";
+const SUBTAB_ON =
+  "border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.14)] text-[#7dbcff] hover:border-steel hover:text-white";
 
 export default function LogsPanel() {
   const [view, setView] = useState<View>("vault");
@@ -170,25 +201,25 @@ export default function LogsPanel() {
   }, [bFollow, loadBackend]);
 
   return (
-    <div className="logs">
-      <div className="logs-subtabs" role="tablist" aria-label="Sumber log">
+    <div className="mt-[18px]">
+      <div className="mb-4 flex gap-2" role="tablist" aria-label="Sumber log">
         <button
           type="button"
-          className={`logs-subtab${view === "vault" ? " logs-subtab-on" : ""}`}
+          className={`${SUBTAB} ${view === "vault" ? SUBTAB_ON : SUBTAB_OFF}`}
           onClick={() => setView("vault")}
         >
           Vault
         </button>
         <button
           type="button"
-          className={`logs-subtab${view === "backend" ? " logs-subtab-on" : ""}`}
+          className={`${SUBTAB} ${view === "backend" ? SUBTAB_ON : SUBTAB_OFF}`}
           onClick={() => setView("backend")}
         >
           Backend
         </button>
         <button
           type="button"
-          className={`logs-subtab${view === "system" ? " logs-subtab-on" : ""}`}
+          className={`${SUBTAB} ${view === "system" ? SUBTAB_ON : SUBTAB_OFF}`}
           onClick={() => setView("system")}
         >
           Sistem
@@ -197,9 +228,9 @@ export default function LogsPanel() {
 
       {view === "vault" && (
         <div>
-          <div className="proj-toolbar">
+          <div className={TOOLBAR}>
             <input
-              className="proj-search"
+              className={SEARCH}
               type="search"
               placeholder="Cari di log vault…"
               value={vQ}
@@ -207,7 +238,7 @@ export default function LogsPanel() {
               aria-label="Cari log vault"
             />
             <select
-              className="proj-filter"
+              className={FIELD_SELECT}
               value={vCat}
               onChange={(e) => setVCat(e.target.value)}
               aria-label="Filter kategori"
@@ -219,33 +250,33 @@ export default function LogsPanel() {
                 </option>
               ))}
             </select>
-            <span className="logs-count">{vTotal} entri</span>
+            <span className="self-center text-[13px] text-fog">{vTotal} entri</span>
           </div>
-          {vError && <p className="proj-error">{vError}</p>}
+          {vError && <p className={`${ERR} mt-3`}>{vError}</p>}
           {vLoading ? (
-            <p className="proj-empty">Memuat log vault…</p>
+            <p className={EMPTY}>Memuat log vault…</p>
           ) : vItems.length === 0 ? (
-            <p className="proj-empty">Tidak ada entri yang cocok.</p>
+            <p className={EMPTY}>Tidak ada entri yang cocok.</p>
           ) : (
-            <ul className="proj-list">
+            <ul className={LIST}>
               {vItems.map((e, i) => (
-                <li key={`${e.timestamp}-${i}`} className="logs-entry">
+                <li key={`${e.timestamp}-${i}`} className="overflow-hidden rounded-[14px] border border-line bg-[rgba(12,12,14,0.72)]">
                   <button
                     type="button"
-                    className="logs-entry-head"
+                    className="flex w-full cursor-pointer flex-wrap items-center gap-2.5 border-none px-4 py-3 text-left text-inherit [background:none] hover:bg-[rgba(255,255,255,0.03)]"
                     onClick={() => setVOpen(vOpen === i ? null : i)}
                   >
-                    <span className="logs-time">{e.timestamp}</span>
-                    <span className={`proj-badge logs-badge-${e.category}`}>
+                    <span className="flex-shrink-0 text-[12.5px] text-fog [font-family:ui-monospace,monospace]">{e.timestamp}</span>
+                    <span className={`${BADGE} ${LOG_BADGE[e.category] ?? BADGE_PLAIN}`}>
                       {e.category}
                     </span>
-                    <span className="logs-title">{e.title}</span>
+                    <span className="text-[14.5px] font-semibold text-paper">{e.title}</span>
                   </button>
                   {vOpen === i && (
-                    <div className="logs-entry-body">
+                    <div className="px-4 pb-3.5 text-sm leading-[1.6] whitespace-pre-wrap text-[#c9c9cf]">
                       <p>{e.summary}</p>
                       {e.pages.length > 0 && (
-                        <p className="logs-pages">
+                        <p className="mt-2 text-[12.5px] text-fog">
                           Pages: {e.pages.join(", ")}
                         </p>
                       )}
@@ -260,9 +291,9 @@ export default function LogsPanel() {
 
       {view === "backend" && (
         <div>
-          <div className="proj-toolbar">
+          <div className={TOOLBAR}>
             <input
-              className="proj-search"
+              className={SEARCH}
               type="search"
               placeholder="Cari di log backend…"
               value={bQ}
@@ -270,7 +301,7 @@ export default function LogsPanel() {
               aria-label="Cari log backend"
             />
             <select
-              className="proj-filter"
+              className={FIELD_SELECT}
               value={bLevel}
               onChange={(e) => setBLevel(e.target.value)}
               aria-label="Filter level"
@@ -281,7 +312,7 @@ export default function LogsPanel() {
               <option value="ERROR">ERROR</option>
             </select>
             <select
-              className="proj-filter"
+              className={FIELD_SELECT}
               value={bLimit}
               onChange={(e) => setBLimit(Number(e.target.value))}
               aria-label="Jumlah baris"
@@ -292,12 +323,12 @@ export default function LogsPanel() {
             </select>
             <button
               type="button"
-              className="proj-mini"
+              className={MINI}
               onClick={() => void loadBackend()}
             >
               Segarkan
             </button>
-            <label className="logs-follow">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[#c9c9cf]">
               <input
                 type="checkbox"
                 checked={bFollow}
@@ -305,21 +336,21 @@ export default function LogsPanel() {
               />
               Ikuti otomatis
             </label>
-            <span className="logs-count">{bTotal} baris</span>
+            <span className="self-center text-[13px] text-fog">{bTotal} baris</span>
           </div>
-          {bError && <p className="proj-error">{bError}</p>}
+          {bError && <p className={`${ERR} mt-3`}>{bError}</p>}
           {bLoading ? (
-            <p className="proj-empty">Memuat log backend…</p>
+            <p className={EMPTY}>Memuat log backend…</p>
           ) : bItems.length === 0 ? (
-            <p className="proj-empty">Tidak ada baris yang cocok.</p>
+            <p className={EMPTY}>Tidak ada baris yang cocok.</p>
           ) : (
-            <div className="logs-term">
+            <div className="mt-3.5 max-h-[520px] overflow-y-auto rounded-[14px] border border-line bg-[#0a0a0c] px-3.5 py-3">
               {bItems.map((l, i) => (
-                <div key={i} className="logs-line">
-                  <span className={`logs-lvl logs-lvl-${l.level}`}>
+                <div key={i} className="flex gap-2.5 border-b border-[rgba(255,255,255,0.03)] py-[3px] text-[12.5px] leading-[1.55] [font-family:ui-monospace,monospace]">
+                  <span className={`w-[62px] flex-shrink-0 pt-0.5 text-[11px] font-bold tracking-[0.04em] ${LVL_TONE[l.level] ?? ""}`}>
                     {l.level}
                   </span>
-                  <span className="logs-msg">{l.message}</span>
+                  <span className="whitespace-pre-wrap text-[#c9c9cf] [word-break:break-word]">{l.message}</span>
                 </div>
               ))}
             </div>
@@ -329,66 +360,66 @@ export default function LogsPanel() {
 
       {view === "system" && (
         <div>
-          {sysError && <p className="proj-error">{sysError}</p>}
+          {sysError && <p className={`${ERR} mt-3`}>{sysError}</p>}
           {sysLoading && !sys ? (
-            <p className="proj-empty">Memuat info sistem…</p>
+            <p className={EMPTY}>Memuat info sistem…</p>
           ) : sys ? (
             <div>
-              <div className="sys-grid">
-                <div className="sys-card">
-                  <span className="sys-label">CPU</span>
-                  <span className="sys-value">{sys.cpu_percent}%</span>
-                  <span className="sys-note">{sys.cpu_count ?? "-"} core</span>
-                  <div className="sys-bar">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
+                <div className="flex flex-col gap-1 rounded-[14px] border border-line bg-[rgba(12,12,14,0.72)] px-4 py-3.5">
+                  <span className="text-xs font-bold tracking-[0.05em] uppercase text-fog">CPU</span>
+                  <span className="text-[26px] font-extrabold text-paper">{sys.cpu_percent}%</span>
+                  <span className="text-[12.5px] text-fog">{sys.cpu_count ?? "-"} core</span>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
                     <div
-                      className="sys-bar-fill"
+                      className="h-full rounded-full bg-accent"
                       style={{ width: `${Math.min(100, sys.cpu_percent)}%` }}
                     />
                   </div>
                 </div>
-                <div className="sys-card">
-                  <span className="sys-label">RAM</span>
-                  <span className="sys-value">{sys.memory.percent}%</span>
-                  <span className="sys-note">
+                <div className="flex flex-col gap-1 rounded-[14px] border border-line bg-[rgba(12,12,14,0.72)] px-4 py-3.5">
+                  <span className="text-xs font-bold tracking-[0.05em] uppercase text-fog">RAM</span>
+                  <span className="text-[26px] font-extrabold text-paper">{sys.memory.percent}%</span>
+                  <span className="text-[12.5px] text-fog">
                     {(sys.memory.used_mb / 1024).toFixed(1)} /{" "}
                     {(sys.memory.total_mb / 1024).toFixed(1)} GB
                   </span>
-                  <div className="sys-bar">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
                     <div
-                      className="sys-bar-fill"
+                      className="h-full rounded-full bg-accent"
                       style={{ width: `${Math.min(100, sys.memory.percent)}%` }}
                     />
                   </div>
                 </div>
-                <div className="sys-card">
-                  <span className="sys-label">Disk {sys.disk.path}</span>
-                  <span className="sys-value">{sys.disk.percent}%</span>
-                  <span className="sys-note">
+                <div className="flex flex-col gap-1 rounded-[14px] border border-line bg-[rgba(12,12,14,0.72)] px-4 py-3.5">
+                  <span className="text-xs font-bold tracking-[0.05em] uppercase text-fog">Disk {sys.disk.path}</span>
+                  <span className="text-[26px] font-extrabold text-paper">{sys.disk.percent}%</span>
+                  <span className="text-[12.5px] text-fog">
                     {sys.disk.used_gb} / {sys.disk.total_gb} GB
                   </span>
-                  <div className="sys-bar">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
                     <div
-                      className="sys-bar-fill"
+                      className="h-full rounded-full bg-accent"
                       style={{ width: `${Math.min(100, sys.disk.percent)}%` }}
                     />
                   </div>
                 </div>
-                <div className="sys-card">
-                  <span className="sys-label">Uptime</span>
-                  <span className="sys-value sys-value-sm">
+                <div className="flex flex-col gap-1 rounded-[14px] border border-line bg-[rgba(12,12,14,0.72)] px-4 py-3.5">
+                  <span className="text-xs font-bold tracking-[0.05em] uppercase text-fog">Uptime</span>
+                  <span className="pt-1 text-[19px] font-extrabold text-paper">
                     {fmtUptime(sys.uptime_seconds)}
                   </span>
-                  <span className="sys-note">
+                  <span className="text-[12.5px] text-fog">
                     sejak {sys.boot_time.replace("T", " ")}
                   </span>
                 </div>
               </div>
-              <p className="logs-host">
+              <p className="mt-3.5 mb-2.5 text-[13px] text-fog">
                 {sys.hostname} — {sys.os}
               </p>
               <button
                 type="button"
-                className="proj-mini"
+                className={MINI}
                 onClick={() => void loadSystem()}
                 disabled={sysLoading}
               >

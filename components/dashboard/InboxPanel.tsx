@@ -11,6 +11,25 @@ import {
   X,
 } from "lucide-react";
 import { apiUrl } from "@/lib/api";
+import {
+  BADGE,
+  BADGE_PLAIN,
+  BADGE_TONE,
+  CARD,
+  CARD_UNREAD,
+  DCARD_ACTIONS,
+  DCARD_CONFIRM_TEXT,
+  DCARD_FOOT,
+  DCARD_HEAD,
+  DCARD_NAME,
+  DCARD_NOTE,
+  DCARD_SUB,
+  DICON_DANGER,
+  DICON_LAYOUT,
+  DICON_NEUTRAL,
+  EMPTY,
+  ERR,
+} from "./ui";
 
 /* Modul Inbox — pesan masuk & feedback pengunjung (permintaan user
    20 Nov 2026). Sumbernya SATU gudang lama backend Vienna Agent:
@@ -90,9 +109,9 @@ function Stars({ rating }: { rating?: string }) {
   const n = Math.max(0, Math.min(5, parseInt(rating || "0", 10) || 0));
   if (n === 0) return null;
   return (
-    <span className="inbox-stars" title={`Rating ${n}/5`}>
+    <span className="ml-auto text-[13px] tracking-[1px] text-[#e5b95f]" title={`Rating ${n}/5`}>
       {"★".repeat(n)}
-      <span className="inbox-stars-off">{"★".repeat(5 - n)}</span>
+      <span className="text-steel">{"★".repeat(5 - n)}</span>
     </span>
   );
 }
@@ -179,16 +198,16 @@ export default function InboxPanel() {
   });
 
   return (
-    <div className="proj">
-      <div className="inbox-toolbar">
-        <div className="inbox-filters" role="tablist" aria-label="Filter pesan">
+    <div className="mt-[18px]">
+      <div className="mb-3.5 flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Filter pesan">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
               role="tab"
               aria-selected={filter === f.id}
-              className={`inbox-filter${filter === f.id ? " is-on" : ""}`}
+              className={`cursor-pointer rounded-full border px-[13px] py-1.5 text-[12.5px] ${filter === f.id ? "border-[rgba(0,129,251,0.5)] bg-[rgba(0,129,251,0.16)] text-white" : "border-line3 bg-[#17171b] text-[#c9c9d2] hover:border-steel hover:text-white"}`}
               onClick={() => setFilter(f.id)}
             >
               {f.label}
@@ -196,14 +215,14 @@ export default function InboxPanel() {
             </button>
           ))}
         </div>
-        <span className="inbox-count">
+        <span className="flex-1 text-right text-[12.5px] text-fog">
           {items === null
             ? "Memuat…"
             : `${shown.length} dari ${all.length} pesan · ${unread} belum dibaca`}
         </span>
         <button
           type="button"
-          className="dicon-btn"
+          className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
           onClick={() => void load()}
           title="Muat ulang"
           aria-label="Muat ulang"
@@ -212,17 +231,17 @@ export default function InboxPanel() {
         </button>
       </div>
 
-      {error && <p className="proj-error">{error}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
 
       {items !== null && shown.length === 0 && (
-        <p className="proj-empty">
+        <p className={EMPTY}>
           {all.length === 0
             ? "Belum ada pesan masuk. Pesan dari formulir Contact dan tool Feedback akan tampil di sini."
             : "Tidak ada pesan pada filter ini."}
         </p>
       )}
 
-      <div className="inbox-list">
+      <div className="flex flex-col gap-2.5">
         {shown.map((item) => {
           const { email, body, isContact } = parseContact(item);
           const isNew = (item.status || "new") === "new";
@@ -234,37 +253,37 @@ export default function InboxPanel() {
           return (
             <article
               key={item._id}
-              className={`dcard inbox-card${isNew ? " is-unread" : ""}`}
+              className={isNew ? CARD_UNREAD : CARD}
             >
-              <div className="dcard-head">
-                <span className="dcard-name">{item.customer_name}</span>
-                <span className="proj-badge">{catLabel}</span>
+              <div className={DCARD_HEAD}>
+                <span className={DCARD_NAME}>{item.customer_name}</span>
+                <span className={`${BADGE} ${BADGE_PLAIN}`}>{catLabel}</span>
                 {isNew ? (
-                  <span className="proj-badge inbox-badge-new">Baru</span>
+                  <span className={`${BADGE} border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.18)] text-[#7db4ff]`}>Baru</span>
                 ) : (
-                  <span className="proj-badge proj-badge-idea">Dibaca</span>
+                  <span className={`${BADGE} ${BADGE_TONE.idea}`}>Dibaca</span>
                 )}
                 {!isContact && <Stars rating={item.rating} />}
               </div>
-              <p className="dcard-sub">
+              <p className={DCARD_SUB}>
                 {item.created_at && (
                   <span>{fmtDateTime(item.created_at)}</span>
                 )}
                 {email && (
-                  <a className="inbox-mail" href={`mailto:${email}`}>
+                  <a className="text-[#7db4ff] no-underline hover:underline" href={`mailto:${email}`}>
                     {email}
                   </a>
                 )}
               </p>
-              <p className="inbox-content">{body}</p>
-              <div className="dcard-foot">
-                <span className="dcard-foot-note" />
+              <p className="mt-0.5 mb-0 text-[13.5px] leading-[1.55] whitespace-pre-wrap break-anywhere text-[#d8d8de]">{body}</p>
+              <div className={DCARD_FOOT}>
+                <span className={DCARD_NOTE} />
                 {confirmId === item._id ? (
-                  <span className="dcard-confirm">
-                    <span className="dcard-confirm-text">Hapus pesan ini?</span>
+                  <span className={DCARD_ACTIONS}>
+                    <span className={DCARD_CONFIRM_TEXT}>Hapus pesan ini?</span>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       disabled={busyId === item._id}
                       onClick={() => void remove(item)}
                       title="Ya, hapus"
@@ -274,7 +293,7 @@ export default function InboxPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       onClick={() => setConfirmId(null)}
                       title="Batal"
                       aria-label="Batal"
@@ -283,10 +302,10 @@ export default function InboxPanel() {
                     </button>
                   </span>
                 ) : (
-                  <span className="dcard-actions">
+                  <span className={DCARD_ACTIONS}>
                     {email && (
                       <a
-                        className="dicon-btn"
+                        className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                         href={`mailto:${email}?subject=${encodeURIComponent(
                           `Re: Pesanmu di amamiya.web.id`,
                         )}`}
@@ -298,7 +317,7 @@ export default function InboxPanel() {
                     )}
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       disabled={busyId === item._id}
                       onClick={() =>
                         void setStatus(item, isNew ? "read" : "new")
@@ -312,7 +331,7 @@ export default function InboxPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       onClick={() => setConfirmId(item._id)}
                       title="Hapus pesan"
                       aria-label="Hapus pesan"
