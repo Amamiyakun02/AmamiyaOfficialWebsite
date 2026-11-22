@@ -50,6 +50,37 @@ type FormState = {
 };
 
 const STATUSES = ["idea", "active", "maintenance", "archived"] as const;
+/* Kelas utilitas Tailwind pengganti sistem proj, dcard, dan dicon-btn
+   (fase migrasi 3c) — nilai disalin persis dari aturan globals.css. */
+const CARD =
+  "relative mb-3 list-none overflow-hidden rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] pt-4 pb-0 last:mb-0 before:absolute before:top-0 before:right-0 before:left-0 before:h-[2px] before:content-['']";
+const DICON_LAYOUT =
+  "inline-flex cursor-pointer items-center justify-center border transition-all duration-[120ms] disabled:cursor-default disabled:opacity-45";
+const DICON_NEUTRAL =
+  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[#3d3d46] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-white";
+const DICON_DANGER =
+  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[rgba(248,113,113,0.55)] enabled:hover:bg-[rgba(248,113,113,0.07)] enabled:hover:text-[#f87171]";
+const DICON_STAR =
+  "border-[#2a2a30] bg-transparent text-[#b9b9c4] enabled:hover:border-[rgba(232,185,62,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#e8b93e]";
+const DICON_GOLD =
+  "border-[rgba(232,185,62,0.45)] bg-[rgba(232,185,62,0.08)] text-[#e8b93e] enabled:hover:border-[#3d3d46] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-white";
+const DICON_GOLD_STAR =
+  "border-[rgba(232,185,62,0.45)] bg-[rgba(232,185,62,0.08)] text-[#e8b93e] enabled:hover:border-[rgba(232,185,62,0.6)] enabled:hover:bg-[rgba(255,255,255,0.05)] enabled:hover:text-[#e8b93e]";
+const BADGE =
+  "rounded-full border px-[9px] py-[3px] text-[11px] font-bold tracking-[0.05em] uppercase";
+const BADGE_TONE: Record<string, string> = {
+  active: "border-[rgba(53,208,127,0.45)] text-[#35d07f]",
+  idea: "border-[rgba(227,179,65,0.45)] text-gold",
+  maintenance: "border-[rgba(88,166,255,0.45)] text-[#58a6ff]",
+  archived: "border-line text-[#8a8a92]",
+};
+const FIELD_INPUT =
+  "w-full rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none";
+const FIELD_SELECT =
+  "rounded-[10px] border border-line bg-[#0c0c0e] px-2.5 py-[9px] text-sm text-paper outline-none";
+const ERR =
+  "rounded-[10px] border border-[rgba(255,90,90,0.25)] bg-[rgba(255,90,90,0.08)] px-3 py-[9px] text-[13px] leading-[1.5] text-rose";
+
 
 const EMPTY_FORM: FormState = {
   name: "",
@@ -311,34 +342,34 @@ export default function ProjectsPanel() {
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <div className="proj">
-      <div className="top-strip">
-        <div className="top-strip-head">
-          <span className="top-strip-title">
+    <div className="mt-[18px]">
+      <div className="mb-4 rounded-[14px] border border-[rgba(227,179,65,0.35)] bg-[rgba(227,179,65,0.06)] px-4 py-3">
+        <div className="flex items-center justify-between gap-2.5">
+          <span className="min-w-0 text-[13.5px] font-bold text-gold">
             ★ Top Project — tampil di section Projects portofolio
           </span>
-          <span className="top-count">{featuredItems.length}/4</span>
+          <span className="rounded-full border border-steel px-2.5 py-0.5 text-[12.5px] font-bold text-[#c9c9cf]">{featuredItems.length}/4</span>
         </div>
         {featuredItems.length === 0 ? (
-          <p className="top-empty">
+          <p className="mt-2 text-[13px] leading-[1.5] text-fog">
             Belum ada yang di-pin. Klik tombol Pin pada project di bawah —
             maksimal 4, urutannya bisa diatur di sini.
           </p>
         ) : (
-          <ol className="top-list">
+          <ol className="mt-2.5 flex list-none flex-col gap-2 p-0">
             {featuredItems.map((p, i) => (
-              <li key={p.id} className="top-item">
-                <span className="top-rank">{i + 1}</span>
-                <span className="top-name">{p.name}</span>
+              <li key={p.id} className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-[rgba(227,179,65,0.18)] text-xs font-extrabold text-gold">{i + 1}</span>
+                <span className="text-sm font-semibold text-paper">{p.name}</span>
                 {(p.status === "idea" || p.status === "archived") && (
-                  <span className="top-warn">
+                  <span className="text-xs text-rose">
                     status {p.status} — tidak tampil ke publik
                   </span>
                 )}
-                <span className="top-btns">
+                <span className="ml-auto inline-flex gap-1.5">
                   <button
                     type="button"
-                    className="dicon-btn sm"
+                    className={`${DICON_LAYOUT} h-7 w-7 rounded-[7px] ${DICON_NEUTRAL}`}
                     disabled={i === 0}
                     onClick={() => void moveFeatured(p, -1)}
                     aria-label={`Naikkan ${p.name}`}
@@ -348,7 +379,7 @@ export default function ProjectsPanel() {
                   </button>
                   <button
                     type="button"
-                    className="dicon-btn sm"
+                    className={`${DICON_LAYOUT} h-7 w-7 rounded-[7px] ${DICON_NEUTRAL}`}
                     disabled={i === featuredItems.length - 1}
                     onClick={() => void moveFeatured(p, 1)}
                     aria-label={`Turunkan ${p.name}`}
@@ -358,7 +389,7 @@ export default function ProjectsPanel() {
                   </button>
                   <button
                     type="button"
-                    className="dicon-btn sm is-on-gold"
+                    className={`${DICON_LAYOUT} h-7 w-7 rounded-[7px] ${DICON_GOLD}`}
                     onClick={() => void toggleFeatured(p)}
                     aria-label={`Lepas pin ${p.name}`}
                     title="Lepas pin"
@@ -372,9 +403,9 @@ export default function ProjectsPanel() {
         )}
       </div>
 
-      <div className="proj-toolbar">
+      <div className="flex flex-wrap items-center gap-2.5">
         <input
-          className="proj-search"
+          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
           type="search"
           placeholder="Cari project…"
           value={q}
@@ -382,7 +413,7 @@ export default function ProjectsPanel() {
           aria-label="Cari project"
         />
         <select
-          className="proj-filter"
+          className={FIELD_SELECT}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Filter status"
@@ -394,7 +425,7 @@ export default function ProjectsPanel() {
             </option>
           ))}
         </select>
-        <button type="button" className="proj-add" onClick={openNew}>
+        <button type="button" className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-white hover:bg-[#1a8dff]" onClick={openNew}>
           + Tambah Project
         </button>
       </div>
@@ -409,14 +440,14 @@ export default function ProjectsPanel() {
           }}
           footer={
             <>
-              {formError && <p className="proj-error">{formError}</p>}
-              <div className="proj-form-actions dash-modal-actions">
-                <button type="submit" className="proj-save" disabled={saving}>
+              {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
+              <div className="flex gap-2.5">
+                <button type="submit" className="cursor-pointer rounded-lg border-none bg-accent px-[18px] py-[9px] text-sm font-semibold text-white disabled:cursor-default disabled:opacity-60" disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="proj-cancel"
+                  className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#c9c9cf] hover:border-steel hover:text-white"
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -426,18 +457,18 @@ export default function ProjectsPanel() {
             </>
           }
         >
-          <div className="proj-grid">
-            <label className="proj-field proj-span2">
-              <span>Nama *</span>
-              <input
+          <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+            <label className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Nama *</span>
+              <input className={FIELD_INPUT}
                 value={form.name}
                 onChange={(e) => set("name")(e.target.value)}
                 maxLength={200}
               />
             </label>
-            <label className="proj-field">
-              <span>Status</span>
-              <select
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Status</span>
+              <select className={FIELD_SELECT}
                 value={form.status}
                 onChange={(e) => set("status")(e.target.value)}
               >
@@ -448,75 +479,75 @@ export default function ProjectsPanel() {
                 ))}
               </select>
             </label>
-            <label className="proj-field proj-span2">
-              <span>Deskripsi</span>
-              <textarea
+            <label className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Deskripsi</span>
+              <textarea className={`${FIELD_INPUT} resize-y`}
                 rows={3}
                 value={form.description}
                 onChange={(e) => set("description")(e.target.value)}
               />
             </label>
-            <label className="proj-field">
-              <span>Tech stack</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Tech stack</span>
+              <input className={FIELD_INPUT}
                 value={form.tech_stack}
                 onChange={(e) => set("tech_stack")(e.target.value)}
                 maxLength={300}
               />
             </label>
-            <label className="proj-field">
-              <span>Path lokal</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Path lokal</span>
+              <input className={FIELD_INPUT}
                 value={form.local_path}
                 onChange={(e) => set("local_path")(e.target.value)}
                 maxLength={500}
                 placeholder="~/Desktop/…"
               />
             </label>
-            <label className="proj-field">
-              <span>Repo URL</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Repo URL</span>
+              <input className={FIELD_INPUT}
                 value={form.repo_url}
                 onChange={(e) => set("repo_url")(e.target.value)}
                 maxLength={500}
                 placeholder="https://github.com/…"
               />
             </label>
-            <label className="proj-field">
-              <span>Link demo</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Link demo</span>
+              <input className={FIELD_INPUT}
                 value={form.link_demo}
                 onChange={(e) => set("link_demo")(e.target.value)}
                 maxLength={500}
               />
             </label>
-            <label className="proj-field">
-              <span>Link docs</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Link docs</span>
+              <input className={FIELD_INPUT}
                 value={form.link_docs}
                 onChange={(e) => set("link_docs")(e.target.value)}
                 maxLength={500}
               />
             </label>
-            <label className="proj-field">
-              <span>Vault note</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Vault note</span>
+              <input className={FIELD_INPUT}
                 value={form.link_vault}
                 onChange={(e) => set("link_vault")(e.target.value)}
                 maxLength={500}
               />
             </label>
-            <label className="proj-field">
-              <span>Video demo (URL/path mp4/webm)</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Video demo (URL/path mp4/webm)</span>
+              <input className={FIELD_INPUT}
                 value={form.demo_video_url}
                 onChange={(e) => set("demo_video_url")(e.target.value)}
                 maxLength={500}
               />
             </label>
-            <label className="proj-field">
-              <span>Thumbnail video (URL)</span>
-              <input
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold tracking-[0.03em] text-fog">Thumbnail video (URL)</span>
+              <input className={FIELD_INPUT}
                 value={form.demo_video_thumbnail}
                 onChange={(e) => set("demo_video_thumbnail")(e.target.value)}
                 maxLength={500}
@@ -526,79 +557,80 @@ export default function ProjectsPanel() {
         </FormModal>
       )}
 
-      {error && <p className="proj-error">{error}</p>}
+      {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
-        <p className="proj-empty">Memuat daftar project…</p>
+        <p className="mt-[18px] text-sm text-fog">Memuat daftar project…</p>
       ) : items.length === 0 ? (
-        <p className="proj-empty">
+        <p className="mt-[18px] text-sm text-fog">
           {q || status
             ? "Tidak ada project yang cocok dengan filter."
             : "Belum ada project terdaftar."}
         </p>
       ) : (
-        <ul className="proj-list">
+        <ul className="mt-4 flex list-none flex-col gap-3 p-0">
           {items.map((p) => (
                         <li
               key={p.id}
-              className={"dcard" + (p.is_featured ? " is-featured" : "")}
+              className={`${CARD} ${p.is_featured ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : ""}`}
             >
-              <div className="dcard-head">
+              <div className="flex flex-wrap items-center gap-2">
                 {p.demo_video_thumbnail && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    className="dcard-thumb"
+                    className="h-11 w-11 flex-none rounded-[9px] border border-[#26262c] object-cover"
                     src={p.demo_video_thumbnail}
                     alt=""
                     loading="lazy"
                   />
                 )}
-                <span className="dcard-name">{p.name}</span>
-                <span className={`proj-badge proj-badge-${p.status}`}>
+                <span className="mr-0.5 text-[15.5px] font-[650] text-[#f4f4f6]">{p.name}</span>
+                <span className={`${BADGE} ${BADGE_TONE[p.status] ?? "border-line text-[#c9c9cf]"}`}>
                   {p.status}
                 </span>
                 {p.is_featured && (
-                  <span className="proj-badge proj-badge-top">
+                  <span className={`${BADGE} border-[rgba(227,179,65,0.55)] text-gold`}>
                     ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
                   </span>
                 )}
               </div>
-              {p.description && <p className="dcard-desc">{p.description}</p>}
-              <p className="dcard-sub">
+              {p.description && <p className="mt-2.5 mb-0 text-[13px] leading-[1.55] text-[#c6c6cf]">{p.description}</p>}
+              <p className="mt-[7px] mb-0 flex flex-wrap gap-3.5 text-xs text-[#9a9aa6]">
                 {p.tech_stack && <span>{p.tech_stack}</span>}
                 {p.local_path && (
-                  <span className="proj-path">{p.local_path}</span>
+                  <span className="[font-family:ui-monospace,monospace]">{p.local_path}</span>
                 )}
                 {p.updated_at && <span>Diubah {fmtDate(p.updated_at)}</span>}
               </p>
-              <div className="dcard-foot">
-                <div className="dcard-foot-note">
+              <div className="mt-3.5 flex items-center gap-3 border-t border-[#202026] pt-2.5 pb-3">
+                <div className="min-w-0 text-[12.5px]">
                   {(p.repo_url ||
                     p.links?.demo ||
                     p.links?.docs ||
                     p.links?.vault ||
                     p.demo_video_url) && (
-                    <div className="proj-links">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[13px]">
                       {p.repo_url && (
-                        <a href={p.repo_url} target="_blank" rel="noreferrer">
+                        <a href={p.repo_url} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
                           Repo
                         </a>
                       )}
                       {p.links?.demo && (
-                        <a href={p.links.demo} target="_blank" rel="noreferrer">
+                        <a href={p.links.demo} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
                           Demo
                         </a>
                       )}
                       {p.links?.docs && (
-                        <a href={p.links.docs} target="_blank" rel="noreferrer">
+                        <a href={p.links.docs} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
                           Docs
                         </a>
                       )}
-                      {p.links?.vault && <span>Vault: {p.links.vault}</span>}
+                      {p.links?.vault && <span className="text-fog">Vault: {p.links.vault}</span>}
                       {p.demo_video_url && (
                         <a
                           href={p.demo_video_url}
                           target="_blank"
                           rel="noreferrer"
+                          className="text-[#58a6ff] no-underline hover:underline"
                         >
                           Video demo
                         </a>
@@ -607,13 +639,13 @@ export default function ProjectsPanel() {
                   )}
                 </div>
                 {confirmId === p.id ? (
-                  <span className="dcard-confirm">
-                    <span className="dcard-confirm-text">
+                  <span className="ml-auto inline-flex flex-none items-center gap-1.5">
+                    <span className="mr-0.5 text-[12.5px] text-[#f0b4b4]">
                       Hapus project ini?
                     </span>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Ya, hapus"
                       aria-label="Ya, hapus"
                       onClick={() => void remove(p)}
@@ -622,7 +654,7 @@ export default function ProjectsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Batal"
                       aria-label="Batal"
                       onClick={() => setConfirmId(null)}
@@ -631,13 +663,10 @@ export default function ProjectsPanel() {
                     </button>
                   </span>
                 ) : (
-                  <span className="dcard-actions">
+                  <span className="ml-auto inline-flex flex-none items-center gap-1.5">
                     <button
                       type="button"
-                      className={
-                        "dicon-btn is-star" +
-                        (p.is_featured ? " is-on-gold" : "")
-                      }
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${p.is_featured ? DICON_GOLD_STAR : DICON_STAR}`}
                       disabled={!p.is_featured && featuredItems.length >= 4}
                       title={
                         !p.is_featured && featuredItems.length >= 4
@@ -661,7 +690,7 @@ export default function ProjectsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`}
                       title="Ubah"
                       aria-label="Ubah"
                       onClick={() => openEdit(p)}
@@ -670,7 +699,7 @@ export default function ProjectsPanel() {
                     </button>
                     <button
                       type="button"
-                      className="dicon-btn is-danger"
+                      className={`${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_DANGER}`}
                       title="Hapus"
                       aria-label="Hapus"
                       onClick={() => setConfirmId(p.id)}

@@ -39,28 +39,28 @@ export default function FormModal({
   }, [onClose]);
 
   return (
-    <div className="dash-modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(4,4,6,0.66)] px-4 py-6 backdrop-blur-[3px]" onClick={onClose}>
       <div
-        className="dash-modal"
+        className="flex max-h-[calc(100dvh-48px)] w-[min(640px,100%)] flex-col rounded-2xl border border-[#2a2a30] bg-panel shadow-[0_24px_64px_rgba(0,0,0,0.55)] animate-[dash-modal-in_0.16s_ease] motion-reduce:animate-none"
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="dash-modal-head">
-          <h3>{title}</h3>
+        <div className="flex items-center justify-between gap-3 px-5 pt-4">
+          <h3 className="text-base font-bold text-paper">{title}</h3>
           <button
             type="button"
-            className="dash-icon-btn"
+            className="ml-auto inline-flex h-[31px] w-[31px] flex-none cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-[#a7a7ae] hover:border-line hover:bg-[rgba(255,255,255,0.05)] hover:text-white"
             onClick={onClose}
             aria-label="Tutup"
           >
             <X size={17} />
           </button>
         </div>
-        <form onSubmit={onSubmit}>
-          <div className="dash-modal-body">{children}</div>
-          {footer && <div className="dash-modal-foot">{footer}</div>}
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-col">
+          <div className="min-h-0 overflow-y-auto px-5 pt-4 pb-5">{children}</div>
+          {footer && <div className="border-t border-line2 px-5 pt-3.5 pb-4">{footer}</div>}
         </form>
       </div>
     </div>
