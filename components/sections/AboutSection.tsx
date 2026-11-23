@@ -84,7 +84,7 @@ export default function AboutSection() {
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3.5">
+      <div className="grid grid-cols-1 gap-3.5 min-[700px]:grid-cols-2 min-[1080px]:grid-cols-5">
         {shown.map((s) => (
           <article
             key={s.name}
