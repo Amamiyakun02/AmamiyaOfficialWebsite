@@ -59,7 +59,7 @@ function StaticProjects({
         ))}
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
+      <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2">
         {shown.map((p) => {
           const Icon = p.icon;
           return (
@@ -279,7 +279,7 @@ export default function ProjectsSection({
 
       {phase === "loading" && (
         <div
-          className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1"
+          className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2"
           aria-hidden="true"
         >
           {[0, 1, 2, 3].map((i) => (
@@ -304,7 +304,7 @@ export default function ProjectsSection({
             Belum ada project unggulan yang di-pin dari dashboard.
           </p>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2">
             {items.map((p) => (
               <PublicProjectCard key={p.id} p={p} />
             ))}
