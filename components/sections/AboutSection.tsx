@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { skillsData, type SkillCategory } from "@/lib/skills";
+import { useEffect, useState } from "react";
+import { skillsData, type Skill, type SkillCategory } from "@/lib/skills";
+import {
+  fetchPublicSkills,
+  publicToSkill,
+  sortPublicSkills,
+} from "@/lib/publicSkills";
 import SectionTitle from "@/components/SectionTitle";
 
 // Halaman Tentang — konten dari WebPortofolio lama: deskripsi profil,
@@ -47,14 +52,34 @@ const SKILL_LIMIT = 10;
 export default function AboutSection() {
   const [cat, setCat] = useState<SkillCategory>("All");
   const [expanded, setExpanded] = useState(false);
+  // Sumber utama: registry dashboard (GET /v1/skills). Data statis
+  // lib/skills.ts hanya fallback bila backend tidak terjangkau/kosong
+  // — pola yang sama seperti section Projects.
+  const [skills, setSkills] = useState<Skill[]>(skillsData);
+  useEffect(() => {
+    let alive = true;
+    void fetchPublicSkills().then((rows) => {
+      if (!alive || !rows || rows.length === 0) return;
+      setSkills(sortPublicSkills(rows).map(publicToSkill));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
   const filtered =
-    cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
-  // Mode ringkas di "Semua" menampilkan 10 skill unggulan (flag featured
-  // di lib/skills.ts); di kategori lain 10 kartu pertama kategori itu.
+    cat === "All" ? skills : skills.filter((s) => s.category === cat);
+  // Mode ringkas di "Semua" menampilkan 10 skill unggulan (flag featured,
+  // terurut featuredOrder dari dashboard); di kategori lain 10 kartu
+  // pertama kategori itu.
   const shown = expanded
     ? filtered
     : cat === "All"
-      ? skillsData.filter((s) => s.featured)
+      ? skills
+          .filter((s) => s.featured)
+          .sort(
+            (a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99),
+          )
+          .slice(0, SKILL_LIMIT)
       : filtered.slice(0, SKILL_LIMIT);
   return (
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">

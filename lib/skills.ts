@@ -19,9 +19,13 @@ export type Skill = {
   name: string;
   level: number;
   // Skill unggulan: maksimal 10 ditampilkan pertama di section About
-  // (sisanya lewat tombol "Lihat semua"). Rencana user: flag ini nanti
-  // diatur dari dashboard.
+  // (sisanya lewat tombol "Lihat semua"). Sejak 23 Nov 2026 flag ini
+  // diatur dari dashboard (tab Skills); data statis di file ini hanya
+  // fallback bila backend tidak terjangkau.
   featured?: boolean;
+  // Urutan pin unggulan dari backend (featured_order); data statis
+  // tidak mengisinya — urutan file yang berlaku.
+  featuredOrder?: number;
   desc: { en: string; id: string };
   category: Exclude<SkillCategory, "All">;
 };

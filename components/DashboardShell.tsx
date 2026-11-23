@@ -23,6 +23,7 @@ import {
   PanelLeftOpen,
   PlugZap,
   ScrollText,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { apiUrl } from "@/lib/api";
@@ -40,8 +41,10 @@ import { apiUrl } from "@/lib/api";
      bisa DILIPAT menjadi rel ikon 68px (tombol di baris merek;
      keadaan tersimpan di localStorage) — tambahan 21 Nov 2026.
    - Isi: Overview (halaman utama statistik, tab bawaan saat masuk)
-     + 8 modul sesuai spec vault (Projects, Logs, Integrations,
-     Contents, Inbox, Users, AI Provider, AI Agent). Tab Inbox
+     + modul-modul sesuai spec vault (Projects, Skills, Logs,
+     Integrations, Contents, Inbox, Users, AI Provider, AI Agent).
+     Tab Skills (23 Nov 2026) mengatur registry keahlian section
+     About portofolio + pin 10 Skill Unggulan dari dashboard. Tab Inbox
      menampung pesan formulir Contact + feedback pengunjung dari
      gudang backend /v1/admin/feedbacks. Tab AI Provider berisi
      panel registri provider + Publish config opencode (dua target:
@@ -58,6 +61,10 @@ const OverviewPanel = dynamic(() => import("./dashboard/OverviewPanel"), {
 });
 
 const ProjectsPanel = dynamic(() => import("./dashboard/ProjectsPanel"), {
+  ssr: false,
+});
+
+const SkillsPanel = dynamic(() => import("./dashboard/SkillsPanel"), {
   ssr: false,
 });
 
@@ -108,6 +115,11 @@ const TABS: Tab[] = [
     id: "projects",
     label: "Projects",
     icon: FolderGit2,
+  },
+  {
+    id: "skills",
+    label: "Skills",
+    icon: Sparkles,
   },
   {
     id: "logs",
@@ -373,6 +385,8 @@ export default function DashboardShell() {
               <OverviewPanel onNavigate={selectTab} />
             ) : tab.id === "projects" ? (
               <ProjectsPanel />
+            ) : tab.id === "skills" ? (
+              <SkillsPanel />
             ) : tab.id === "logs" ? (
               <LogsPanel />
             ) : tab.id === "integrations" ? (
