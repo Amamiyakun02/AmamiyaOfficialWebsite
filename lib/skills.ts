@@ -1,24 +1,218 @@
-// Data keahlian — dipindah dari WebPortofolio lama (src/pages/About.tsx),
-// dipakai halaman Tentang. Level dalam persen.
-export type SkillCategory = "All" | "AI/ML" | "Web" | "Systems" | "Other";
+// Data keahlian — dipakai section About (filter kategori + kartu level).
+// Kategori diperluas 23 Nov 2026 atas permintaan user: Frontend, Backend,
+// Android, Database, Deployment, AI/ML, AI Tools, Other. Sebagian isi
+// masih dummy (Fiber, Laravel, Kotlin, GCP, Oracle Cloud) — disesuaikan
+// lagi oleh user nanti.
+export type SkillCategory =
+  | "All"
+  | "Frontend"
+  | "Backend"
+  | "Android"
+  | "Database"
+  | "Deployment"
+  | "AI/ML"
+  | "AI Tools"
+  | "Other";
 
 export type Skill = {
   name: string;
   level: number;
   desc: { en: string; id: string };
-  category: "AI/ML" | "Web" | "Systems" | "Other";
+  category: Exclude<SkillCategory, "All">;
 };
 
 export const skillsData: Skill[] = [
+  // ===== Frontend =====
+  {
+    name: "React",
+    level: 80,
+    desc: {
+      en: "Frontends and dashboards with React.",
+      id: "Frontend dan dasbor dengan React."
+    },
+    category: "Frontend"
+  },
+  {
+    name: "Next.js",
+    level: 80,
+    desc: {
+      en: "Full-stack web apps and this portfolio site itself.",
+      id: "Aplikasi web full-stack dan situs portofolio ini sendiri."
+    },
+    category: "Frontend"
+  },
+  {
+    name: "Tailwind CSS",
+    level: 75,
+    desc: {
+      en: "Responsive layouts and component styling with utilities.",
+      id: "Layout responsif dan styling komponen berbasis utilitas."
+    },
+    category: "Frontend"
+  },
+  {
+    name: "TypeScript / JS",
+    level: 75,
+    desc: {
+      en: "Type-safe code for web apps.",
+      id: "Kode yang type-safe untuk aplikasi web."
+    },
+    category: "Frontend"
+  },
+
+  // ===== Backend =====
+  {
+    name: "FastAPI",
+    level: 85,
+    desc: {
+      en: "REST APIs and the AI agent backend behind this site.",
+      id: "API REST dan backend agent AI di balik situs ini."
+    },
+    category: "Backend"
+  },
   {
     name: "Python",
     level: 85,
     desc: {
-      en: "Main language for scripting, automation, and data pipelines.",
-      id: "Bahasa utama untuk scripting, otomatisasi, dan alur data."
+      en: "Main language for backends, scripting, and automation.",
+      id: "Bahasa utama untuk backend, scripting, dan otomatisasi."
     },
-    category: "AI/ML"
+    category: "Backend"
   },
+  {
+    name: "Fiber (Go)",
+    level: 55,
+    desc: {
+      en: "Lightweight, fast HTTP APIs with Go's Fiber framework.",
+      id: "API HTTP yang ringan dan cepat dengan framework Fiber di Go."
+    },
+    category: "Backend"
+  },
+  {
+    name: "Laravel",
+    level: 55,
+    desc: {
+      en: "PHP web apps with Laravel's MVC structure and Eloquent ORM.",
+      id: "Aplikasi web PHP dengan struktur MVC Laravel dan Eloquent ORM."
+    },
+    category: "Backend"
+  },
+
+  // ===== Android =====
+  {
+    name: "Flutter & Dart",
+    level: 80,
+    desc: {
+      en: "Cross-platform mobile apps with Flutter.",
+      id: "Aplikasi mobile lintas platform dengan Flutter."
+    },
+    category: "Android"
+  },
+  {
+    name: "Kotlin",
+    level: 50,
+    desc: {
+      en: "Native Android apps with Kotlin.",
+      id: "Aplikasi Android native dengan Kotlin."
+    },
+    category: "Android"
+  },
+
+  // ===== Database =====
+  {
+    name: "PostgreSQL",
+    level: 75,
+    desc: {
+      en: "Relational storage for dashboards and audit data.",
+      id: "Penyimpanan relasional untuk dasbor dan data audit."
+    },
+    category: "Database"
+  },
+  {
+    name: "MongoDB",
+    level: 80,
+    desc: {
+      en: "Document storage for app data and the MCP server.",
+      id: "Penyimpanan dokumen untuk data aplikasi dan server MCP."
+    },
+    category: "Database"
+  },
+  {
+    name: "MySQL",
+    level: 70,
+    desc: {
+      en: "Classic relational databases for web apps.",
+      id: "Database relasional klasik untuk aplikasi web."
+    },
+    category: "Database"
+  },
+
+  // ===== Deployment =====
+  {
+    name: "Vultr",
+    level: 75,
+    desc: {
+      en: "VPS hosting for backends and self-hosted services.",
+      id: "Hosting VPS untuk backend dan layanan self-hosted."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Google Cloud (GCP)",
+    level: 50,
+    desc: {
+      en: "Cloud compute and managed services on Google Cloud.",
+      id: "Komputasi awan dan layanan terkelola di Google Cloud."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Oracle Cloud",
+    level: 50,
+    desc: {
+      en: "Cloud infrastructure on Oracle Cloud (OCI).",
+      id: "Infrastruktur awan di Oracle Cloud (OCI)."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Cloudflare",
+    level: 80,
+    desc: {
+      en: "DNS, proxy, and tunnels for my domains and services.",
+      id: "DNS, proxy, dan tunnel untuk domain dan layananku."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Vercel",
+    level: 80,
+    desc: {
+      en: "Frontend hosting and deployment for Next.js apps.",
+      id: "Hosting dan deployment frontend untuk aplikasi Next.js."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Docker Containers",
+    level: 80,
+    desc: {
+      en: "Containerized apps for consistent deployments.",
+      id: "Aplikasi dalam container agar deployment konsisten."
+    },
+    category: "Deployment"
+  },
+  {
+    name: "Linux Administration",
+    level: 70,
+    desc: {
+      en: "Server setup, config, and day-to-day administration.",
+      id: "Setup server, konfigurasi, dan administrasi harian."
+    },
+    category: "Deployment"
+  },
+
+  // ===== AI/ML =====
   {
     name: "PyTorch & ML",
     level: 75,
@@ -47,43 +241,54 @@ export const skillsData: Skill[] = [
     category: "AI/ML"
   },
 
+  // ===== AI Tools =====
   {
-    name: "TypeScript / JS",
+    name: "Claude Code",
     level: 75,
     desc: {
-      en: "Type-safe code for web apps.",
-      id: "Kode yang type-safe untuk aplikasi web."
+      en: "AI coding assistant for development workflows.",
+      id: "Asisten coding AI untuk alur kerja pengembangan."
     },
-    category: "Web"
+    category: "AI Tools"
   },
   {
-    name: "React",
-    level: 80,
-    desc: {
-      en: "Frontends and dashboards with React.",
-      id: "Frontend dan dasbor dengan React."
-    },
-    category: "Web"
-  },
-  {
-    name: "Tailwind CSS",
-    level: 65,
-    desc: {
-      en: "Responsive layouts and component styling.",
-      id: "Layout responsif dan styling komponen."
-    },
-    category: "Web"
-  },
-
-  {
-    name: "Linux Administration",
+    name: "Codex",
     level: 70,
     desc: {
-      en: "Server setup, config, and day-to-day administration.",
-      id: "Setup server, konfigurasi, dan administrasi harian."
+      en: "OpenAI's coding agent for code generation and fixes.",
+      id: "Agent coding OpenAI untuk membuat dan memperbaiki kode."
     },
-    category: "Systems"
+    category: "AI Tools"
   },
+  {
+    name: "OpenCode",
+    level: 85,
+    desc: {
+      en: "The agent core powering this site's public and admin assistants.",
+      id: "Inti agent yang menjalankan asisten publik dan admin situs ini."
+    },
+    category: "AI Tools"
+  },
+  {
+    name: "Muse",
+    level: 75,
+    desc: {
+      en: "Personal AI assistant in chat and messaging apps.",
+      id: "Asisten AI pribadi di aplikasi chat dan pesan."
+    },
+    category: "AI Tools"
+  },
+  {
+    name: "MCP",
+    level: 85,
+    desc: {
+      en: "Model Context Protocol — my own MCP server with dozens of tools for agents.",
+      id: "Model Context Protocol — server MCP buatanku dengan puluhan tool untuk agent."
+    },
+    category: "AI Tools"
+  },
+
+  // ===== Other =====
   {
     name: "Bash & Python Scripting",
     level: 80,
@@ -91,35 +296,15 @@ export const skillsData: Skill[] = [
       en: "Automation scripts for routine tasks.",
       id: "Skrip otomatisasi untuk tugas rutin."
     },
-    category: "Systems"
-  },
-  {
-    name: "Docker Containers",
-    level: 80,
-    desc: {
-      en: "Containerized apps for consistent deployments.",
-      id: "Aplikasi dalam container agar deployment konsisten."
-    },
-    category: "Systems"
-  },
-
-  {
-    name: "Flutter & Dart",
-    level: 80,
-    desc: {
-      en: "Cross-platform mobile apps with Flutter.",
-      id: "Aplikasi mobile lintas platform dengan Flutter."
-    },
     category: "Other"
   },
   {
-    name: "SQL & MongoDB",
-    level: 75,
+    name: "Git & GitHub",
+    level: 80,
     desc: {
-      en: "Relational and document databases for app storage.",
-      id: "Database relasional dan dokumen untuk penyimpanan aplikasi."
+      en: "Version control and collaboration for all my projects.",
+      id: "Kontrol versi dan kolaborasi untuk semua proyekku."
     },
     category: "Other"
   }
 ]
-

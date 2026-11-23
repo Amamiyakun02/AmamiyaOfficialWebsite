@@ -7,7 +7,17 @@ import SectionTitle from "@/components/SectionTitle";
 // Halaman Tentang — konten dari WebPortofolio lama: deskripsi profil,
 // matriks keahlian (dengan filter kategori seperti aslinya), dan
 // linimasa pengalaman.
-const CATS: SkillCategory[] = ["All", "AI/ML", "Web", "Systems", "Other"];
+const CATS: SkillCategory[] = [
+  "All",
+  "Frontend",
+  "Backend",
+  "Android",
+  "Database",
+  "Deployment",
+  "AI/ML",
+  "AI Tools",
+  "Other",
+];
 
 const TIMELINE = [
   {
