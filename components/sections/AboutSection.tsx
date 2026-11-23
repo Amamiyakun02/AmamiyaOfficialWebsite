@@ -118,9 +118,7 @@ export default function AboutSection() {
             className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
             onClick={() => setExpanded((v) => !v)}
           >
-            {expanded
-              ? "Tampilkan lebih sedikit"
-              : `Lihat semua ${filtered.length} keahlian`}
+            {expanded ? "Tampilkan lebih sedikit" : "Lihat semua keahlian"}
           </button>
         </div>
       ) : null}
