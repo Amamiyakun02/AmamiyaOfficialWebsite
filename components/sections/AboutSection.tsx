@@ -14,6 +14,7 @@ const CATS: SkillCategory[] = [
   "Android",
   "Database",
   "Deployment",
+  "System Integration",
   "AI/ML",
   "AI Tools",
   "Other",
