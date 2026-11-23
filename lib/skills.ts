@@ -18,6 +18,10 @@ export type SkillCategory =
 export type Skill = {
   name: string;
   level: number;
+  // Skill unggulan: maksimal 10 ditampilkan pertama di section About
+  // (sisanya lewat tombol "Lihat semua"). Rencana user: flag ini nanti
+  // diatur dari dashboard.
+  featured?: boolean;
   desc: { en: string; id: string };
   category: Exclude<SkillCategory, "All">;
 };
@@ -27,6 +31,7 @@ export const skillsData: Skill[] = [
   {
     name: "React",
     level: 80,
+    featured: true,
     desc: {
       en: "Frontends and dashboards with React.",
       id: "Frontend dan dasbor dengan React."
@@ -36,6 +41,7 @@ export const skillsData: Skill[] = [
   {
     name: "Next.js",
     level: 80,
+    featured: true,
     desc: {
       en: "Full-stack web apps and this portfolio site itself.",
       id: "Aplikasi web full-stack dan situs portofolio ini sendiri."
@@ -54,6 +60,7 @@ export const skillsData: Skill[] = [
   {
     name: "TypeScript / JS",
     level: 75,
+    featured: true,
     desc: {
       en: "Type-safe code for web apps.",
       id: "Kode yang type-safe untuk aplikasi web."
@@ -65,6 +72,7 @@ export const skillsData: Skill[] = [
   {
     name: "FastAPI",
     level: 85,
+    featured: true,
     desc: {
       en: "REST APIs and the AI agent backend behind this site.",
       id: "API REST dan backend agent AI di balik situs ini."
@@ -74,6 +82,7 @@ export const skillsData: Skill[] = [
   {
     name: "Python",
     level: 85,
+    featured: true,
     desc: {
       en: "Main language for backends, scripting, and automation.",
       id: "Bahasa utama untuk backend, scripting, dan otomatisasi."
@@ -155,6 +164,7 @@ export const skillsData: Skill[] = [
   {
     name: "Discord API",
     level: 85,
+    featured: true,
     desc: {
       en: "Community bots with dozens of commands, music, and moderation.",
       id: "Bot komunitas dengan puluhan perintah, musik, dan moderasi."
@@ -276,6 +286,7 @@ export const skillsData: Skill[] = [
   {
     name: "PostgreSQL",
     level: 75,
+    featured: true,
     desc: {
       en: "Relational storage for dashboards and audit data.",
       id: "Penyimpanan relasional untuk dasbor dan data audit."
@@ -285,6 +296,7 @@ export const skillsData: Skill[] = [
   {
     name: "MongoDB",
     level: 80,
+    featured: true,
     desc: {
       en: "Document storage for app data and the MCP server.",
       id: "Penyimpanan dokumen untuk data aplikasi dan server MCP."
@@ -444,6 +456,7 @@ export const skillsData: Skill[] = [
   {
     name: "OpenCode",
     level: 85,
+    featured: true,
     desc: {
       en: "The agent core powering this site's public and admin assistants.",
       id: "Inti agent yang menjalankan asisten publik dan admin situs ini."
@@ -462,6 +475,7 @@ export const skillsData: Skill[] = [
   {
     name: "MCP",
     level: 85,
+    featured: true,
     desc: {
       en: "Model Context Protocol — my own MCP server with dozens of tools for agents.",
       id: "Model Context Protocol — server MCP buatanku dengan puluhan tool untuk agent."

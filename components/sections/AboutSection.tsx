@@ -41,10 +41,21 @@ const TIMELINE = [
   },
 ];
 
+// Maksimal kartu keahlian yang tampil sebelum tombol "Lihat semua".
+const SKILL_LIMIT = 10;
+
 export default function AboutSection() {
   const [cat, setCat] = useState<SkillCategory>("All");
-  const shown =
+  const [expanded, setExpanded] = useState(false);
+  const filtered =
     cat === "All" ? skillsData : skillsData.filter((s) => s.category === cat);
+  // Mode ringkas di "Semua" menampilkan 10 skill unggulan (flag featured
+  // di lib/skills.ts); di kategori lain 10 kartu pertama kategori itu.
+  const shown = expanded
+    ? filtered
+    : cat === "All"
+      ? skillsData.filter((s) => s.featured)
+      : filtered.slice(0, SKILL_LIMIT);
   return (
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="About" />
@@ -64,7 +75,10 @@ export default function AboutSection() {
                 ? "border-accent bg-accent text-white"
                 : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#d7d7dd]"
             }`}
-            onClick={() => setCat(c)}
+            onClick={() => {
+              setCat(c);
+              setExpanded(false);
+            }}
           >
             {c === "All" ? "Semua" : c}
           </button>
@@ -97,6 +111,19 @@ export default function AboutSection() {
           </article>
         ))}
       </div>
+      {filtered.length > shown.length || expanded ? (
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded
+              ? "Tampilkan lebih sedikit"
+              : `Lihat semua ${filtered.length} keahlian`}
+          </button>
+        </div>
+      ) : null}
 
       <h2 className="mt-10 mb-4 text-xl font-bold">Pengalaman</h2>
       <div className="flex flex-col gap-3.5">
