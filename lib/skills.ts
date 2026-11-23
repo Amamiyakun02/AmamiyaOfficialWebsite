@@ -162,6 +162,15 @@ export const skillsData: Skill[] = [
     category: "System Integration"
   },
   {
+    name: "Spotify API",
+    level: 70,
+    desc: {
+      en: "Music search, playlists, and playback control through Spotify.",
+      id: "Pencarian musik, playlist, dan kontrol pemutaran lewat Spotify."
+    },
+    category: "System Integration"
+  },
+  {
     name: "Resend (Email API)",
     level: 80,
     desc: {
@@ -221,6 +230,15 @@ export const skillsData: Skill[] = [
     desc: {
       en: "Mercury models powering this site's public assistant.",
       id: "Model Mercury yang menjalankan asisten publik situs ini."
+    },
+    category: "System Integration"
+  },
+  {
+    name: "ElevenLabs API",
+    level: 65,
+    desc: {
+      en: "Text-to-speech voices and voice generation for apps.",
+      id: "Suara text-to-speech dan pembuatan suara untuk aplikasi."
     },
     category: "System Integration"
   },
