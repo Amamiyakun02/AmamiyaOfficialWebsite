@@ -1,11 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { toolsData } from "@/lib/tools";
 import SectionTitle from "@/components/SectionTitle";
 
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
 // lib/tools.ts. Yang sudah dipindah berstatus "live" dan bisa dibuka;
-// sisanya menyusul bertahap.
+// sisanya menyusul bertahap. Tampilan awal dibatasi TOOL_LIMIT kartu
+// (tool live lebih dulu) agar grid rapi 3x3; sisanya lewat tombol
+// "Lihat semua tool", pola yang sama seperti section Keahlian.
+const TOOL_LIMIT = 9;
+
 export default function ToolsSection() {
+  const [expanded, setExpanded] = useState(false);
+  const ordered = [...toolsData].sort(
+    (a, b) => (a.status === "live" ? 0 : 1) - (b.status === "live" ? 0 : 1)
+  );
+  const shown = expanded ? ordered : ordered.slice(0, TOOL_LIMIT);
   return (
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Tools" />
@@ -15,7 +27,7 @@ export default function ToolsSection() {
         Semuanya sedang dipindah ke rumah baru ini secara bertahap.
       </p>
       <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2 min-[1080px]:grid-cols-3">
-        {toolsData.map((t) => {
+        {shown.map((t) => {
           const Icon = t.icon;
           const live = t.status === "live";
           return (
@@ -66,6 +78,17 @@ export default function ToolsSection() {
           );
         })}
       </div>
+      {toolsData.length > TOOL_LIMIT && (
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? "Tampilkan lebih sedikit" : "Lihat semua tool"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
