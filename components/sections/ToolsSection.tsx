@@ -14,7 +14,7 @@ export default function ToolsSection() {
         video, pengolah PDF dan gambar, sampai playground MCP server-ku.
         Semuanya sedang dipindah ke rumah baru ini secara bertahap.
       </p>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
+      <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2 min-[1080px]:grid-cols-3">
         {toolsData.map((t) => {
           const Icon = t.icon;
           const live = t.status === "live";
