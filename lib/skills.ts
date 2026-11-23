@@ -97,6 +97,24 @@ export const skillsData: Skill[] = [
     },
     category: "Backend"
   },
+  {
+    name: "Supabase",
+    level: 65,
+    desc: {
+      en: "Backend-as-a-service on PostgreSQL: database, auth, and storage in one platform.",
+      id: "Backend-as-a-service berbasis PostgreSQL: database, auth, dan storage dalam satu platform."
+    },
+    category: "Backend"
+  },
+  {
+    name: "Firebase",
+    level: 65,
+    desc: {
+      en: "Google's app platform: Firestore, auth, and hosting for web and mobile apps.",
+      id: "Platform aplikasi Google: Firestore, auth, dan hosting untuk aplikasi web dan mobile."
+    },
+    category: "Backend"
+  },
 
   // ===== Android =====
   {
@@ -143,6 +161,33 @@ export const skillsData: Skill[] = [
     desc: {
       en: "Classic relational databases for web apps.",
       id: "Database relasional klasik untuk aplikasi web."
+    },
+    category: "Database"
+  },
+  {
+    name: "Qdrant",
+    level: 75,
+    desc: {
+      en: "Vector database for embeddings and semantic search.",
+      id: "Database vektor untuk embedding dan pencarian semantik."
+    },
+    category: "Database"
+  },
+  {
+    name: "ChromaDB",
+    level: 70,
+    desc: {
+      en: "Embedding store for RAG pipelines and AI apps.",
+      id: "Penyimpanan embedding untuk alur RAG dan aplikasi AI."
+    },
+    category: "Database"
+  },
+  {
+    name: "Redis",
+    level: 65,
+    desc: {
+      en: "In-memory store for caching, sessions, and queues.",
+      id: "Penyimpanan in-memory untuk cache, sesi, dan antrean."
     },
     category: "Database"
   },
