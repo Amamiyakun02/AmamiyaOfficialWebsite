@@ -149,13 +149,17 @@ function StaticProjects({
 
 export function PublicProjectCard({ p }: { p: PublicProject }) {
   const tech = techList(p.tech_stack);
+  // Gambar kartu: image_url dari dashboard (Modul Media) lebih dulu;
+  // tanpa itu, thumbnail video demo seperti sebelumnya; keduanya
+  // kosong = kartu polos persis tampilan lama.
+  const cardImage = p.image_url ?? p.demo_video_thumbnail;
   return (
     <article className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#3d3d47]">
-      {p.demo_video_thumbnail && (
+      {cardImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           className="mb-3 block h-[140px] w-full rounded-[10px] border border-line2 object-cover"
-          src={p.demo_video_thumbnail}
+          src={cardImage}
           alt=""
           loading="lazy"
         />

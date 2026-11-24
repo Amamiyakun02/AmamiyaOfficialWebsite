@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Download } from "lucide-react";
 import { GithubIcon } from "./BrandIcons";
 import { scrollToSection } from "@/lib/scroll";
+import { fetchPublicCvUrl } from "@/lib/publicCv";
 
 // Tombol kanan navbar = ikon GitHub ke profil user (permintaan user
 // 16 Nov, menggantikan tombol "Coba Tools") + pil "Unduh CV" di
@@ -28,6 +29,19 @@ export default function Navbar() {
   const [current, setCurrent] = useState("home");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // URL CV dari dashboard (GET /v1/site/cv, Modul Media): selama
+  // belum diatur (null) tombol Unduh CV disembunyikan — pengganti
+  // tautan statis /profesional-cv.pdf yang lama.
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void fetchPublicCvUrl().then((url) => {
+      if (alive) setCvUrl(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Sidebar mobile gaya situs docs (permintaan user 16 Nov): drawer
   // geser dari kiri berisi daftar menu vertikal yang bersih — bukan
@@ -153,14 +167,17 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <a
-            className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#e6e6e9] no-underline hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
-            href="/profesional-cv.pdf"
-            download
-          >
-            <Download size={15} />
-            Unduh CV
-          </a>
+          {cvUrl && (
+            <a
+              className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#e6e6e9] no-underline hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
+              href={cvUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Download size={15} />
+              Unduh CV
+            </a>
+          )}
           <a
             className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-line3 bg-white/[0.03] text-[#e6e6e9] hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white"
             href={GITHUB_URL}
@@ -240,14 +257,17 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="mt-auto flex gap-[10px] border-t border-[#1c1c20] px-[18px] pt-4 pb-5">
-          <a
-            className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
-            href="/profesional-cv.pdf"
-            download
-            onClick={() => setOpen(false)}
-          >
-            <Download size={17} /> Unduh CV
-          </a>
+          {cvUrl && (
+            <a
+              className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
+              href={cvUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+            >
+              <Download size={17} /> Unduh CV
+            </a>
+          )}
           <a
             className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
             href={GITHUB_URL}

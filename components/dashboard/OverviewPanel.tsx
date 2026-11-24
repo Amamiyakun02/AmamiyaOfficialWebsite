@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import CvCard from "./CvCard";
 import {
   ArrowUpRight,
   Blocks,
@@ -587,6 +588,8 @@ export default function OverviewPanel({
           <ArrowUpRight size={16} className="flex-none text-[#75757e]" />
         </button>
       )}
+
+      <CvCard />
 
       <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
         <div className="rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">

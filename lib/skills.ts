@@ -26,6 +26,9 @@ export type Skill = {
   // Urutan pin unggulan dari backend (featured_order); data statis
   // tidak mengisinya — urutan file yang berlaku.
   featuredOrder?: number;
+  // Ikon dari dashboard (Modul Media, kolom icon_url); data statis
+  // tidak mengisinya — kartu tampil tanpa ikon seperti sebelumnya.
+  iconUrl?: string | null;
   desc: { en: string; id: string };
   category: Exclude<SkillCategory, "All">;
 };

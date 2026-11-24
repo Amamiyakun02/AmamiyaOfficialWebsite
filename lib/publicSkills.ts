@@ -17,6 +17,7 @@ export type PublicSkill = {
   description_en: string | null;
   category: string;
   sort_order: number;
+  icon_url: string | null;
   is_featured: boolean;
   featured_order: number | null;
 };
@@ -55,6 +56,7 @@ export function publicToSkill(s: PublicSkill): Skill {
     level: Math.max(0, Math.min(100, s.level || 0)),
     desc: { id: s.description_id ?? "", en: s.description_en ?? "" },
     category,
+    iconUrl: s.icon_url ?? undefined,
     featured: s.is_featured || undefined,
     featuredOrder: s.is_featured ? (s.featured_order ?? undefined) : undefined,
   };

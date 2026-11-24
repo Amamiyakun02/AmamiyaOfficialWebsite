@@ -17,6 +17,7 @@ export type PublicProject = {
   repo_url: string | null;
   status: string;
   links: Record<string, string>;
+  image_url: string | null;
   demo_video_url: string | null;
   demo_video_thumbnail: string | null;
   is_featured: boolean;
@@ -69,6 +70,7 @@ export function staticAsPublic(featuredOnly: boolean): PublicProject[] {
     repo_url: p.githubUrl || null,
     status: "active",
     links,
+    image_url: null,
     demo_video_url: null,
     demo_video_thumbnail: null,
     is_featured: p.featured,

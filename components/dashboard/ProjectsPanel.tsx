@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import MediaField from "./MediaField";
 import {
   BADGE,
   BADGE_TONE,
@@ -42,6 +43,7 @@ type Project = {
   repo_url: string | null;
   status: string;
   links: Record<string, string>;
+  image_url: string | null;
   demo_video_url: string | null;
   demo_video_thumbnail: string | null;
   is_featured: boolean;
@@ -61,6 +63,7 @@ type FormState = {
   link_vault: string;
   demo_video_url: string;
   demo_video_thumbnail: string;
+  image_url: string;
 };
 
 const STATUSES = ["idea", "active", "maintenance", "archived"] as const;
@@ -79,6 +82,7 @@ const EMPTY_FORM: FormState = {
   link_vault: "",
   demo_video_url: "",
   demo_video_thumbnail: "",
+  image_url: "",
 };
 
 function toForm(p: Project): FormState {
@@ -94,6 +98,7 @@ function toForm(p: Project): FormState {
     link_vault: p.links?.vault ?? "",
     demo_video_url: p.demo_video_url ?? "",
     demo_video_thumbnail: p.demo_video_thumbnail ?? "",
+    image_url: p.image_url ?? "",
   };
 }
 
@@ -113,6 +118,7 @@ function toPayload(f: FormState) {
     links,
     demo_video_url: blank(f.demo_video_url),
     demo_video_thumbnail: blank(f.demo_video_thumbnail),
+    image_url: blank(f.image_url),
   };
 }
 
@@ -538,6 +544,11 @@ export default function ProjectsPanel() {
                 maxLength={500}
               />
             </label>
+            <MediaField
+              label="Gambar project (URL)"
+              value={form.image_url}
+              onChange={set("image_url")}
+            />
           </div>
         </FormModal>
       )}
@@ -559,11 +570,11 @@ export default function ProjectsPanel() {
               className={`${CARD} ${p.is_featured ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : ""}`}
             >
               <div className="flex flex-wrap items-center gap-2">
-                {p.demo_video_thumbnail && (
+                {(p.image_url ?? p.demo_video_thumbnail) && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     className="h-11 w-11 flex-none rounded-[9px] border border-[#26262c] object-cover"
-                    src={p.demo_video_thumbnail}
+                    src={p.image_url ?? p.demo_video_thumbnail ?? ""}
                     alt=""
                     loading="lazy"
                   />

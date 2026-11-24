@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import FormModal from "./FormModal";
+import MediaField from "./MediaField";
 import {
   BADGE,
   CARD,
@@ -42,6 +43,7 @@ type SkillItem = {
   description_en: string | null;
   category: string;
   sort_order: number;
+  icon_url: string | null;
   is_featured: boolean;
   featured_order: number | null;
   updated_at: string | null;
@@ -54,6 +56,7 @@ type FormState = {
   description_en: string;
   category: string;
   sort_order: string;
+  icon_url: string;
 };
 
 const CATEGORIES = [
@@ -77,6 +80,7 @@ const EMPTY_FORM: FormState = {
   description_en: "",
   category: "Frontend",
   sort_order: "0",
+  icon_url: "",
 };
 
 function toForm(s: SkillItem): FormState {
@@ -87,6 +91,7 @@ function toForm(s: SkillItem): FormState {
     description_en: s.description_en ?? "",
     category: s.category,
     sort_order: String(s.sort_order ?? 0),
+    icon_url: s.icon_url ?? "",
   };
 }
 
@@ -101,6 +106,7 @@ function toPayload(f: FormState) {
     description_en: blank(f.description_en),
     category: f.category,
     sort_order: sortOrder,
+    icon_url: blank(f.icon_url),
   };
 }
 
@@ -510,6 +516,11 @@ export default function SkillsPanel() {
                 onChange={(e) => set("description_en")(e.target.value)}
               />
             </label>
+            <MediaField
+              label="Ikon skill (URL)"
+              value={form.icon_url}
+              onChange={set("icon_url")}
+            />
           </div>
         </FormModal>
       )}
@@ -531,6 +542,15 @@ export default function SkillsPanel() {
               className={`${CARD} ${s.is_featured ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : ""}`}
             >
               <div className="flex flex-wrap items-center gap-2">
+                {s.icon_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="h-6 w-6 flex-none object-contain"
+                    src={s.icon_url}
+                    alt=""
+                    loading="lazy"
+                  />
+                )}
                 <span className="mr-0.5 text-[15.5px] font-[650] text-[#f4f4f6]">{s.name}</span>
                 <span className={`${BADGE} border-line text-[#c9c9cf]`}>{s.category}</span>
                 {s.is_featured && (

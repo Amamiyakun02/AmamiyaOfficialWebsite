@@ -115,8 +115,19 @@ export default function AboutSection() {
             key={s.name}
             className="rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] p-4"
           >
-            <div className="flex items-baseline justify-between">
-              <h3 className="m-0 text-[14.5px] font-bold">{s.name}</h3>
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex min-w-0 items-center gap-2">
+                {s.iconUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="h-6 w-6 flex-none object-contain"
+                    src={s.iconUrl}
+                    alt=""
+                    loading="lazy"
+                  />
+                )}
+                <h3 className="m-0 text-[14.5px] font-bold">{s.name}</h3>
+              </span>
               <span className="text-xs font-bold text-accent3">
                 {s.level}%
               </span>
