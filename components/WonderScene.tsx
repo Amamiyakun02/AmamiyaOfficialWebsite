@@ -2602,6 +2602,9 @@ export default function WonderScene({
     // LOGO (user 26 Nov 2026): titik teal-light #00BBA2, balok dua
     // nada teal #009BA0 / sea #006E9B, karakter puncak neon #00FFAA
     // (sebelumnya nyaris putih 238,244,255 warisan highlight lama).
+    // Kecerahan keempatnya kemudian diturunkan SEDIKIT (faktor 0,85,
+    // permintaan user di hari yang sama): #00D991 / #009F8A /
+    // #008488 / #005E84.
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
     let lastHeatFrame = 0; // cap waktu frame gelombang terakhir (untuk throttle 30fps)
@@ -2661,7 +2664,7 @@ export default function WonderScene({
             g.fillStyle = `rgba(${INK},${c.a})`;
             g.fillText(WORD[i], x0, c.y + TEXT_Y);
           }
-          g.fillStyle = `rgba(0,255,170,${(fade * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(0,217,145,${(fade * s.peak).toFixed(3)})`;
           g.fillText(WORD[i], x0, c.y + TEXT_Y);
           continue;
         }
@@ -2675,7 +2678,7 @@ export default function WonderScene({
           const mw = charW * 0.84;
           const mh = capH * 0.62;
           const cy = c.y + TEXT_Y - capH / 2;
-          g.fillStyle = `rgba(0,187,162,${(0.95 * aDots * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(0,159,138,${(0.95 * aDots * s.peak).toFixed(3)})`;
           for (let d = 0; d < 8; d++) {
             const px = cx + ((d % 4) - 1.5) * (mw / 3);
             const py = cy + (((d / 4) | 0) - 0.5) * mh;
@@ -2693,9 +2696,9 @@ export default function WonderScene({
           const bh = capH * 1.08;
           const bx = cx - bw / 2;
           const by = c.y + TEXT_Y - capH - (bh - capH) / 2;
-          g.fillStyle = `rgba(0,155,160,${(aBlk * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(0,132,136,${(aBlk * s.peak).toFixed(3)})`;
           g.fillRect(bx, by, bw * 0.55, bh);
-          g.fillStyle = `rgba(0,110,155,${(aBlk * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(0,94,132,${(aBlk * s.peak).toFixed(3)})`;
           g.fillRect(bx + bw * 0.55, by, bw * 0.45, bh);
         }
         // Fase karakter (0,60–1): huruf muncul mengisi balok, naik
@@ -2704,7 +2707,7 @@ export default function WonderScene({
           const aCh = Math.min(1, (p - 0.6) / 0.24);
           const yOff =
             (1 - Math.min(1, (p - 0.6) / 0.4)) * FONT_SIZE * 0.06;
-          g.fillStyle = `rgba(0,255,170,${(aCh * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(0,217,145,${(aCh * s.peak).toFixed(3)})`;
           g.fillText(WORD[i], x0, c.y + TEXT_Y + yOff);
         }
       }
