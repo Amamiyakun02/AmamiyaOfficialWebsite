@@ -107,7 +107,7 @@ const PLATFORM_META: Record<
   },
   threads: {
     label: "Threads",
-    badgeClass: "bg-[#EEF4FF] text-[#11245F]",
+    badgeClass: "bg-[#EEF4FF] text-[#17171b]",
     chipClass: "text-[#DCE7FA]",
     Icon: ({ size = 11 }) => <AtSign size={size} />,
   },
@@ -275,7 +275,7 @@ export default function VideoDownloader() {
               ).map((p) => {
                 const { label, Icon, chipClass } = PLATFORM_META[p];
                 return (
-                  <span key={p} className={`inline-flex items-center gap-[5px] rounded-lg border border-line bg-[#050E2E] px-[9px] py-1 text-[10px] font-bold ${chipClass}`}>
+                  <span key={p} className={`inline-flex items-center gap-[5px] rounded-lg border border-line bg-[#0a0a0b] px-[9px] py-1 text-[10px] font-bold ${chipClass}`}>
                     <Icon size={11} />
                     {label}
                   </span>
@@ -294,7 +294,7 @@ export default function VideoDownloader() {
               </label>
               <div className="flex flex-col gap-2 min-[560px]:flex-row">
                 <input
-                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#050E2E] px-[13px] py-[11px] text-[12.5px] text-[#DCE7FA] outline-none placeholder:text-[#4C63A0] focus:border-line"
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#0a0a0b] px-[13px] py-[11px] text-[12.5px] text-[#DCE7FA] outline-none placeholder:text-[#4C63A0] focus:border-line"
                   id="vd-url"
                   type="url"
                   value={url}
@@ -309,7 +309,7 @@ export default function VideoDownloader() {
                   type="button"
                   onClick={handleCheck}
                   disabled={checking || !url.trim()}
-                  className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] flex-shrink-0 bg-accent px-4 py-[11px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
+                  className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1e1e22] disabled:text-[#5D7099] flex-shrink-0 bg-accent px-4 py-[11px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
                 >
                   {checking ? (
                     <>
@@ -336,7 +336,7 @@ export default function VideoDownloader() {
                       )}
                       Format
                     </span>
-                    <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-[#050E2E] p-1">
+                    <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-[#0a0a0b] p-1">
                       {(["mp4", "mp3"] as const).map((f) => (
                         <button
                           key={f}
@@ -355,7 +355,7 @@ export default function VideoDownloader() {
                       value={quality}
                       onChange={(e) => setQuality(e.target.value)}
                       disabled={format === "mp3"}
-                      className="w-full rounded-xl border border-line bg-[#050E2E] px-3 py-2.5 text-[12.5px] text-[#DCE7FA] outline-none focus:border-line disabled:opacity-40"
+                      className="w-full rounded-xl border border-line bg-[#0a0a0b] px-3 py-2.5 text-[12.5px] text-[#DCE7FA] outline-none focus:border-line disabled:opacity-40"
                       aria-label="Kualitas"
                     >
                       {format === "mp3" ? (
@@ -378,7 +378,7 @@ export default function VideoDownloader() {
                     type="button"
                     onClick={handleDownload}
                     disabled={downloading}
-                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] w-full bg-accent px-4 py-[13px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1e1e22] disabled:text-[#5D7099] w-full bg-accent px-4 py-[13px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
                   >
                     {downloading ? (
                       <>
@@ -401,7 +401,7 @@ export default function VideoDownloader() {
                     type="button"
                     onClick={handleReset}
                     disabled={downloading || checking}
-                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1e1e22] disabled:text-[#5D7099] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
                   >
                     Tautan Baru
                   </button>
@@ -447,7 +447,7 @@ export default function VideoDownloader() {
             ) : (
               <div className="overflow-hidden rounded-2xl border border-line bg-panel">
                 {info.thumbnail && (
-                  <div className="relative aspect-[16/9] bg-[#050E2E]">
+                  <div className="relative aspect-[16/9] bg-[#0a0a0b]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className="block h-full w-full object-cover" src={info.thumbnail} alt={info.title} />
                     {platMeta && (

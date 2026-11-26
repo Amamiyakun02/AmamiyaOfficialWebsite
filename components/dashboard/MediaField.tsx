@@ -58,7 +58,7 @@ export default function MediaField({
         {value && (
           <button
             type="button"
-            className="flex-none cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
+            className="flex-none cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
             onClick={() => onChange("")}
           >
             Hapus
@@ -75,7 +75,7 @@ export default function MediaField({
         />
         <button
           type="button"
-          className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
           disabled={busy}
           onClick={() => fileRef.current?.click()}
         >

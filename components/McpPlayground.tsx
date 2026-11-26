@@ -117,8 +117,8 @@ export default function McpPlayground() {
           </button>
         </div>
 
-        <div className="mt-[18px] overflow-hidden rounded-[14px] border border-line bg-[#050E2E]">
-          <div className="border-b border-[#16296B] bg-panel2 px-3.5 py-[7px] text-[10px] font-bold tracking-[0.1em] text-accent2 uppercase">claude_desktop_config.json</div>
+        <div className="mt-[18px] overflow-hidden rounded-[14px] border border-line bg-[#0a0a0b]">
+          <div className="border-b border-[#1e1e22] bg-panel2 px-3.5 py-[7px] text-[10px] font-bold tracking-[0.1em] text-accent2 uppercase">claude_desktop_config.json</div>
           <pre className="m-0 overflow-x-auto p-3.5 font-mono text-xs leading-[1.55] text-[#C3D2F0]">{MCP_CONNECT_SNIPPET}</pre>
         </div>
 
@@ -146,7 +146,7 @@ export default function McpPlayground() {
               <div className="mt-2 font-mono text-[10.5px] leading-[1.5] break-all text-[#5D7099]">{tool.schema}</div>
               <div className="mt-3 flex gap-2">
                 <input
-                  className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#050E2E] px-[11px] py-2 font-mono text-xs text-[#DCE7FA] outline-none focus:border-line"
+                  className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0a0a0b] px-[11px] py-2 font-mono text-xs text-[#DCE7FA] outline-none focus:border-line"
                   value={inputs[tool.name] ?? ""}
                   onChange={(e) =>
                     setInputs((prev) => ({
@@ -169,7 +169,7 @@ export default function McpPlayground() {
                 </button>
               </div>
               {outputs[tool.name] !== undefined && (
-                <pre className="mt-3 rounded-[10px] border border-line bg-[#040A24] p-[11px_12px] font-mono text-[11.5px] whitespace-pre-wrap break-words text-[#5EEAD0]">{outputs[tool.name]}</pre>
+                <pre className="mt-3 rounded-[10px] border border-line bg-[#08080a] p-[11px_12px] font-mono text-[11.5px] whitespace-pre-wrap break-words text-[#5EEAD0]">{outputs[tool.name]}</pre>
               )}
             </div>
           ))}

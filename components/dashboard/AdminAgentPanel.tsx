@@ -472,7 +472,7 @@ function MessageText({ text }: { text: string }) {
         if (i % 2 === 1) {
           const code = seg.replace(/^[a-zA-Z0-9_-]*\n/, "");
           return (
-            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#050E2E] px-3 py-2.5 text-[13px] whitespace-pre">
+            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#0a0a0b] px-3 py-2.5 text-[13px] whitespace-pre">
               {code}
             </pre>
           );
@@ -494,7 +494,7 @@ const MSG_AI =
 const MSG_COL_USER = "flex min-w-0 flex-col items-end";
 const MSG_COL_AI = "flex min-w-0 flex-col items-start";
 const MSG_AVATAR =
-  "mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover";
+  "mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0b] object-cover";
 const BUBBLE_USER =
   "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#052A1E]";
 const BUBBLE_AI =
@@ -518,7 +518,7 @@ const TOOL_BTN =
 const QP_SEND =
   "inline-flex h-9 w-9 flex-[0_0_auto] cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-[#052A1E] disabled:cursor-default disabled:opacity-45";
 const NEW_BTN =
-  "inline-flex cursor-pointer items-center gap-[7px] rounded-lg border border-[#22336A] bg-[#11245F] px-3 py-[7px] text-[13px] text-[#DCE7FA] transition-all duration-[120ms] hover:border-[#354C8C] hover:bg-[rgba(255,255,255,0.05)]";
+  "inline-flex cursor-pointer items-center gap-[7px] rounded-lg border border-[#22336A] bg-[#17171b] px-3 py-[7px] text-[13px] text-[#DCE7FA] transition-all duration-[120ms] hover:border-[#354C8C] hover:bg-[rgba(255,255,255,0.05)]";
 const SESS_ICON =
   "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-transparent bg-transparent text-[#93A9D1] hover:border-[#22336A] hover:text-[#DCE7FA]";
 const SESS_ICON_DANGER =
@@ -2050,7 +2050,7 @@ export default function AdminAgentPanel() {
       {/* Kepala chat gaya aplikasi chat umum (permintaan user
           18 Nov): judul sesi + status instance di kiri; pemilih
           sesi & tombol sesi baru di kanan. */}
-      <div className="flex flex-wrap items-center gap-3.5 border-b border-[#16296B] bg-[rgba(255,255,255,0.015)] px-[18px] py-3">
+      <div className="flex flex-wrap items-center gap-3.5 border-b border-[#1e1e22] bg-[rgba(255,255,255,0.015)] px-[18px] py-3">
         <div className="min-w-0">
           <div className="max-w-[430px] truncate text-[16.5px] font-[650] text-[#EEF4FF]">{sessionTitle}</div>
           <div className="mt-0.5 flex items-center gap-[7px] text-[12.5px] text-[#93A9D1]">
@@ -2096,7 +2096,7 @@ export default function AdminAgentPanel() {
                   {sessions.map((s) => (
                     <div
                       key={s.id}
-                      className={`flex items-center gap-1.5 rounded-[9px] px-0.5 py-0.5 pl-1 ${s.id === currentSession ? "bg-[#11245F] shadow-[inset_2px_0_0_#00FFAA]" : "hover:bg-[#11245F]"}`}
+                      className={`flex items-center gap-1.5 rounded-[9px] px-0.5 py-0.5 pl-1 ${s.id === currentSession ? "bg-[#17171b] shadow-[inset_2px_0_0_#00FFAA]" : "hover:bg-[#17171b]"}`}
                     >
                       <button
                         type="button"
@@ -2167,7 +2167,7 @@ export default function AdminAgentPanel() {
       </div>
 
       <div
-        className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto border-b border-[#16296B] px-[18px] py-4 [scrollbar-width:thin] [scrollbar-color:#2C3F78_transparent] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-[99px] [&::-webkit-scrollbar-thumb]:bg-[#2C3F78] [&::-webkit-scrollbar-track]:bg-transparent"
+        className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto border-b border-[#1e1e22] px-[18px] py-4 [scrollbar-width:thin] [scrollbar-color:#2C3F78_transparent] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-[99px] [&::-webkit-scrollbar-thumb]:bg-[#2C3F78] [&::-webkit-scrollbar-track]:bg-transparent"
         ref={logRef}
         onScroll={(e) => {
           const el = e.currentTarget;

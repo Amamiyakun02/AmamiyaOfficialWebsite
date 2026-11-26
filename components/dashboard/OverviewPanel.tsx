@@ -396,7 +396,7 @@ export default function OverviewPanel({
           ? "Error"
           : "Tidak terjangkau";
     return (
-      <div className="flex items-start gap-2.5 py-2 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#16296B]">
+      <div className="flex items-start gap-2.5 py-2 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#1e1e22]">
         <span
           className={`mt-[5px] h-[9px] w-[9px] flex-none rounded-full ${st?.status === "ok" ? "bg-[#3fb96f] shadow-[0_0_8px_rgba(63,185,111,0.55)]" : st?.status === "error" ? "bg-[#d9a13b]" : "bg-[#d65757]"}`}
           aria-hidden="true"
@@ -500,7 +500,7 @@ export default function OverviewPanel({
       </div>
 
       <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-0.5">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-0.5">
           <span className="mb-1.5 text-[#5EEAD0]"><MessagesSquare size={17} /></span>
           <b className="text-[26px] leading-[1.1] font-bold text-[#EEF4FF]">{kpiSessions !== null ? fmtNum(kpiSessions) : "—"}</b>
           <span className="text-[13px] font-semibold text-[#AFC2E6]">Sesi AI tercatat</span>
@@ -508,7 +508,7 @@ export default function OverviewPanel({
             {kpiPub !== null ? `${kpiPub} publik · ${kpiAdm} admin` : "belum termuat"}
           </span>
         </div>
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-0.5">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-0.5">
           <span className="mb-1.5 text-[#5EEAD0]"><Send size={17} /></span>
           <b className="text-[26px] leading-[1.1] font-bold text-[#EEF4FF]">{kpiRequests !== null ? fmtNum(kpiRequests) : "—"}</b>
           <span className="text-[13px] font-semibold text-[#AFC2E6]">Total request</span>
@@ -520,7 +520,7 @@ export default function OverviewPanel({
                 : "belum termuat"}
           </span>
         </div>
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-0.5">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-0.5">
           <span className="mb-1.5 text-[#5EEAD0]"><Coins size={17} /></span>
           <b className="text-[26px] leading-[1.1] font-bold text-[#EEF4FF]">{kpiTokens !== null ? fmtTokens(kpiTokens) : "—"}</b>
           <span className="text-[13px] font-semibold text-[#AFC2E6]">Token terpakai</span>
@@ -532,7 +532,7 @@ export default function OverviewPanel({
                 : "belum ada request"}
           </span>
         </div>
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-0.5">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-0.5">
           <span className="mb-1.5 text-[#5EEAD0]"><CircleDollarSign size={17} /></span>
           <b className="text-[26px] leading-[1.1] font-bold text-[#EEF4FF]">{kpiCost !== null ? fmtCost(kpiCost) : "—"}</b>
           <span className="text-[13px] font-semibold text-[#AFC2E6]">Estimasi biaya</span>
@@ -542,23 +542,23 @@ export default function OverviewPanel({
 
       {ai && (
         <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8298C0]"><Send size={13} /> Request hari ini</span>
             <b className="text-xl leading-[1.15] font-bold text-[#EEF4FF]">{fmtNum(ai.requests_today)}</b>
           </div>
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8298C0]"><Coins size={13} /> Token hari ini</span>
             <b className="text-xl leading-[1.15] font-bold text-[#EEF4FF]">{fmtTokens(ai.tokens_today)}</b>
           </div>
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8298C0]"><MessagesSquare size={13} /> Sesi aktif hari ini</span>
             <b className="text-xl leading-[1.15] font-bold text-[#EEF4FF]">{fmtNum(ai.sessions_active_today)}</b>
           </div>
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8298C0]"><TriangleAlert size={13} /> Giliran gagal</span>
             <b className="text-xl leading-[1.15] font-bold text-[#EEF4FF]">{fmtNum(ai.turns_failed_total)}</b>
           </div>
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex flex-col gap-1 px-4 py-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8298C0]"><Timer size={13} /> Rata-rata durasi</span>
             <b className="text-xl leading-[1.15] font-bold text-[#EEF4FF]">{fmtDuration(ai.avg_turn_duration_ms)}</b>
           </div>
@@ -568,7 +568,7 @@ export default function OverviewPanel({
       {inbox && (
         <button
           type="button"
-          className={`mb-3.5 flex w-full cursor-pointer items-center gap-[13px] rounded-[14px] border bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-3.5 text-left text-[#EEF4FF] ${inbox.unread > 0 ? "border-[rgba(0,255,170,0.55)] shadow-[0_0_0_1px_rgba(0,255,170,0.25)]" : "border-[#1E3066] hover:border-[#354C8C]"}`}
+          className={`mb-3.5 flex w-full cursor-pointer items-center gap-[13px] rounded-[14px] border bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-3.5 text-left text-[#EEF4FF] ${inbox.unread > 0 ? "border-[rgba(0,255,170,0.55)] shadow-[0_0_0_1px_rgba(0,255,170,0.25)]" : "border-[#1E3066] hover:border-[#354C8C]"}`}
           onClick={() => onNavigate("inbox")}
         >
           <span className="inline-flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] bg-[rgba(0,255,170,0.14)] text-accent3">
@@ -592,7 +592,7 @@ export default function OverviewPanel({
       <CvCard />
 
       <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
           <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Agent &amp; Model Aktif</h3>
           {instRow("Agent Publik (Assistant)", "public", defPub)}
           {instRow("Agent Administrator", "admin", defAdm)}
@@ -602,7 +602,7 @@ export default function OverviewPanel({
           </p>
         </div>
 
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
           <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Penggunaan per model</h3>
           {byModel.length === 0 ? (
             <p className="text-[13px] leading-[1.55] text-[#8298C0]">Belum ada sesi tercatat.</p>
@@ -616,7 +616,7 @@ export default function OverviewPanel({
                     {m.cost_usd ? ` · ${fmtCost(m.cost_usd)}` : ""}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#16296B]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#1e1e22]">
                   <div
                     className="h-full rounded-full bg-[linear-gradient(90deg,#00FFAA,#5EEAD0)]"
                     style={{
@@ -631,7 +631,7 @@ export default function OverviewPanel({
       </div>
 
       <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
           <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">
             {ai ? "Request per hari (7 hari terakhir)" : "Sesi aktif 7 hari terakhir"}
           </h3>
@@ -670,7 +670,7 @@ export default function OverviewPanel({
           )}
         </div>
 
-        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+        <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
           <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Tool paling sering dipakai</h3>
           {byTool.length === 0 ? (
             <p className="text-[13px] leading-[1.55] text-[#8298C0]">Belum ada pemakaian tool tercatat.</p>
@@ -688,7 +688,7 @@ export default function OverviewPanel({
 
       {ai && (
         <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3">
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
             <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Rincian token per jenis</h3>
             {tokenSplitTotal === 0 ? (
               <p className="text-[13px] leading-[1.55] text-[#8298C0]">
@@ -705,7 +705,7 @@ export default function OverviewPanel({
                       {((t.value / tokenSplitTotal) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%
                     </span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[#16296B]">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#1e1e22]">
                     <div
                       className="h-full rounded-full bg-[linear-gradient(90deg,#00FFAA,#5EEAD0)]"
                       style={{ width: `${Math.max(2, (t.value / tokenSplitTotal) * 100)}%` }}
@@ -716,7 +716,7 @@ export default function OverviewPanel({
             )}
           </div>
 
-          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+          <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
             <h3 className="mb-3 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Tentang data ini</h3>
             <p className="mt-2.5 text-xs leading-[1.5] text-[#8298C0]">
               Total sesi, request, token &amp; biaya adalah akumulasi
@@ -739,7 +739,7 @@ export default function OverviewPanel({
             <button
               key={m.id}
               type="button"
-              className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 flex cursor-pointer flex-col gap-0.5 text-left [font:inherit] hover:border-[#2C3F78]"
+              className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 flex cursor-pointer flex-col gap-0.5 text-left [font:inherit] hover:border-[#2C3F78]"
               onClick={() => onNavigate(m.id)}
             >
               <span className="mb-1.5 inline-flex items-center gap-[7px] text-xs font-semibold text-[#8298C0]">
@@ -754,7 +754,7 @@ export default function OverviewPanel({
       </div>
 
       <h3 className="mt-[18px] mb-2.5 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">Sesi terbaru</h3>
-      <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4 py-1.5">
+      <div className="rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4 py-1.5">
         {recent === null ? (
           <p className="text-[13px] leading-[1.55] text-[#8298C0]">Memuat…</p>
         ) : recent.length === 0 ? (
@@ -764,7 +764,7 @@ export default function OverviewPanel({
           </p>
         ) : (
           recent.slice(0, 6).map((s) => (
-            <div key={s.id} className="flex items-start gap-3 py-2.5 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#16296B]">
+            <div key={s.id} className="flex items-start gap-3 py-2.5 [&:not(:first-of-type)]:border-t [&:not(:first-of-type)]:border-[#1e1e22]">
               <span
                 className={`mt-px flex-none rounded-full border px-[9px] py-0.5 text-[11px] font-bold tracking-[0.03em] ${s.role === "admin" ? "border-[rgba(139,92,246,0.35)] bg-[rgba(139,92,246,0.12)] text-[#c4a6ff]" : "border-[rgba(0,255,170,0.3)] bg-[rgba(0,255,170,0.12)] text-[#5EEAD0]"}`}
               >

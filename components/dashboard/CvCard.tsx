@@ -115,7 +115,7 @@ export default function CvCard() {
   }
 
   return (
-    <div className="mb-3 rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+    <div className="mb-3 rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#141416,#101013)] px-[18px] py-4">
       <h3 className="mb-2 flex items-center gap-2 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">
         <FileText size={15} className="text-[#5EEAD0]" />
         CV Situs
@@ -163,7 +163,7 @@ export default function CvCard() {
         </button>
         <button
           type="button"
-          className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
           disabled={busy || !loaded || (!current && !input)}
           onClick={() => void clear()}
         >
@@ -181,7 +181,7 @@ export default function CvCard() {
         />
         <button
           type="button"
-          className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
           disabled={busy || !loaded}
           onClick={() => fileRef.current?.click()}
         >

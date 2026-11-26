@@ -249,7 +249,7 @@ function MessageText({ text }: { text: string }) {
         if (i % 2 === 1) {
           const code = seg.replace(/^[a-zA-Z0-9_-]*\n/, "");
           return (
-            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#050E2E] px-3 py-2.5 text-[13px] whitespace-pre">
+            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#0a0a0b] px-3 py-2.5 text-[13px] whitespace-pre">
               {code}
             </pre>
           );
@@ -877,7 +877,7 @@ export default function AssistantChat({
   const renderHitlCard = (card: HitlCard) => (
     <div key={card.id} className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+      <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0b] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
       <div className="flex min-w-0 flex-col items-start">
         {card.status === "cancelled" ? (
           <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8298C0]">
@@ -1202,7 +1202,7 @@ export default function AssistantChat({
 
   return (
     <div className={embedded ? "flex min-h-0 w-full flex-1 flex-col px-3 pt-2 pb-3" : "mx-auto flex min-h-0 w-full max-w-[880px] flex-1 flex-col px-4 pt-3.5 pb-4 max-[760px]:px-3 max-[760px]:pt-2.5 max-[760px]:pb-3"}>
-      <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#16296B] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#16296B] pb-3"}>
+      <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#1e1e22] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#1e1e22] pb-3"}>
         <Link href="/#tools" className={embedded ? "hidden" : "mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white max-[760px]:mr-0"}>
           <ArrowLeft size={16} /> Semua tools
         </Link>
@@ -1224,7 +1224,7 @@ export default function AssistantChat({
           <div className={m.sender === "user" ? "flex max-w-[85%] self-end max-[760px]:max-w-[92%]" : "flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]"}>
             {m.sender === "ai" && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+              <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0b] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
             )}
             <div className={m.sender === "user" ? "flex min-w-0 flex-col items-end" : "flex min-w-0 flex-col items-start"}>
               <div className={m.sender === "user" ? "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#052A1E]" : "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#DCE7FA]"}>
@@ -1276,7 +1276,7 @@ export default function AssistantChat({
         {waiting && !toolName && (
           <div className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+            <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0b] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
             <div className="flex min-w-0 flex-col items-start">
               {/* Kelas msg-typing dipertahankan sebagai kait CSS
                   vanilla untuk animasi titik ketik (.msg-typing .dot,

@@ -41,7 +41,7 @@ export default function LazySection({
       id={id}
       ref={ref}
       className={`relative scroll-mt-[70px]${
-        id === "projects" ? "" : " border-t border-[#0D1E52]"
+        id === "projects" ? "" : " border-t border-[#141416]"
       }`}
       style={on ? undefined : { minHeight }}
     >

@@ -18,9 +18,9 @@ import { HighlightedCode } from "@/components/ChatMarkdown";
 import { DICON_LAYOUT, DICON_NEUTRAL } from "./dashboard/ui";
 
 const FC_BTN =
-  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-line3 bg-[#11245F] text-[#AFC2E6] hover:border-steel hover:text-white";
+  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-line3 bg-[#17171b] text-[#AFC2E6] hover:border-steel hover:text-white";
 const CODEWRAP =
-  "mx-5 mt-3 mb-1 flex min-h-0 items-start overflow-auto rounded-[10px] border border-line bg-[#050E2E] [&_.msg-code]:m-0 [&_.msg-code]:flex-1 [&_.msg-code]:border-none [&_.msg-code]:rounded-none [&_.msg-code]:bg-transparent [&_.msg-code]:leading-[1.55] [&_.msg-code]:overflow-visible";
+  "mx-5 mt-3 mb-1 flex min-h-0 items-start overflow-auto rounded-[10px] border border-line bg-[#0a0a0b] [&_.msg-code]:m-0 [&_.msg-code]:flex-1 [&_.msg-code]:border-none [&_.msg-code]:rounded-none [&_.msg-code]:bg-transparent [&_.msg-code]:leading-[1.55] [&_.msg-code]:overflow-visible";
 const MODAL_X = `${DICON_LAYOUT} h-8 w-8 rounded-lg ${DICON_NEUTRAL}`;
 
 
@@ -419,7 +419,7 @@ export function FileReviewWindow({
       }}
       onPointerDown={onFocus}
     >
-      <div className="flex cursor-grab items-center gap-2.5 border-b border-[#16296B] px-3 py-2.5 select-none [touch-action:none] active:cursor-grabbing" onPointerDown={onHeadPointerDown}>
+      <div className="flex cursor-grab items-center gap-2.5 border-b border-[#1e1e22] px-3 py-2.5 select-none [touch-action:none] active:cursor-grabbing" onPointerDown={onHeadPointerDown}>
         <span className="flex min-w-0 flex-1 items-center gap-[7px] text-[0.86rem] font-bold text-white">
           {langFromName(file.name) === "text" ? (
             <FileText size={15} />

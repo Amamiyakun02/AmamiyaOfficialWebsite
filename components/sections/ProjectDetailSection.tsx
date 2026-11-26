@@ -139,7 +139,7 @@ export default function ProjectDetailSection({
       )}
       <section className="mt-[34px]">
         <h2 className="m-0 mb-2.5 text-lg font-bold">Cuplikan Kode</h2>
-        <pre className="m-0 overflow-x-auto rounded-xl border border-line2 bg-[#050E2E] p-4 text-[12.5px] leading-[1.6] text-[#C3D2F0]">
+        <pre className="m-0 overflow-x-auto rounded-xl border border-line2 bg-[#0a0a0b] p-4 text-[12.5px] leading-[1.6] text-[#C3D2F0]">
           <code>{p.codeSnippet.code}</code>
         </pre>
       </section>

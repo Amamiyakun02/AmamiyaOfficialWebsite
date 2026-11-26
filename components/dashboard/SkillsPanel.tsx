@@ -378,7 +378,7 @@ export default function SkillsPanel() {
 
       <div className="flex flex-wrap items-center gap-2.5">
         <input
-          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
+          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#0a0a0b] px-3 py-[9px] text-sm text-paper outline-none"
           type="search"
           placeholder="Cari skill…"
           value={q}
@@ -428,7 +428,7 @@ export default function SkillsPanel() {
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
+                  className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -479,7 +479,7 @@ export default function SkillsPanel() {
                   />
                 </span>
                 <input
-                  className="w-[76px] flex-none rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
+                  className="w-[76px] flex-none rounded-[10px] border border-line bg-[#0a0a0b] px-3 py-[9px] text-sm text-paper outline-none"
                   type="number"
                   min={0}
                   max={100}
@@ -573,7 +573,7 @@ export default function SkillsPanel() {
                 <span>Urutan {s.sort_order}</span>
                 {s.updated_at && <span>Diubah {fmtDate(s.updated_at)}</span>}
               </p>
-              <div className="mt-3.5 flex items-center gap-3 border-t border-[#16296B] pt-2.5 pb-3">
+              <div className="mt-3.5 flex items-center gap-3 border-t border-[#1e1e22] pt-2.5 pb-3">
                 {confirmId === s.id ? (
                   <span className="ml-auto inline-flex flex-none items-center gap-1.5">
                     <span className="mr-0.5 text-[12.5px] text-[#f0b4b4]">Hapus skill ini?</span>

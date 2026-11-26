@@ -773,12 +773,12 @@ export default function AiProvidersPanel() {
               <div className="flex flex-col gap-2">
                 {form.models.map((m, idx) => (
                   <div className="flex gap-2" key={idx}>
-                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0a0a0b] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.id}
                       onChange={(e) => setModel(idx, "id", e.target.value)}
                       placeholder="id model — mis. mercury-3"
                     />
-                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0a0a0b] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.name}
                       onChange={(e) => setModel(idx, "name", e.target.value)}
                       placeholder="Nama tampil — mis. Mercury 3"
@@ -928,7 +928,7 @@ export default function AiProvidersPanel() {
                     <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-[#5D7099]">{p.package}</span>
                   )}
                 </p>
-                <div className="mt-3 flex items-baseline gap-2.5 rounded-[10px] border border-[#16296B] bg-[rgba(255,255,255,0.03)] px-3 py-2">
+                <div className="mt-3 flex items-baseline gap-2.5 rounded-[10px] border border-[#1e1e22] bg-[rgba(255,255,255,0.03)] px-3 py-2">
                   <span className="flex-none text-[10.5px] tracking-[0.08em] uppercase text-[#8298C0]">Model default</span>
                   <span className="[font-family:ui-monospace,monospace] text-[13.5px] text-white">
                     {p.default_model ?? "—"}

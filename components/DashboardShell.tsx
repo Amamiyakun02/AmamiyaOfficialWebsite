@@ -268,7 +268,7 @@ export default function DashboardShell() {
 
   if (state !== "ok") {
     return (
-      <div className="dash-app flex min-h-0 flex-1 items-center justify-center bg-[#040A24]">
+      <div className="dash-app flex min-h-0 flex-1 items-center justify-center bg-[#08080a]">
         <p className="text-sm text-fog">Memeriksa sesi…</p>
       </div>
     );
@@ -279,7 +279,7 @@ export default function DashboardShell() {
 
   return (
     <div className={sideCollapsed ? "dash-app is-side-collapsed" : "dash-app"}>
-      <aside className={`relative z-[2] flex min-h-0 flex-col gap-[22px] overflow-y-auto border-r border-[#16296B] bg-[#040A24] px-3.5 pt-5 pb-4 max-[920px]:min-w-0 max-[920px]:flex-row max-[920px]:flex-wrap max-[920px]:items-center max-[920px]:gap-x-3.5 max-[920px]:gap-y-2.5 max-[920px]:overflow-visible max-[920px]:border-r-0 max-[920px]:border-b max-[920px]:py-3 ${sideCollapsed ? "min-[921px]:px-2.5" : ""}`}>
+      <aside className={`relative z-[2] flex min-h-0 flex-col gap-[22px] overflow-y-auto border-r border-[#1e1e22] bg-[#08080a] px-3.5 pt-5 pb-4 max-[920px]:min-w-0 max-[920px]:flex-row max-[920px]:flex-wrap max-[920px]:items-center max-[920px]:gap-x-3.5 max-[920px]:gap-y-2.5 max-[920px]:overflow-visible max-[920px]:border-r-0 max-[920px]:border-b max-[920px]:py-3 ${sideCollapsed ? "min-[921px]:px-2.5" : ""}`}>
         <div className={`flex items-center gap-[11px] px-2 py-0.5 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-3 min-[921px]:px-0" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -335,8 +335,8 @@ export default function DashboardShell() {
             <span className={sideCollapsed ? "min-[921px]:hidden" : undefined}>Situs utama</span>
             <ArrowUpRight size={13} className={`ml-auto text-[#5D7099] ${sideCollapsed ? "min-[921px]:hidden" : ""}`} />
           </a>
-          <div className={`flex items-center gap-2.5 border-t border-[#16296B] px-1.5 pt-[13px] pb-0.5 max-[920px]:border-t-0 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-[9px] min-[921px]:px-0" : ""}`}>
-            <span className="inline-flex h-[29px] w-[29px] flex-none items-center justify-center rounded-full border border-[#22336A] bg-[#11245F] text-[12.5px] font-bold text-[#DCE7FA]" aria-hidden="true">
+          <div className={`flex items-center gap-2.5 border-t border-[#1e1e22] px-1.5 pt-[13px] pb-0.5 max-[920px]:border-t-0 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-[9px] min-[921px]:px-0" : ""}`}>
+            <span className="inline-flex h-[29px] w-[29px] flex-none items-center justify-center rounded-full border border-[#22336A] bg-[#17171b] text-[12.5px] font-bold text-[#DCE7FA]" aria-hidden="true">
               {(user || "A").charAt(0).toUpperCase()}
             </span>
             <span className={`flex min-w-0 flex-col leading-[1.3] max-[920px]:hidden ${sideCollapsed ? "min-[921px]:hidden" : ""}`}>

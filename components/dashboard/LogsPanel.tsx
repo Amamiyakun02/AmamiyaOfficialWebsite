@@ -69,7 +69,7 @@ const LVL_TONE: Record<string, string> = {
 const SUBTAB =
   "cursor-pointer rounded-lg border px-[15px] py-[7px] text-[13.5px]";
 const SUBTAB_OFF =
-  "border-line bg-[rgba(10,24,71,0.7)] text-[#AFC2E6] hover:border-steel hover:text-white";
+  "border-line bg-[rgba(16,16,19,0.7)] text-[#AFC2E6] hover:border-steel hover:text-white";
 const SUBTAB_ON =
   "border-[rgba(0,255,170,0.45)] bg-[rgba(0,255,170,0.14)] text-[#5EEAD0] hover:border-steel hover:text-white";
 
@@ -344,7 +344,7 @@ export default function LogsPanel() {
           ) : bItems.length === 0 ? (
             <p className={EMPTY}>Tidak ada baris yang cocok.</p>
           ) : (
-            <div className="mt-3.5 max-h-[520px] overflow-y-auto rounded-[14px] border border-line bg-[#050E2E] px-3.5 py-3">
+            <div className="mt-3.5 max-h-[520px] overflow-y-auto rounded-[14px] border border-line bg-[#0a0a0b] px-3.5 py-3">
               {bItems.map((l, i) => (
                 <div key={i} className="flex gap-2.5 border-b border-[rgba(255,255,255,0.03)] py-[3px] text-[12.5px] leading-[1.55] [font-family:ui-monospace,monospace]">
                   <span className={`w-[62px] flex-shrink-0 pt-0.5 text-[11px] font-bold tracking-[0.04em] ${LVL_TONE[l.level] ?? ""}`}>

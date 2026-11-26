@@ -207,7 +207,7 @@ export default function InboxPanel() {
               type="button"
               role="tab"
               aria-selected={filter === f.id}
-              className={`cursor-pointer rounded-full border px-[13px] py-1.5 text-[12.5px] ${filter === f.id ? "border-[rgba(0,255,170,0.5)] bg-[rgba(0,255,170,0.16)] text-white" : "border-line3 bg-[#11245F] text-[#AFC2E6] hover:border-steel hover:text-white"}`}
+              className={`cursor-pointer rounded-full border px-[13px] py-1.5 text-[12.5px] ${filter === f.id ? "border-[rgba(0,255,170,0.5)] bg-[rgba(0,255,170,0.16)] text-white" : "border-line3 bg-[#17171b] text-[#AFC2E6] hover:border-steel hover:text-white"}`}
               onClick={() => setFilter(f.id)}
             >
               {f.label}

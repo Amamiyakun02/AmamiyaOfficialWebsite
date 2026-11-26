@@ -135,7 +135,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="relative z-[5] flex flex-none items-center justify-between border-b border-[#16296B] bg-[rgba(13,13,15,0.94)] px-7 py-3 max-[760px]:px-[18px] max-[760px]:py-2.5">
+      <header className="relative z-[5] flex flex-none items-center justify-between border-b border-[#1e1e22] bg-[rgba(13,13,15,0.94)] px-7 py-3 max-[760px]:px-[18px] max-[760px]:py-2.5">
         <div className="flex items-center gap-[30px] max-[760px]:gap-[14px]">
           <Link
             href="/#home"
@@ -209,14 +209,14 @@ export default function Navbar() {
         aria-hidden="true"
       />
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[60] flex w-[min(300px,84vw)] flex-col border-r border-[#16296B] bg-[#0A1847] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.24,1)] min-[761px]:hidden motion-reduce:transition-none ${
+        className={`fixed top-0 bottom-0 left-0 z-[60] flex w-[min(300px,84vw)] flex-col border-r border-[#1e1e22] bg-[#101013] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.24,1)] min-[761px]:hidden motion-reduce:transition-none ${
           open
             ? "pointer-events-auto translate-x-0 shadow-[24px_0_48px_rgba(0,0,0,0.45)]"
             : "pointer-events-none -translate-x-[105%]"
         }`}
         aria-hidden={!open}
       >
-        <div className="flex items-center justify-between border-b border-[#16296B] px-[18px] py-[13px]">
+        <div className="flex items-center justify-between border-b border-[#1e1e22] px-[18px] py-[13px]">
           <Link
             href="/#home"
             className="inline-flex items-center gap-[9px] text-[17px] font-bold tracking-[0.01em] text-white no-underline"
@@ -256,7 +256,7 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto flex gap-[10px] border-t border-[#16296B] px-[18px] pt-4 pb-5">
+        <div className="mt-auto flex gap-[10px] border-t border-[#1e1e22] px-[18px] pt-4 pb-5">
           {cvUrl && (
             <a
               className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#41538A] hover:bg-white/[0.08]"
