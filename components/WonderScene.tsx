@@ -46,6 +46,7 @@ const HEAT_RY = 57; // (idem)
 // MENYAMPING tegak lurus arah gerak kursor dalam radius petak huruf.
 const RIPPLE_R = 7; // radius gelombang: 7 petak huruf dari kursor (10 terasa terlalu luas, kata user)
 const RIPPLE_STAGGER_MS = 150; // jeda mulai per petak sepanjang sumbu sapuan — 60ms terasa BARANGAN kata user (fase antar petak cuma beda 7% dari durasi 800ms); 150ms membuat tiap petak jelas bergiliran: satu petak sudah berbalok saat petak berikutnya baru bertitik
+const SHOW_HERO_CTA = false; // tombol "Lihat Proyek" DISEMBUNYIKAN sementara (user 26 Nov 2026: "hide dulu buttonnya, isi kekosongannya dengan amamiya") — balikkan ke true untuk menampilkan lagi; komponen HeroCtas dibiarkan utuh
 const MAT_MS = 800; // durasi materialisasi per huruf — diperlambat dari 600ms intro judul agar perubahan titik->balok->karakter sempat terlihat (permintaan user)
 const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
 const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
@@ -806,10 +807,14 @@ export default function WonderScene({
         const parent = cvs!.parentElement;
         const logoEl = parent?.querySelector<HTMLElement>(".hero-logo");
         const ctaEl = parent?.querySelector<HTMLElement>(".hero-ctas");
-        if (logoEl && ctaEl) {
+        // Tombol disembunyikan -> lubang berakhir di bawah KATA, jadi
+        // kekosongan bekas tombol diisi kata grid (permintaan user).
+        const bottomEl =
+          ctaEl ?? parent?.querySelector<HTMLElement>(".stage-title h1");
+        if (logoEl && bottomEl) {
           const base = cvs!.getBoundingClientRect();
           const lr = logoEl.getBoundingClientRect();
-          const cr = ctaEl.getBoundingClientRect();
+          const cr = bottomEl.getBoundingClientRect();
           const top = lr.top - base.top + lr.height * (60 / 1235) - CH * 0.55;
           const bottom = cr.bottom - base.top + CH * 0.55;
           if (bottom > top + 120) {
@@ -3080,8 +3085,9 @@ export default function WonderScene({
               <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
             </h1>
             {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV.
-                Halaman login dashboard menggantinya dengan form (belowChips). */}
-            {belowChips ?? <HeroCtas />}
+                Halaman login dashboard menggantinya dengan form (belowChips).
+                Sementara disembunyikan lewat SHOW_HERO_CTA (user 26 Nov 2026). */}
+            {belowChips ?? (SHOW_HERO_CTA ? <HeroCtas /> : null)}
           </>
         )}
       </div>
