@@ -775,8 +775,7 @@ export default function WonderScene({
       // 26 Nov 2026 (user): DESKTOP dipersempit jadi 2 LAJUR saja —
       // komposisi tengah kini logo besar (3x) + kata selebar emblem;
       // ponsel tetap 4 lajur seperti sebelumnya.
-      const holeCols = viewW < 640 ? Math.min(4, cols) : Math.min(2, cols);
-      const holeW = holeCols * CW;
+      let holeCols = viewW < 640 ? Math.min(4, cols) : Math.min(2, cols);
       const holeHBase =
         viewW < 640
           ? Math.min(96, Math.max(84, viewH * 0.2))
@@ -794,10 +793,11 @@ export default function WonderScene({
           cvs!.parentElement?.querySelector<HTMLElement>(".login-form");
         const fh = formEl?.offsetHeight ?? 0;
         if (fh > 0) holeH = fh + 2 * CH;
-      } else if (viewW >= 640) {
+      } else {
         // Beranda desktop (user 26 Nov 2026): lubang MENGIKUTI tumpukan
         // hero yang diukur langsung — dari puncak TAMPAK emblem logo
-        // (kotak SVG-nya punya ruang kosong 288/1600 di atas emblem)
+        // (viewBox hero sudah dipotong ke emblem: sisa ruang kosong
+        // di atas emblem kini hanya 60/1235 tinggi kotak)
         // sampai bawah tombol CTA, masing-masing + 0,55 baris napas.
         // Sebelumnya tinggi lubang tetap (maks 480px) menyisakan pita
         // kosong lebar di atas logo yang diminta user tetap diisi kata
@@ -810,11 +810,23 @@ export default function WonderScene({
           const base = cvs!.getBoundingClientRect();
           const lr = logoEl.getBoundingClientRect();
           const cr = ctaEl.getBoundingClientRect();
-          const top = lr.top - base.top + lr.height * (288 / 1600) - CH * 0.55;
+          const top = lr.top - base.top + lr.height * (60 / 1235) - CH * 0.55;
           const bottom = cr.bottom - base.top + CH * 0.55;
           if (bottom > top + 120) {
             holeH = bottom - top;
             holeYOff = top;
+          }
+          // Layar < 1080 (HP & tablet): lebar lubang mengikuti lebar
+          // EMBLEM terukur — jumlah lajur terkecil yang menutupinya.
+          // (Desktop >= 1080 tetap 2 lajur sesuai persetujuan user;
+          // di HP/tablet 2 lajur jauh lebih sempit dari emblem
+          // sehingga kata grid menembus sisi-sisi logo.)
+          if (viewW < 1080) {
+            const emblemW = lr.width * (1282 / 1402);
+            holeCols = Math.min(
+              cols,
+              Math.max(2, Math.ceil(emblemW / CW)),
+            );
           }
         }
       }
@@ -829,6 +841,7 @@ export default function WonderScene({
       // padahal blok judul + ikon butuh lebih — judul/ikon tumpah
       // keluar lubang dan menimpa baris grid. Lantai ini memastikan
       // lubang tidak pernah lebih kecil dari isinya.)
+      const holeW = holeCols * CW;
       const holeX = CW + ((cols - holeCols) / 2) * CW;
       const holeY = holeYOff ?? (viewH - holeH) / 2;
       const inHole = (px: number, py: number) => {

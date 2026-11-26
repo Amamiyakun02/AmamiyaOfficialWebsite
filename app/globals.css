@@ -401,7 +401,11 @@ body {
      lebar emblem logo di atasnya (logo diperbesar 3x = kotak 354px,
      emblem tampak ±284px; kata = 7 slot x 0,95em = 6,65em, jadi font
      ±43px) dan lubang menyempit jadi 2 lajur. */
-  font-size: clamp(26px, 3.36vw, 47px);
+  /* 26 Nov 2026 (lanjutan): koefisien diubah 3,36vw -> 9,88vw agar
+     lebar kata MELACAK emblem di semua lebar layar, bukan hanya
+     desktop — font = emblem/6,65 dan emblem = 0,80125 x min(390px,
+     82vw), jadi di bawah 476px font menyusut sebanding 82vw. */
+  font-size: clamp(20px, 9.88vw, 47px);
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: 0;
@@ -655,15 +659,17 @@ h1.t-instant .t-block {
    (mulai +0,1 dtk, selesai ±1,26 dtk) -> KATA besar dibangun di
    bawah logo (jenjang huruf ditunda +1,35 dtk) -> CTA (+2,7 dtk). */
 .hero-logo {
-  /* 118px -> 354px (3x) -> 390px (sedikit lebih besar lagi, user
-     26 Nov 2026); dibatasi 82vw di layar sempit */
-  width: min(390px, 82vw);
-  aspect-ratio: 1;
+  /* 118px -> 354px (3x) -> 390px; lalu viewBox DIPOTONG ke emblem
+     (26 Nov 2026, perbaikan mobile) sehingga kotak menjadi 341px /
+     72vw dengan rasio 1402/1235 — ukuran emblem TAMPAK tidak berubah
+     (desktop 312px, HP ±256px), hanya ruang kosong bingkainya hilang */
+  width: min(341px, 72vw);
+  aspect-ratio: 1402 / 1235;
   height: auto;
-  /* margin bawah negatif (user 26 Nov 2026): kata ditarik naik 38px
-     menelan ruang kosong SVG di bawah emblem — celah tampak emblem->
-     kata menyusut dari ±50px menjadi ±12px */
-  margin-bottom: -38px;
+  /* margin bawah negatif: kata ditarik naik menelan sisa ruang kosong
+     di bawah emblem dalam crop (60/1402 x lebar kotak = ±15px di
+     desktop) — celah tampak emblem->kata tetap ±10px */
+  margin-bottom: -5px;
   margin-top: 10px;
   justify-self: center;
   pointer-events: none;
@@ -701,6 +707,12 @@ h1.t-instant .t-block {
   .stage-title .hero-logo-el {
     opacity: 1 !important;
     animation: none !important;
+  }
+}
+@media (max-width: 475px) {
+  .hero-logo {
+    /* sisa ruang kosong crop = 60/1402 x 72vw = 3,1vw */
+    margin-bottom: calc(10px - 3.1vw);
   }
 }
 
@@ -832,7 +844,10 @@ code {
      seluruh kata seperti sebelumnya), dan kini diskalakan turun
      sekali lagi mengikuti panggung pendek (31 Okt) */
   .stage-title h1 {
-    font-size: clamp(17px, 4.6vw, 20px);
+    /* 26 Nov 2026: rumus lama (17-20px, agar muat lubang 4 lajur)
+       diganti rumus pelacak emblem yang sama dengan aturan dasar —
+       lubang ponsel kini mengikuti tumpukan, kata selebar emblem. */
+    font-size: clamp(20px, 9.88vw, 47px);
   }
   /* panel kontrol: sama seperti tab/desktop — kecil di kiri bawah
      stage (31 Okt; sebelumnya di atas stage dan terlihat besar
@@ -1557,7 +1572,11 @@ code {
 }
 @media (max-width: 760px) {
   .hero-wrap {
-    height: 55%;
+    /* 55% -> 62% (26 Nov 2026): tumpukan hero baru (logo crop + kata
+       + CTA ±346px) tidak lagi muat di stage 55% pada HP pendek
+       (terukur CTA keluar 10px di layar 700px); 62% membuat semua
+       ukuran HP muat sementara section bawah tetap mengintip. */
+    height: 62%;
   }
 }
 /* Layar PENDEK (HP landscape & tablet pendek): blok tengah diperkecil
@@ -1565,7 +1584,16 @@ code {
    45px + cip 56px tumpah keluar lubang (±79px) dan menimpa grid. */
 @media (max-width: 1080px) and (max-height: 540px) {
   .stage-title h1 {
-    font-size: 30px;
+    /* melacak logo 150px versi crop di bawah (emblem 137px =
+       6,65 x 21px) */
+    font-size: 21px;
+  }
+  /* Logo hero diperkecil di layar pendek agar tumpukan muat di stage
+     landscape; versi crop: ruang kosong bawah emblem tinggal 6px,
+     margin +4px menjaga celah ke kata ±10px */
+  .hero-logo {
+    width: 150px;
+    margin-bottom: 4px;
   }
   .fx-cards {
     margin-top: 8px;
@@ -3729,13 +3757,16 @@ code {
    margin tombol +30 sekaligus kompensasi +30 agar judul diam. */
 @media (min-width: 641px) and (max-width: 1080px) {
   .stage-title {
-    /* margin 52 + tombol ±64 = 116 (era dock 3 segmen: 99) */
-    padding-top: 116px;
+    /* 116px -> 0 (26 Nov 2026): kompensasi era dock dinolkan, lihat
+       catatan di blok ponsel bawah */
+    padding-top: 0;
   }
   /* pemilih ganda: wajib mengalahkan aturan dasar .hero-ctas yang
      letaknya lebih bawah di berkas ini */
   .stage-title .hero-ctas {
-    margin-top: 52px;
+    /* 52px -> 12px (26 Nov 2026): celah kata->CTA wajar, bukan lagi
+       penurunan paksa era dock */
+    margin-top: 12px;
   }
 }
 /* Ponsel: tombol diperkecil jadi SEBARIS bertiga (perbaikan 2 Nov
@@ -3745,8 +3776,13 @@ code {
    (terukur di rig). */
 @media (max-width: 640px) {
   .stage-title {
-    /* margin 14 + tombol ±56 = 70 (era dock 3 segmen sebaris: 53) */
-    padding-top: 70px;
+    /* 70px -> 0 (26 Nov 2026): kompensasi padding era dock DINOLKAN di
+       HP & tablet — premise lamanya (judul+cip terpusat di lubang,
+       tombol menggantung di bawahnya) tidak berlaku lagi sejak hero
+       berisi logo+kata+CTA sebagai satu tumpukan dan lubang diukur
+       mengikuti tumpukan itu; kompensasi lama terukur mendorong CTA
+       28-68px KELUAR stage pendek mobile. */
+    padding-top: 0;
   }
 }
 /* Muncul terakhir: setelah logo terakit + kata selesai dibangun

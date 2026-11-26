@@ -30,7 +30,12 @@ export default function HeroLogo() {
       role="img"
       aria-label="Logo Amamiya"
     >
-      <svg viewBox="0 0 1600 1600" className="hero-logo-svg">
+      {/* viewBox DIPOTONG ke kotak emblem + bantalan 60 (99 228 1402
+          1235) sejak perbaikan mobile 26 Nov 2026: bingkai asli 1600
+          menyimpan ±288/197 ruang kosong atas/bawah yang memakan
+          tinggi tumpukan di stage pendek. Koordinat path & gradasi
+          tetap di ruang asli — ini murni jendela pandang. */}
+      <svg viewBox="99 228 1402 1235" className="hero-logo-svg">
         <linearGradient id="hg0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028">
           <stop offset="0" stopColor="#00ffaa" />
           <stop offset="1" stopColor="#003796" />
