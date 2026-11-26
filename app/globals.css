@@ -4036,10 +4036,13 @@ code {
 }
 .login-brand-logo {
   display: block;
-  width: 46px;
-  height: 46px;
+  /* 46px -> 64px + celah ke kata diperkecil 6px -> 2px (user
+     26 Nov 2026); kalimat sub "Masuk untuk mengelola sistem."
+     dihapus dari form di hari yang sama. */
+  width: 64px;
+  height: 64px;
   object-fit: contain;
-  margin: 0 auto 6px;
+  margin: 0 auto 2px;
 }
 .login-brand-name {
   font-size: 19px;

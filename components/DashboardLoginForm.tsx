@@ -59,10 +59,9 @@ export default function DashboardLoginForm() {
           judul teks lama "System Dashboard". */}
       <div className="login-brand">
         <img src="/favicon.png" alt="" className="login-brand-logo" />
-        <p className="login-brand-name">Amamiya</p>
+        <p className="login-brand-name">AMAMIYA</p>
         <p className="login-brand-sub">Dashboard System</p>
       </div>
-      <p className="login-form-sub">Masuk untuk mengelola sistem.</p>
       <label className="login-field">
         <span>Username</span>
         <input
