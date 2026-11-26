@@ -717,25 +717,28 @@ h1.t-instant .t-block {
    elemen logo yang sesungguhnya. */
 @media (min-width: 641px) and (max-width: 1080px) {
   .hero-logo {
-    width: 250px;
-    /* ruang kosong bawah crop pada 250px = 10,7px, jadi margin 0
-       memberi celah ke kata yang pas (±10px) */
-    margin-bottom: 0;
+    /* 250px -> 125px (setengahnya lagi, user 26 Nov 2026) */
+    width: 125px;
+    /* ruang kosong bawah crop pada 125px = 5,4px; margin +5px
+       menjaga celah ke kata ±10px */
+    margin-bottom: 5px;
   }
   .stage-title h1 {
-    font-size: 34px;
+    /* emblem 125 x 0,9144 = 114px -> font 114/6,65 = 17px */
+    font-size: 17px;
   }
 }
 @media (max-width: 640px) {
   .hero-logo {
-    width: min(56vw, 250px);
-    margin-bottom: 0;
+    /* 56vw -> 28vw, maks 250 -> 125 (setengahnya lagi) */
+    width: min(28vw, 125px);
+    margin-bottom: 5px;
   }
 }
 @media (max-width: 475px) {
   .hero-logo {
-    /* sisa ruang kosong crop = 60/1402 x 56vw = 2,4vw */
-    margin-bottom: calc(10px - 2.4vw);
+    /* sisa ruang kosong crop = 60/1402 x 28vw = 1,2vw */
+    margin-bottom: calc(10px - 1.2vw);
   }
 }
 
@@ -868,10 +871,11 @@ code {
      sekali lagi mengikuti panggung pendek (31 Okt) */
   .stage-title h1 {
     /* 26 Nov 2026: rumus lama (17-20px, agar muat lubang 4 lajur)
-       diganti rumus pelacak emblem; koefisien 7,7vw + mentok 34px
-       mengikuti logo HP/tablet yang DIPERKECIL (user: logo kegedean
-       di mobile/tab) — emblem HP = 0,9144 x min(56vw, 250px). */
-    font-size: clamp(17px, 7.7vw, 34px);
+       diganti rumus pelacak emblem; koefisien mengikuti logo
+       HP/tablet yang diperkecil DUA KALI atas permintaan user
+       (terakhir: setengahnya lagi) — emblem = 0,9144 x
+       min(28vw, 125px) -> font 3,85vw mentok 17px. */
+    font-size: clamp(13px, 3.85vw, 17px);
   }
   /* panel kontrol: sama seperti tab/desktop — kecil di kiri bawah
      stage (31 Okt; sebelumnya di atas stage dan terlihat besar
@@ -1608,16 +1612,16 @@ code {
    45px + cip 56px tumpah keluar lubang (±79px) dan menimpa grid. */
 @media (max-width: 1080px) and (max-height: 540px) {
   .stage-title h1 {
-    /* melacak logo 150px versi crop di bawah (emblem 137px =
-       6,65 x 21px) */
-    font-size: 21px;
+    /* melacak logo 100px versi crop di bawah (emblem 91px =
+       6,65 x 14px) */
+    font-size: 14px;
   }
   /* Logo hero diperkecil di layar pendek agar tumpukan muat di stage
-     landscape; versi crop: ruang kosong bawah emblem tinggal 6px,
-     margin +4px menjaga celah ke kata ±10px */
+     landscape; versi crop: ruang kosong bawah emblem tinggal 4px,
+     margin +6px menjaga celah ke kata ±10px */
   .hero-logo {
-    width: 150px;
-    margin-bottom: 4px;
+    width: 100px;
+    margin-bottom: 6px;
   }
   .fx-cards {
     margin-top: 8px;
