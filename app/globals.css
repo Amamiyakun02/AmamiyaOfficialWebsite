@@ -709,10 +709,33 @@ h1.t-instant .t-block {
     animation: none !important;
   }
 }
+/* Logo DIPERKECIL di tablet & ponsel (user 26 Nov 2026: "kegedean
+   itu logonya untuk view mobile dan tab, makanya jadi rusak") —
+   desktop tidak berubah (341px). Kata mengikuti lewat aturan font
+   masing-masing (tablet 34px tetap; ponsel clamp 7,7vw/34px di blok
+   override <=760). Lubang grid otomatis mengikuti karena diukur dari
+   elemen logo yang sesungguhnya. */
+@media (min-width: 641px) and (max-width: 1080px) {
+  .hero-logo {
+    width: 250px;
+    /* ruang kosong bawah crop pada 250px = 10,7px, jadi margin 0
+       memberi celah ke kata yang pas (±10px) */
+    margin-bottom: 0;
+  }
+  .stage-title h1 {
+    font-size: 34px;
+  }
+}
+@media (max-width: 640px) {
+  .hero-logo {
+    width: min(56vw, 250px);
+    margin-bottom: 0;
+  }
+}
 @media (max-width: 475px) {
   .hero-logo {
-    /* sisa ruang kosong crop = 60/1402 x 72vw = 3,1vw */
-    margin-bottom: calc(10px - 3.1vw);
+    /* sisa ruang kosong crop = 60/1402 x 56vw = 2,4vw */
+    margin-bottom: calc(10px - 2.4vw);
   }
 }
 
@@ -845,9 +868,10 @@ code {
      sekali lagi mengikuti panggung pendek (31 Okt) */
   .stage-title h1 {
     /* 26 Nov 2026: rumus lama (17-20px, agar muat lubang 4 lajur)
-       diganti rumus pelacak emblem yang sama dengan aturan dasar —
-       lubang ponsel kini mengikuti tumpukan, kata selebar emblem. */
-    font-size: clamp(20px, 9.88vw, 47px);
+       diganti rumus pelacak emblem; koefisien 7,7vw + mentok 34px
+       mengikuti logo HP/tablet yang DIPERKECIL (user: logo kegedean
+       di mobile/tab) — emblem HP = 0,9144 x min(56vw, 250px). */
+    font-size: clamp(17px, 7.7vw, 34px);
   }
   /* panel kontrol: sama seperti tab/desktop — kecil di kiri bawah
      stage (31 Okt; sebelumnya di atas stage dan terlihat besar
