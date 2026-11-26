@@ -3884,17 +3884,39 @@ code {
 }
 @media (max-width: 640px) {
   .hero-ctas {
-    margin-top: 14px;
+    margin-top: 12px;
+    padding: 4px;
+  }
+  .hero-cta {
+    /* 11px 26px/15px -> 8px 20px/13px (26 Nov 2026): tombol ikut
+       disesuaikan dengan logo+kata ponsel yang sudah dua kali
+       diperkecil — kapsul lama (tinggi ±54px) mendominasi tumpukan
+       kecil; kini ±43px, tetap nyaman disentuh */
+    padding: 8px 20px;
+    font-size: 13px;
+    gap: 7px;
+  }
+  .hero-cta svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+}
+/* Tablet: tombol ikut disesuaikan dengan logo 125px + kata 17px
+   (26 Nov 2026) — font 13,5px, tinggi kapsul ±47px. margin-top 12px
+   sudah diatur blok kompensasi tablet di atas. */
+@media (min-width: 641px) and (max-width: 1080px) {
+  .hero-ctas {
     padding: 5px;
   }
   .hero-cta {
-    padding: 11px 26px;
-    font-size: 15px;
+    padding: 9px 24px;
+    font-size: 13.5px;
     gap: 8px;
   }
   .hero-cta svg {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
   }
 }
