@@ -318,11 +318,11 @@ export default function PdfAnalysis() {
         </Link>
 
         <div className="mt-4 flex items-start gap-3.5">
-          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] text-accent2">
+          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.1)] text-accent2">
             <FileText size={26} />
           </span>
           <div>
-            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#f2f2f5]">PDF Analysis</h1>
+            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#EEF4FF]">PDF Analysis</h1>
             <p className="mt-[5px] max-w-[560px] text-[13.5px] leading-[1.6] text-fog">
               Cek warna halaman dan baca metadata dokumen PDF — lalu ekstrak
               halaman pilihan menjadi PDF baru.
@@ -336,7 +336,7 @@ export default function PdfAnalysis() {
             <div className="rounded-[14px] border border-line bg-panel p-5">
               {!file ? (
                 <div
-                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-dashed px-5 py-[34px] text-center transition-[border-color,background] duration-200 ${dragOver ? "border-accent bg-[rgba(0,129,251,0.06)]" : "border-line3 hover:border-[rgba(0,129,251,0.45)]"}`}
+                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-dashed px-5 py-[34px] text-center transition-[border-color,background] duration-200 ${dragOver ? "border-accent bg-[rgba(0,255,170,0.06)]" : "border-line3 hover:border-[rgba(0,255,170,0.45)]"}`}
                   onDragOver={(e) => {
                     e.preventDefault();
                     setDragOver(true);
@@ -364,17 +364,17 @@ export default function PdfAnalysis() {
                     accept=".pdf"
                     className="hidden"
                   />
-                  <span className="mb-2.5 inline-flex rounded-[14px] border border-[rgba(0,129,251,0.18)] bg-[rgba(0,129,251,0.08)] p-3.5 text-accent2">
+                  <span className="mb-2.5 inline-flex rounded-[14px] border border-[rgba(0,255,170,0.18)] bg-[rgba(0,255,170,0.08)] p-3.5 text-accent2">
                     <Upload size={30} />
                   </span>
                   <h3 className="m-0 text-[15px] text-white">Seret dan lepas PDF Anda di sini</h3>
                   <p className="m-0 text-xs text-dim">atau klik untuk mencari dari perangkat Anda</p>
-                  <span className="mt-3.5 rounded-md border border-line bg-[#0b0b0d] px-2 py-[3px] text-[10px] font-bold tracking-[0.08em] text-dim uppercase">Hanya file PDF · maks 25 MB</span>
+                  <span className="mt-3.5 rounded-md border border-line bg-[#050E2E] px-2 py-[3px] text-[10px] font-bold tracking-[0.08em] text-dim uppercase">Hanya file PDF · maks 25 MB</span>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3.5">
-                  <div className="relative flex items-center gap-3 rounded-xl border border-line bg-[#0b0b0d] p-3.5">
-                    <span className="inline-flex flex-shrink-0 rounded-[10px] border border-[rgba(0,129,251,0.16)] bg-[rgba(0,129,251,0.1)] p-2.5 text-accent2">
+                  <div className="relative flex items-center gap-3 rounded-xl border border-line bg-[#050E2E] p-3.5">
+                    <span className="inline-flex flex-shrink-0 rounded-[10px] border border-[rgba(0,255,170,0.16)] bg-[rgba(0,255,170,0.1)] p-2.5 text-accent2">
                       <FileText size={20} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -394,13 +394,13 @@ export default function PdfAnalysis() {
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-2.5 rounded-xl border border-[#1e1e23] bg-[#0b0b0d] p-3.5">
+                  <div className="flex flex-col gap-2.5 rounded-xl border border-[#16296B] bg-[#050E2E] p-3.5">
                     <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-1.5 text-xs font-bold text-[#c9c9d2]" htmlFor="pdf-threshold-range">
+                      <label className="inline-flex items-center gap-1.5 text-xs font-bold text-[#AFC2E6]" htmlFor="pdf-threshold-range">
                         <SlidersHorizontal size={14} className="text-accent2" />
                         <span>Ambang Warna</span>
                       </label>
-                      <span className="rounded-md border border-[rgba(0,129,251,0.16)] bg-[rgba(0,129,251,0.1)] px-2 py-0.5 font-mono text-xs font-bold text-accent2">{threshold}</span>
+                      <span className="rounded-md border border-[rgba(0,255,170,0.16)] bg-[rgba(0,255,170,0.1)] px-2 py-0.5 font-mono text-xs font-bold text-accent2">{threshold}</span>
                     </div>
                     <input
                       className="w-full cursor-pointer accent-accent"
@@ -429,7 +429,7 @@ export default function PdfAnalysis() {
 
                   <button
                     type="button"
-                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[rgba(0,129,251,0.35)] bg-accent p-[13px] text-xs font-extrabold tracking-[0.08em] text-white uppercase transition-[background] duration-200 enabled:hover:bg-[#2b93ff] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1c1c21] disabled:text-dim"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[rgba(0,255,170,0.35)] bg-accent p-[13px] text-xs font-extrabold tracking-[0.08em] text-[#052A1E] uppercase transition-[background] duration-200 enabled:hover:bg-[#00BBA2] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-dim"
                     onClick={handleAnalyze}
                     disabled={analyzing}
                   >
@@ -464,7 +464,7 @@ export default function PdfAnalysis() {
           <div className="flex min-w-0 flex-col gap-4">
             {analyzing && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-[14px] border border-line bg-panel px-5 py-11 text-center text-dim">
-                <span className="inline-flex rounded-[14px] border border-[rgba(0,129,251,0.18)] bg-[rgba(0,129,251,0.1)] p-4 text-accent2">
+                <span className="inline-flex rounded-[14px] border border-[rgba(0,255,170,0.18)] bg-[rgba(0,255,170,0.1)] p-4 text-accent2">
                   <RefreshCw size={30} className="pdf-spin" />
                 </span>
                 <h3 className="m-0 mt-1.5 text-[15px] text-white">Menganalisis PDF</h3>
@@ -500,10 +500,10 @@ export default function PdfAnalysis() {
                     <strong className="text-2xl leading-[1.1] font-extrabold text-white">{result.grayscale_pages_count}</strong>
                   </div>
                   <div className="flex flex-col gap-1 rounded-[14px] border border-line bg-panel p-3.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.07em] text-[#34d399] uppercase">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.07em] text-[#00FFAA] uppercase">
                       <Clock size={10} /> Waktu Eksekusi
                     </span>
-                    <strong className="text-2xl leading-[1.1] font-extrabold text-[#34d399]">
+                    <strong className="text-2xl leading-[1.1] font-extrabold text-[#00FFAA]">
                       {result.detection_time_seconds}s
                     </strong>
                   </div>
@@ -513,10 +513,10 @@ export default function PdfAnalysis() {
                   <h3 className="m-0 mb-3 flex items-center gap-1.5 text-xs font-bold tracking-[0.08em] text-fog uppercase">
                     <Layers size={13} /> Rasio Distribusi Warna
                   </h3>
-                  <div className="flex h-3 w-full overflow-hidden rounded-full border border-line bg-[#0b0b0d]">
+                  <div className="flex h-3 w-full overflow-hidden rounded-full border border-line bg-[#050E2E]">
                     {result.colored_pages_count > 0 && (
                       <div
-                        className="h-full bg-[linear-gradient(90deg,#0070e0,#2b93ff)]"
+                        className="h-full bg-[linear-gradient(90deg,#006E9B,#00BBA2)]"
                         style={{
                           width: `${(result.colored_pages_count / result.total_pages) * 100}%`,
                         }}
@@ -524,7 +524,7 @@ export default function PdfAnalysis() {
                     )}
                     {result.grayscale_pages_count > 0 && (
                       <div
-                        className="h-full bg-[#3f3f46]"
+                        className="h-full bg-[#354C8C]"
                         style={{
                           width: `${(result.grayscale_pages_count / result.total_pages) * 100}%`,
                         }}
@@ -533,11 +533,11 @@ export default function PdfAnalysis() {
                   </div>
                   <div className="mt-2.5 flex justify-between text-[11px] font-semibold text-fog">
                     <span>
-                      <i className="mr-0.5 inline-block h-2 w-2 rounded-full bg-[#2b93ff]" /> {result.colored_pages_count}{" "}
+                      <i className="mr-0.5 inline-block h-2 w-2 rounded-full bg-[#00BBA2]" /> {result.colored_pages_count}{" "}
                       ({Math.round((result.colored_pages_count / result.total_pages) * 100)}%)
                     </span>
                     <span>
-                      <i className="mr-0.5 inline-block h-2 w-2 rounded-full bg-[#52525b]" /> {result.grayscale_pages_count}{" "}
+                      <i className="mr-0.5 inline-block h-2 w-2 rounded-full bg-[#4C63A0]" /> {result.grayscale_pages_count}{" "}
                       ({Math.round((result.grayscale_pages_count / result.total_pages) * 100)}%)
                     </span>
                   </div>
@@ -549,7 +549,7 @@ export default function PdfAnalysis() {
                     {metaRows.map((item) => (
                       <div key={item.label} className="flex min-w-0 flex-col">
                         <span className="text-[10px] font-bold tracking-[0.07em] text-dim uppercase">{item.label}</span>
-                        <strong className="mt-[3px] text-xs font-semibold break-anywhere text-[#e4e4e7]">{item.val}</strong>
+                        <strong className="mt-[3px] text-xs font-semibold break-anywhere text-[#DCE7FA]">{item.val}</strong>
                       </div>
                     ))}
                   </div>
@@ -567,7 +567,7 @@ export default function PdfAnalysis() {
                     <div className="flex min-w-[200px] flex-1 flex-col gap-1.5">
                       <label className="text-[10px] font-bold tracking-[0.07em] text-fog uppercase" htmlFor="pdf-cut-input">Halaman yang Diekstrak</label>
                       <input
-                        className="rounded-[10px] border border-line bg-[#0b0b0d] px-3 py-[9px] font-mono text-xs text-white outline-none focus:border-line"
+                        className="rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] font-mono text-xs text-white outline-none focus:border-line"
                         id="pdf-cut-input"
                         type="text"
                         value={rangeText}
@@ -578,7 +578,7 @@ export default function PdfAnalysis() {
                     </div>
                     <button
                       type="button"
-                      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-[rgba(0,129,251,0.35)] bg-accent px-[18px] text-[11px] font-extrabold tracking-[0.06em] whitespace-nowrap text-white uppercase enabled:hover:bg-[#2b93ff] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1c1c21] disabled:text-[#5c5c64]"
+                      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-[rgba(0,255,170,0.35)] bg-accent px-[18px] text-[11px] font-extrabold tracking-[0.06em] whitespace-nowrap text-[#052A1E] uppercase enabled:hover:bg-[#00BBA2] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#4C63A0]"
                       onClick={handleCut}
                       disabled={cutting || selectedPages.length === 0}
                     >
@@ -604,12 +604,12 @@ export default function PdfAnalysis() {
                 </div>
 
                 <div className="rounded-[14px] border border-line bg-panel p-5">
-                  <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#1e1e23] pb-3">
+                  <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#16296B] pb-3">
                     <h3 className="m-0 flex items-center gap-1.5 text-xs font-bold tracking-[0.08em] text-fog uppercase">Rincian Halaman</h3>
                     <div className="relative">
                       <Search size={12} className="absolute top-1/2 left-[9px] -translate-y-1/2 text-dim" />
                       <input
-                        className="w-[180px] rounded-lg border border-line bg-[#0b0b0d] py-1.5 pr-2.5 pl-7 font-mono text-xs text-white outline-none focus:border-line"
+                        className="w-[180px] rounded-lg border border-line bg-[#050E2E] py-1.5 pr-2.5 pl-7 font-mono text-xs text-white outline-none focus:border-line"
                         type="text"
                         value={searchQuery}
                         onChange={(e) =>
@@ -621,7 +621,7 @@ export default function PdfAnalysis() {
                     </div>
                   </div>
 
-                  <div className="mb-3 inline-flex flex-wrap gap-1 rounded-[10px] border border-[#1e1e23] bg-[#0b0b0d] p-1">
+                  <div className="mb-3 inline-flex flex-wrap gap-1 rounded-[10px] border border-[#16296B] bg-[#050E2E] p-1">
                     {(
                       [
                         ["all", "Semua Halaman"],
@@ -632,7 +632,7 @@ export default function PdfAnalysis() {
                       <button
                         key={mode}
                         type="button"
-                        className={`cursor-pointer rounded-[7px] border-0 px-3 py-[5px] text-[11px] font-bold ${activeFilter === mode ? "bg-accent text-white" : "bg-transparent text-fog hover:text-[#e4e4e7]"}`}
+                        className={`cursor-pointer rounded-[7px] border-0 px-3 py-[5px] text-[11px] font-bold ${activeFilter === mode ? "bg-accent text-[#052A1E]" : "bg-transparent text-fog hover:text-[#DCE7FA]"}`}
                         onClick={() => setActiveFilter(mode)}
                       >
                         {label}
@@ -640,23 +640,23 @@ export default function PdfAnalysis() {
                     ))}
                   </div>
 
-                  <div className="mb-3.5 flex flex-wrap items-center gap-2 rounded-xl border border-[#1e1e23] bg-[#0b0b0d] p-2">
+                  <div className="mb-3.5 flex flex-wrap items-center gap-2 rounded-xl border border-[#16296B] bg-[#050E2E] p-2">
                     <span className="px-1 text-[9px] font-bold tracking-[0.08em] text-dim uppercase">Pilih:</span>
-                    <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#3a3a42] hover:text-white border-line bg-panel2 text-[#c9c9d2]" onClick={() => result && applySelection(Array.from({ length: result.total_pages }, (_, i) => i + 1))}>
+                    <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#354C8C] hover:text-white border-line bg-panel2 text-[#AFC2E6]" onClick={() => result && applySelection(Array.from({ length: result.total_pages }, (_, i) => i + 1))}>
                       Pilih Semua
                     </button>
                     {result.colored_pages_count > 0 && (
-                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#3a3a42] hover:text-white border-[rgba(0,129,251,0.2)] bg-[rgba(0,129,251,0.08)] text-accent2" onClick={() => applySelection(result.colored_pages)}>
+                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#354C8C] hover:text-white border-[rgba(0,255,170,0.2)] bg-[rgba(0,255,170,0.08)] text-accent2" onClick={() => applySelection(result.colored_pages)}>
                         Pilih Hanya Berwarna
                       </button>
                     )}
                     {result.grayscale_pages_count > 0 && (
-                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#3a3a42] hover:text-white border-line bg-panel2 text-[#c9c9d2]" onClick={() => applySelection(result.grayscale_pages)}>
+                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#354C8C] hover:text-white border-line bg-panel2 text-[#AFC2E6]" onClick={() => applySelection(result.grayscale_pages)}>
                         Pilih Hanya Grayscale
                       </button>
                     )}
                     {selectedPages.length > 0 && (
-                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#3a3a42] hover:text-white ml-auto border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.06)] text-[#fb7185]" onClick={() => applySelection([])}>
+                      <button type="button" className="cursor-pointer rounded-[7px] border px-2.5 py-[5px] text-[10px] font-bold hover:border-[#354C8C] hover:text-white ml-auto border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.06)] text-[#fb7185]" onClick={() => applySelection([])}>
                         Bersihkan Pilihan
                       </button>
                     )}
@@ -670,19 +670,19 @@ export default function PdfAnalysis() {
                           <button
                             key={pageObj.page}
                             type="button"
-                            className={`relative flex cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-1 py-2.5 transition-[border-color,background] duration-150 ${selected ? "border-accent bg-[rgba(0,129,251,0.12)]" : pageObj.is_colored ? "border-[rgba(0,129,251,0.18)] bg-[rgba(0,129,251,0.05)]" : "border-line bg-[#0b0b0d]"} ${pageObj.is_colored ? "hover:border-[rgba(0,129,251,0.45)]" : selected ? "" : "hover:border-[#3a3a42]"}`}
+                            className={`relative flex cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-1 py-2.5 transition-[border-color,background] duration-150 ${selected ? "border-accent bg-[rgba(0,255,170,0.12)]" : pageObj.is_colored ? "border-[rgba(0,255,170,0.18)] bg-[rgba(0,255,170,0.05)]" : "border-line bg-[#050E2E]"} ${pageObj.is_colored ? "hover:border-[rgba(0,255,170,0.45)]" : selected ? "" : "hover:border-[#354C8C]"}`}
                             onClick={() => handleTogglePage(pageObj.page)}
                             aria-pressed={selected}
                           >
                             {selected && (
-                              <span className="absolute top-1 right-1 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-white">
+                              <span className="absolute top-1 right-1 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[#052A1E]">
                                 <Check size={10} strokeWidth={3} />
                               </span>
                             )}
                             <span className="text-[9px] font-bold tracking-[0.07em] text-dim uppercase">Halaman</span>
                             <span className="font-mono text-[15px] font-extrabold text-white">{pageObj.page}</span>
                             <span
-                              className={`rounded px-[5px] py-0.5 text-[8px] font-extrabold tracking-[0.05em] uppercase ${pageObj.is_colored ? "bg-[rgba(0,129,251,0.22)] text-accent2" : "bg-[#1e1e23] text-fog"}`}
+                              className={`rounded px-[5px] py-0.5 text-[8px] font-extrabold tracking-[0.05em] uppercase ${pageObj.is_colored ? "bg-[rgba(0,255,170,0.22)] text-accent2" : "bg-[#16296B] text-fog"}`}
                             >
                               {pageObj.is_colored ? "Warna" : "Abu"}
                             </span>

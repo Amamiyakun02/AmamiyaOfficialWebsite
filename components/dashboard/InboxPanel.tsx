@@ -207,7 +207,7 @@ export default function InboxPanel() {
               type="button"
               role="tab"
               aria-selected={filter === f.id}
-              className={`cursor-pointer rounded-full border px-[13px] py-1.5 text-[12.5px] ${filter === f.id ? "border-[rgba(0,129,251,0.5)] bg-[rgba(0,129,251,0.16)] text-white" : "border-line3 bg-[#17171b] text-[#c9c9d2] hover:border-steel hover:text-white"}`}
+              className={`cursor-pointer rounded-full border px-[13px] py-1.5 text-[12.5px] ${filter === f.id ? "border-[rgba(0,255,170,0.5)] bg-[rgba(0,255,170,0.16)] text-white" : "border-line3 bg-[#11245F] text-[#AFC2E6] hover:border-steel hover:text-white"}`}
               onClick={() => setFilter(f.id)}
             >
               {f.label}
@@ -259,7 +259,7 @@ export default function InboxPanel() {
                 <span className={DCARD_NAME}>{item.customer_name}</span>
                 <span className={`${BADGE} ${BADGE_PLAIN}`}>{catLabel}</span>
                 {isNew ? (
-                  <span className={`${BADGE} border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.18)] text-[#7db4ff]`}>Baru</span>
+                  <span className={`${BADGE} border-[rgba(0,255,170,0.45)] bg-[rgba(0,255,170,0.18)] text-[#5EEAD0]`}>Baru</span>
                 ) : (
                   <span className={`${BADGE} ${BADGE_TONE.idea}`}>Dibaca</span>
                 )}
@@ -270,12 +270,12 @@ export default function InboxPanel() {
                   <span>{fmtDateTime(item.created_at)}</span>
                 )}
                 {email && (
-                  <a className="text-[#7db4ff] no-underline hover:underline" href={`mailto:${email}`}>
+                  <a className="text-[#5EEAD0] no-underline hover:underline" href={`mailto:${email}`}>
                     {email}
                   </a>
                 )}
               </p>
-              <p className="mt-0.5 mb-0 text-[13.5px] leading-[1.55] whitespace-pre-wrap break-anywhere text-[#d8d8de]">{body}</p>
+              <p className="mt-0.5 mb-0 text-[13.5px] leading-[1.55] whitespace-pre-wrap break-anywhere text-[#C3D2F0]">{body}</p>
               <div className={DCARD_FOOT}>
                 <span className={DCARD_NOTE} />
                 {confirmId === item._id ? (

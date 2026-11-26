@@ -464,7 +464,7 @@ export default function UsersPanel() {
         </FormModal>
       )}
 
-      {resetMsg && <p className="m-0 mb-3 text-[13.5px] text-[#35d07f]">{resetMsg}</p>}
+      {resetMsg && <p className="m-0 mb-3 text-[13.5px] text-[#00FFAA]">{resetMsg}</p>}
       {error && <p className={`${ERR} mt-3`}>{error}</p>}
       {loading ? (
         <p className={EMPTY}>Memuat daftar user…</p>
@@ -505,7 +505,7 @@ export default function UsersPanel() {
               {resetId === u.id && (
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <input
-                    className="flex-[1_1_220px] rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.05)] px-2.5 py-[7px] text-[13.5px] text-[#f2f2f2]"
+                    className="flex-[1_1_220px] rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.05)] px-2.5 py-[7px] text-[13.5px] text-[#EEF4FF]"
                     type="password"
                     placeholder="Password baru (min. 8 karakter)"
                     value={resetPw}

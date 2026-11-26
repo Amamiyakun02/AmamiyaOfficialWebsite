@@ -334,12 +334,12 @@ export default function ProjectsPanel() {
 
   return (
     <div className="mt-[18px]">
-      <div className="mb-4 rounded-[14px] border border-[rgba(227,179,65,0.35)] bg-[rgba(227,179,65,0.06)] px-4 py-3">
+      <div className="mb-4 rounded-[14px] border border-[rgba(0,255,170,0.35)] bg-[rgba(0,255,170,0.06)] px-4 py-3">
         <div className="flex items-center justify-between gap-2.5">
           <span className="min-w-0 text-[13.5px] font-bold text-gold">
             ★ Top Project — tampil di section Projects portofolio
           </span>
-          <span className="rounded-full border border-steel px-2.5 py-0.5 text-[12.5px] font-bold text-[#c9c9cf]">{featuredItems.length}/4</span>
+          <span className="rounded-full border border-steel px-2.5 py-0.5 text-[12.5px] font-bold text-[#AFC2E6]">{featuredItems.length}/4</span>
         </div>
         {featuredItems.length === 0 ? (
           <p className="mt-2 text-[13px] leading-[1.5] text-fog">
@@ -350,7 +350,7 @@ export default function ProjectsPanel() {
           <ol className="mt-2.5 flex list-none flex-col gap-2 p-0">
             {featuredItems.map((p, i) => (
               <li key={p.id} className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-[rgba(227,179,65,0.18)] text-xs font-extrabold text-gold">{i + 1}</span>
+                <span className="inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-[rgba(0,255,170,0.18)] text-xs font-extrabold text-gold">{i + 1}</span>
                 <span className="text-sm font-semibold text-paper">{p.name}</span>
                 {(p.status === "idea" || p.status === "archived") && (
                   <span className="text-xs text-rose">
@@ -396,7 +396,7 @@ export default function ProjectsPanel() {
 
       <div className="flex flex-wrap items-center gap-2.5">
         <input
-          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
+          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
           type="search"
           placeholder="Cari project…"
           value={q}
@@ -416,7 +416,7 @@ export default function ProjectsPanel() {
             </option>
           ))}
         </select>
-        <button type="button" className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-white hover:bg-[#1a8dff]" onClick={openNew}>
+        <button type="button" className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-[#052A1E] hover:bg-[#00BBA2]" onClick={openNew}>
           + Tambah Project
         </button>
       </div>
@@ -433,12 +433,12 @@ export default function ProjectsPanel() {
             <>
               {formError && <p className={`${ERR} m-0 mb-2.5`}>{formError}</p>}
               <div className="flex gap-2.5">
-                <button type="submit" className="cursor-pointer rounded-lg border-none bg-accent px-[18px] py-[9px] text-sm font-semibold text-white disabled:cursor-default disabled:opacity-60" disabled={saving}>
+                <button type="submit" className="cursor-pointer rounded-lg border-none bg-accent px-[18px] py-[9px] text-sm font-semibold text-[#052A1E] disabled:cursor-default disabled:opacity-60" disabled={saving}>
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#c9c9cf] hover:border-steel hover:text-white"
+                  className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -567,37 +567,37 @@ export default function ProjectsPanel() {
           {items.map((p) => (
                         <li
               key={p.id}
-              className={`${CARD} ${p.is_featured ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : ""}`}
+              className={`${CARD} ${p.is_featured ? "before:bg-[linear-gradient(90deg,#00FFAA,rgba(0,255,170,0))]" : ""}`}
             >
               <div className="flex flex-wrap items-center gap-2">
                 {(p.image_url ?? p.demo_video_thumbnail) && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    className="h-11 w-11 flex-none rounded-[9px] border border-[#26262c] object-cover"
+                    className="h-11 w-11 flex-none rounded-[9px] border border-[#1E3066] object-cover"
                     src={p.image_url ?? p.demo_video_thumbnail ?? ""}
                     alt=""
                     loading="lazy"
                   />
                 )}
-                <span className="mr-0.5 text-[15.5px] font-[650] text-[#f4f4f6]">{p.name}</span>
-                <span className={`${BADGE} ${BADGE_TONE[p.status] ?? "border-line text-[#c9c9cf]"}`}>
+                <span className="mr-0.5 text-[15.5px] font-[650] text-[#EEF4FF]">{p.name}</span>
+                <span className={`${BADGE} ${BADGE_TONE[p.status] ?? "border-line text-[#AFC2E6]"}`}>
                   {p.status}
                 </span>
                 {p.is_featured && (
-                  <span className={`${BADGE} border-[rgba(227,179,65,0.55)] text-gold`}>
+                  <span className={`${BADGE} border-[rgba(0,255,170,0.55)] text-gold`}>
                     ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
                   </span>
                 )}
               </div>
-              {p.description && <p className="mt-2.5 mb-0 text-[13px] leading-[1.55] text-[#c6c6cf]">{p.description}</p>}
-              <p className="mt-[7px] mb-0 flex flex-wrap gap-3.5 text-xs text-[#9a9aa6]">
+              {p.description && <p className="mt-2.5 mb-0 text-[13px] leading-[1.55] text-[#AFC2E6]">{p.description}</p>}
+              <p className="mt-[7px] mb-0 flex flex-wrap gap-3.5 text-xs text-[#93A9D1]">
                 {p.tech_stack && <span>{p.tech_stack}</span>}
                 {p.local_path && (
                   <span className="[font-family:ui-monospace,monospace]">{p.local_path}</span>
                 )}
                 {p.updated_at && <span>Diubah {fmtDate(p.updated_at)}</span>}
               </p>
-              <div className="mt-3.5 flex items-center gap-3 border-t border-[#202026] pt-2.5 pb-3">
+              <div className="mt-3.5 flex items-center gap-3 border-t border-[#16296B] pt-2.5 pb-3">
                 <div className="min-w-0 text-[12.5px]">
                   {(p.repo_url ||
                     p.links?.demo ||
@@ -606,17 +606,17 @@ export default function ProjectsPanel() {
                     p.demo_video_url) && (
                     <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[13px]">
                       {p.repo_url && (
-                        <a href={p.repo_url} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
+                        <a href={p.repo_url} target="_blank" rel="noreferrer" className="text-[#00BBA2] no-underline hover:underline">
                           Repo
                         </a>
                       )}
                       {p.links?.demo && (
-                        <a href={p.links.demo} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
+                        <a href={p.links.demo} target="_blank" rel="noreferrer" className="text-[#00BBA2] no-underline hover:underline">
                           Demo
                         </a>
                       )}
                       {p.links?.docs && (
-                        <a href={p.links.docs} target="_blank" rel="noreferrer" className="text-[#58a6ff] no-underline hover:underline">
+                        <a href={p.links.docs} target="_blank" rel="noreferrer" className="text-[#00BBA2] no-underline hover:underline">
                           Docs
                         </a>
                       )}
@@ -626,7 +626,7 @@ export default function ProjectsPanel() {
                           href={p.demo_video_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[#58a6ff] no-underline hover:underline"
+                          className="text-[#00BBA2] no-underline hover:underline"
                         >
                           Video demo
                         </a>

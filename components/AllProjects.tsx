@@ -44,23 +44,23 @@ export default function AllProjects() {
           <ArrowLeft size={14} /> Kembali ke Beranda
         </Link>
         <SectionTitle text="Projects" />
-        <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+        <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
           Semua project publikku — yang di-pin sebagai Top Project tampil
           lebih dulu. Daftar ini dikelola dari System Dashboard-ku.
         </p>
         {phase === "fallback" && (
-          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
             (Menampilkan daftar cadangan — server backend sedang tidak
             terjangkau.)
           </p>
         )}
         {phase === "loading" ? (
-          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">Memuat daftar project…</p>
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">Memuat daftar project…</p>
         ) : items.length === 0 ? (
-          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">Belum ada project publik.</p>
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">Belum ada project publik.</p>
         ) : (
           <>
-            <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">Menampilkan {items.length} project.</p>
+            <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">Menampilkan {items.length} project.</p>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 max-[760px]:grid-cols-1">
               {items.map((p) => (
                 <PublicProjectCard key={p.id} p={p} />

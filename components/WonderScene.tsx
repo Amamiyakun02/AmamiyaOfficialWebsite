@@ -152,7 +152,7 @@ function drawTitleGlyph(
   const cy = H / 2;
   const S = Math.min(W, H);
   ctx.clearRect(0, 0, W, H);
-  ctx.shadowColor = "rgba(245,245,255,0.85)";
+  ctx.shadowColor = "rgba(238,244,255,0.85)";
   if (kind === "spiral") {
     // Skala glyph DISAMAKAN antar jenis (permintaan user 31 Okt):
     // spiral dan atom berbagi diameter batas 0,68 x S; sparkle
@@ -182,14 +182,14 @@ function drawTitleGlyph(
         }
         ctx.shadowBlur = 0;
         ctx.lineWidth = Math.max(1.2, 0.38 * rMid);
-        ctx.strokeStyle = "rgba(245,245,255,0.15)";
+        ctx.strokeStyle = "rgba(238,244,255,0.15)";
         ctx.stroke(path);
         ctx.lineWidth = Math.max(1, 0.2 * rMid);
-        ctx.strokeStyle = "rgba(245,245,255,0.32)";
+        ctx.strokeStyle = "rgba(238,244,255,0.32)";
         ctx.stroke(path);
         ctx.shadowBlur = 5;
         ctx.lineWidth = Math.max(1.1, 0.07 * rMid);
-        ctx.strokeStyle = "rgba(245,245,255,0.95)";
+        ctx.strokeStyle = "rgba(238,244,255,0.95)";
         ctx.stroke(path);
         ctx.shadowBlur = 0;
         const hsh = Math.sin(a * 127.1 + s0 * 311.7) * 43758.5453;
@@ -203,7 +203,7 @@ function drawTitleGlyph(
           const wy = cy + bx * Math.sin(rot + off) + by * Math.cos(rot + off);
           ctx.beginPath();
           ctx.arc(wx, wy, 0.7 + h1 * 0.9, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(245,245,255,0.85)";
+          ctx.fillStyle = "rgba(238,244,255,0.85)";
           ctx.fill();
         }
       }
@@ -214,7 +214,7 @@ function drawTitleGlyph(
     ctx.beginPath();
     ctx.ellipse(0, 0, R * 0.24, R * 0.13, 0, 0, Math.PI * 2);
     ctx.shadowBlur = 8;
-    ctx.fillStyle = "rgba(245,245,255,0.8)";
+    ctx.fillStyle = "rgba(238,244,255,0.8)";
     ctx.fill();
     ctx.restore();
     ctx.shadowBlur = 0;
@@ -238,7 +238,7 @@ function drawTitleGlyph(
     ctx.quadraticCurveTo(-rx * p, -ry * p, 0, -ry);
     ctx.closePath();
     ctx.shadowBlur = 4;
-    ctx.fillStyle = `rgba(245,245,255,${0.92 + 0.08 * Math.sin(now / 260)})`;
+    ctx.fillStyle = `rgba(238,244,255,${0.92 + 0.08 * Math.sin(now / 260)})`;
     ctx.fill();
     ctx.restore();
     ctx.shadowBlur = 0;
@@ -247,8 +247,8 @@ function drawTitleGlyph(
     const f = 0.25;
     const rot = now / 1400;
     ctx.shadowBlur = 4;
-    ctx.strokeStyle = "rgba(245,245,255,0.95)";
-    ctx.fillStyle = "rgba(245,245,255,0.95)";
+    ctx.strokeStyle = "rgba(238,244,255,0.95)";
+    ctx.fillStyle = "rgba(238,244,255,0.95)";
     ctx.lineWidth = Math.max(1.4, S * 0.016);
     for (let k = 0; k < 3; k++) {
       const ang = rot + (k * Math.PI) / 3;
@@ -286,11 +286,11 @@ function drawTitleGlyph(
     };
     const band = (mul: number) => {
       const gr = ctx.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
-      gr.addColorStop(0, "rgba(245,245,255,0)");
-      gr.addColorStop(0.16, `rgba(245,245,255,${0.28 * mul})`);
-      gr.addColorStop(0.5, `rgba(245,245,255,${0.85 * mul})`);
-      gr.addColorStop(0.84, `rgba(245,245,255,${0.28 * mul})`);
-      gr.addColorStop(1, "rgba(245,245,255,0)");
+      gr.addColorStop(0, "rgba(238,244,255,0)");
+      gr.addColorStop(0.16, `rgba(238,244,255,${0.28 * mul})`);
+      gr.addColorStop(0.5, `rgba(238,244,255,${0.85 * mul})`);
+      gr.addColorStop(0.84, `rgba(238,244,255,${0.28 * mul})`);
+      gr.addColorStop(1, "rgba(238,244,255,0)");
       return gr;
     };
     ctx.beginPath();
@@ -305,7 +305,7 @@ function drawTitleGlyph(
     ]) {
       ctx.beginPath();
       ctx.arc(cx, cy, ringR * p.m, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(245,245,255,${p.a})`;
+      ctx.strokeStyle = `rgba(238,244,255,${p.a})`;
       ctx.lineWidth = Math.max(1, R * p.w);
       ctx.stroke();
     }
@@ -315,11 +315,11 @@ function drawTitleGlyph(
     ]) {
       ctx.beginPath();
       ctx.arc(cx, cy, ringR, seg.a0, seg.a1);
-      ctx.strokeStyle = "rgba(245,245,255,0.85)";
+      ctx.strokeStyle = "rgba(238,244,255,0.85)";
       ctx.lineWidth = Math.max(1.1, R * 0.2);
       ctx.stroke();
     }
-    ctx.fillStyle = "rgba(245,245,255,0.9)";
+    ctx.fillStyle = "rgba(238,244,255,0.9)";
     for (let i = 0; i < 8; i++) {
       const rf = 0.92 + hT(i * 3 + 1) * 0.16;
       const th = hT(i * 7 + 2) * Math.PI * 2 - now * 0.0012;
@@ -333,7 +333,7 @@ function drawTitleGlyph(
     ctx.fill();
     ctx.beginPath();
     ctx.arc(cx, cy, R * 1.02, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(245,245,255,0.9)";
+    ctx.strokeStyle = "rgba(238,244,255,0.9)";
     ctx.lineWidth = Math.max(1.1, R * 0.12);
     ctx.stroke();
     ctx.beginPath();
@@ -1188,8 +1188,8 @@ export default function WonderScene({
       // tidak jadi gumpalan cahaya di mobile.
       const sMin = Math.min(1, gScale);
       const glowS = 4 * sMin;
-      g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
-      g.shadowColor = "rgba(245,245,255,0.8)";
+      g.fillStyle = `rgba(238,244,255,${alpha.toFixed(3)})`;
+      g.shadowColor = "rgba(238,244,255,0.8)";
       // Tinggi galaksi = tinggi huruf di sekitarnya (permintaan user):
       // skala Y dihitung dari tinggi tinta huruf kapital "A" pada font
       // grid yang benar-benar terpakai, jadi diameter vertikal galaksi
@@ -1274,16 +1274,16 @@ export default function WonderScene({
           // + alpha rendahnya sendiri yang memberi kesan lembut)
           g.shadowBlur = 0;
           g.lineWidth = Math.max(0.8 * sMin, 0.38 * rMid);
-          g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.16).toFixed(3)})`;
+          g.strokeStyle = `rgba(238,244,255,${(fAlpha * 0.16).toFixed(3)})`;
           g.stroke(path);
           // lapis 2: badan tengah
           g.lineWidth = Math.max(0.7 * sMin, 0.2 * rMid);
-          g.strokeStyle = `rgba(245,245,255,${(fAlpha * 0.34).toFixed(3)})`;
+          g.strokeStyle = `rgba(238,244,255,${(fAlpha * 0.34).toFixed(3)})`;
           g.stroke(path);
           // lapis 3: garis inti terang (satu-satunya yang bercahaya)
           g.shadowBlur = glowS;
           g.lineWidth = Math.max(0.9 * gScale, 0.07 * rMid);
-          g.strokeStyle = `rgba(245,245,255,${fAlpha.toFixed(3)})`;
+          g.strokeStyle = `rgba(238,244,255,${fAlpha.toFixed(3)})`;
           g.stroke(path);
           g.shadowBlur = 0;
           // taburan bintang: posisi deterministik dari (lengan, potongan)
@@ -1296,7 +1296,7 @@ export default function WonderScene({
             const my = rMid * Math.sin(thMid) + Math.cos(thMid) * off;
             g.beginPath();
             g.arc(mx, my, (0.45 + h1 * 0.5) * gScale, 0, Math.PI * 2);
-            g.fillStyle = `rgba(245,245,255,${(fAlpha * 0.8).toFixed(3)})`;
+            g.fillStyle = `rgba(238,244,255,${(fAlpha * 0.8).toFixed(3)})`;
             g.fill();
           }
         }
@@ -1309,7 +1309,7 @@ export default function WonderScene({
       g.beginPath();
       g.ellipse(0, 0, 2.7 * gScale, 1.5 * gScale, 0, 0, Math.PI * 2);
       g.shadowBlur = glowS;
-      g.fillStyle = `rgba(245,245,255,${(alpha * 0.75).toFixed(3)})`;
+      g.fillStyle = `rgba(238,244,255,${(alpha * 0.75).toFixed(3)})`;
       g.fill();
       g.restore();
       g.restore();
@@ -1348,9 +1348,9 @@ export default function WonderScene({
       sg.quadraticCurveTo(-rxB * p, ryB * p, -rxB, 0);
       sg.quadraticCurveTo(-rxB * p, -ryB * p, 0, -ryB);
       sg.closePath();
-      sg.shadowColor = "rgba(245,245,255,0.85)";
+      sg.shadowColor = "rgba(238,244,255,0.85)";
       sg.shadowBlur = SPARK_GLOW * Math.min(1, gScale);
-      sg.fillStyle = "rgba(245,245,255,1)";
+      sg.fillStyle = "rgba(238,244,255,1)";
       sg.fill();
       sp = { cvs, hw, hh };
       if (spriteCache.size > 12) spriteCache.clear();
@@ -1403,9 +1403,9 @@ export default function WonderScene({
       g.quadraticCurveTo(-rx * p, ry * p, -rx, 0);
       g.quadraticCurveTo(-rx * p, -ry * p, 0, -ry);
       g.closePath();
-      g.shadowColor = "rgba(245,245,255,0.85)";
+      g.shadowColor = "rgba(238,244,255,0.85)";
       g.shadowBlur = SPARK_GLOW * Math.min(1, gScale);
-      g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
+      g.fillStyle = `rgba(238,244,255,${alpha.toFixed(3)})`;
       g.fill();
       g.restore();
       g.shadowBlur = 0;
@@ -1429,10 +1429,10 @@ export default function WonderScene({
       const R = (capHeight() * ATOM_SIZE * scale) / 2;
       const rot = s.baseRot + (now / 1000) * 0.45 * ATOM_SPIN;
       g.save();
-      g.shadowColor = "rgba(245,245,255,0.85)";
+      g.shadowColor = "rgba(238,244,255,0.85)";
       g.shadowBlur = ATOM_GLOW * Math.min(1, gScale);
-      g.strokeStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
-      g.fillStyle = `rgba(245,245,255,${alpha.toFixed(3)})`;
+      g.strokeStyle = `rgba(238,244,255,${alpha.toFixed(3)})`;
+      g.fillStyle = `rgba(238,244,255,${alpha.toFixed(3)})`;
       g.lineWidth = 1.2 * gScale;
       for (let k = 0; k < ATOM_ORBITS; k++) {
         const ang = rot + (k * Math.PI) / 3;
@@ -2559,7 +2559,7 @@ export default function WonderScene({
     // ke huruf dasar. Sekali per lintasan kursor (spentSet sama
     // seperti dulu): huruf yang sudah bermain tidak dipicu ulang
     // sampai kursor keluar dari jangkauannya. Warna dibuat terang
-    // seperti highlight lama (nyaris putih 245,245,255).
+    // seperti highlight lama (nyaris putih 238,244,255).
     let heatRaf: number | null = null;
     let lastMoveAt = 0;
     let lastHeatFrame = 0; // cap waktu frame gelombang terakhir (untuk throttle 30fps)
@@ -2619,7 +2619,7 @@ export default function WonderScene({
             g.fillStyle = `rgba(${INK},${c.a})`;
             g.fillText(WORD[i], x0, c.y + TEXT_Y);
           }
-          g.fillStyle = `rgba(245,245,255,${(fade * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(238,244,255,${(fade * s.peak).toFixed(3)})`;
           g.fillText(WORD[i], x0, c.y + TEXT_Y);
           continue;
         }
@@ -2662,7 +2662,7 @@ export default function WonderScene({
           const aCh = Math.min(1, (p - 0.6) / 0.24);
           const yOff =
             (1 - Math.min(1, (p - 0.6) / 0.4)) * FONT_SIZE * 0.06;
-          g.fillStyle = `rgba(245,245,255,${(aCh * s.peak).toFixed(3)})`;
+          g.fillStyle = `rgba(238,244,255,${(aCh * s.peak).toFixed(3)})`;
           g.fillText(WORD[i], x0, c.y + TEXT_Y + yOff);
         }
       }

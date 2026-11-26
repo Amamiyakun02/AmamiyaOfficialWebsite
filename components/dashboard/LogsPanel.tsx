@@ -56,22 +56,22 @@ function fmtUptime(s: number): string {
 
 
 const LOG_BADGE: Record<string, string> = {
-  ingest: "border-[rgba(88,166,255,0.45)] text-[#58a6ff]",
-  maintenance: "border-[rgba(227,179,65,0.45)] text-gold",
-  query: "border-[rgba(53,208,127,0.45)] text-[#35d07f]",
+  ingest: "border-[rgba(88,166,255,0.45)] text-[#00BBA2]",
+  maintenance: "border-[rgba(0,255,170,0.45)] text-gold",
+  query: "border-[rgba(53,208,127,0.45)] text-[#00FFAA]",
   create: "border-[rgba(188,140,255,0.45)] text-[#bc8cff]",
 };
 const LVL_TONE: Record<string, string> = {
-  INFO: "text-[#58a6ff]",
+  INFO: "text-[#00BBA2]",
   WARNING: "text-gold",
   ERROR: "text-rose",
 };
 const SUBTAB =
   "cursor-pointer rounded-lg border px-[15px] py-[7px] text-[13.5px]";
 const SUBTAB_OFF =
-  "border-line bg-[rgba(16,16,19,0.7)] text-[#c9c9cf] hover:border-steel hover:text-white";
+  "border-line bg-[rgba(10,24,71,0.7)] text-[#AFC2E6] hover:border-steel hover:text-white";
 const SUBTAB_ON =
-  "border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.14)] text-[#7dbcff] hover:border-steel hover:text-white";
+  "border-[rgba(0,255,170,0.45)] bg-[rgba(0,255,170,0.14)] text-[#5EEAD0] hover:border-steel hover:text-white";
 
 export default function LogsPanel() {
   const [view, setView] = useState<View>("vault");
@@ -273,7 +273,7 @@ export default function LogsPanel() {
                     <span className="text-[14.5px] font-semibold text-paper">{e.title}</span>
                   </button>
                   {vOpen === i && (
-                    <div className="px-4 pb-3.5 text-sm leading-[1.6] whitespace-pre-wrap text-[#c9c9cf]">
+                    <div className="px-4 pb-3.5 text-sm leading-[1.6] whitespace-pre-wrap text-[#AFC2E6]">
                       <p>{e.summary}</p>
                       {e.pages.length > 0 && (
                         <p className="mt-2 text-[12.5px] text-fog">
@@ -328,7 +328,7 @@ export default function LogsPanel() {
             >
               Segarkan
             </button>
-            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[#c9c9cf]">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[#AFC2E6]">
               <input
                 type="checkbox"
                 checked={bFollow}
@@ -344,13 +344,13 @@ export default function LogsPanel() {
           ) : bItems.length === 0 ? (
             <p className={EMPTY}>Tidak ada baris yang cocok.</p>
           ) : (
-            <div className="mt-3.5 max-h-[520px] overflow-y-auto rounded-[14px] border border-line bg-[#0a0a0c] px-3.5 py-3">
+            <div className="mt-3.5 max-h-[520px] overflow-y-auto rounded-[14px] border border-line bg-[#050E2E] px-3.5 py-3">
               {bItems.map((l, i) => (
                 <div key={i} className="flex gap-2.5 border-b border-[rgba(255,255,255,0.03)] py-[3px] text-[12.5px] leading-[1.55] [font-family:ui-monospace,monospace]">
                   <span className={`w-[62px] flex-shrink-0 pt-0.5 text-[11px] font-bold tracking-[0.04em] ${LVL_TONE[l.level] ?? ""}`}>
                     {l.level}
                   </span>
-                  <span className="whitespace-pre-wrap text-[#c9c9cf] [word-break:break-word]">{l.message}</span>
+                  <span className="whitespace-pre-wrap text-[#AFC2E6] [word-break:break-word]">{l.message}</span>
                 </div>
               ))}
             </div>

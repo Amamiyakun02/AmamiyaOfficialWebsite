@@ -84,7 +84,7 @@ export default function AboutSection() {
   return (
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="About" />
-      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
         Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
         Sekali buat, berguna selamanya.
       </p>
@@ -95,10 +95,10 @@ export default function AboutSection() {
           <button
             key={c}
             type="button"
-            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#4a4a55] ${
+            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#41538A] ${
               cat === c
-                ? "border-accent bg-accent text-white"
-                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#d7d7dd]"
+                ? "border-accent bg-accent text-[#052A1E]"
+                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#C3D2F0]"
             }`}
             onClick={() => {
               setCat(c);
@@ -134,14 +134,14 @@ export default function AboutSection() {
             </div>
             <div className="my-2.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
               <span
-                className="block h-full rounded-full bg-[linear-gradient(90deg,#0081fb,#38bdf8)]"
+                className="block h-full rounded-full bg-[linear-gradient(90deg,#00FFAA,#009BA0)]"
                 style={{ width: `${s.level}%` }}
               />
             </div>
-            <p className="m-0 mb-2.5 text-[12.5px] leading-[1.55] text-[#a7a7b0]">
+            <p className="m-0 mb-2.5 text-[12.5px] leading-[1.55] text-[#9DB1D9]">
               {s.desc.id}
             </p>
-            <span className="text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
+            <span className="text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
               {s.category}
             </span>
           </article>
@@ -151,7 +151,7 @@ export default function AboutSection() {
         <div className="mt-6 text-center">
           <button
             type="button"
-            className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
+            className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded ? "Tampilkan lebih sedikit" : "Lihat semua keahlian"}
@@ -171,10 +171,10 @@ export default function AboutSection() {
             </span>
             <div>
               <h3 className="m-0 mb-1 text-[15px]">{t.title}</h3>
-              <p className="m-0 mb-1 text-[13px] leading-[1.6] font-semibold text-[#d7d7dd]">
+              <p className="m-0 mb-1 text-[13px] leading-[1.6] font-semibold text-[#C3D2F0]">
                 {t.subtitle}
               </p>
-              <p className="m-0 text-[13px] leading-[1.6] text-[#a7a7b0]">
+              <p className="m-0 text-[13px] leading-[1.6] text-[#9DB1D9]">
                 {t.desc}
               </p>
             </div>

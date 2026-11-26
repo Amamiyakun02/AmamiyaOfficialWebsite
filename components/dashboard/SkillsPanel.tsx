@@ -316,12 +316,12 @@ export default function SkillsPanel() {
 
   return (
     <div className="mt-[18px]">
-      <div className="mb-4 rounded-[14px] border border-[rgba(227,179,65,0.35)] bg-[rgba(227,179,65,0.06)] px-4 py-3">
+      <div className="mb-4 rounded-[14px] border border-[rgba(0,255,170,0.35)] bg-[rgba(0,255,170,0.06)] px-4 py-3">
         <div className="flex items-center justify-between gap-2.5">
           <span className="min-w-0 text-[13.5px] font-bold text-gold">
             ★ Skill Unggulan — tampil pertama di section About portofolio
           </span>
-          <span className="rounded-full border border-steel px-2.5 py-0.5 text-[12.5px] font-bold text-[#c9c9cf]">
+          <span className="rounded-full border border-steel px-2.5 py-0.5 text-[12.5px] font-bold text-[#AFC2E6]">
             {featuredItems.length}/{FEATURED_LIMIT}
           </span>
         </div>
@@ -334,7 +334,7 @@ export default function SkillsPanel() {
           <ol className="mt-2.5 flex list-none flex-col gap-2 p-0">
             {featuredItems.map((s, i) => (
               <li key={s.id} className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-[rgba(227,179,65,0.18)] text-xs font-extrabold text-gold">
+                <span className="inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-[rgba(0,255,170,0.18)] text-xs font-extrabold text-gold">
                   {i + 1}
                 </span>
                 <span className="text-sm font-semibold text-paper">{s.name}</span>
@@ -378,7 +378,7 @@ export default function SkillsPanel() {
 
       <div className="flex flex-wrap items-center gap-2.5">
         <input
-          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
+          className="flex-[1_1_220px] rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
           type="search"
           placeholder="Cari skill…"
           value={q}
@@ -400,7 +400,7 @@ export default function SkillsPanel() {
         </select>
         <button
           type="button"
-          className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-white hover:bg-[#1a8dff]"
+          className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-[#052A1E] hover:bg-[#00BBA2]"
           onClick={openNew}
         >
           + Tambah Skill
@@ -421,14 +421,14 @@ export default function SkillsPanel() {
               <div className="flex gap-2.5">
                 <button
                   type="submit"
-                  className="cursor-pointer rounded-lg border-none bg-accent px-[18px] py-[9px] text-sm font-semibold text-white disabled:cursor-default disabled:opacity-60"
+                  className="cursor-pointer rounded-lg border-none bg-accent px-[18px] py-[9px] text-sm font-semibold text-[#052A1E] disabled:cursor-default disabled:opacity-60"
                   disabled={saving}
                 >
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#c9c9cf] hover:border-steel hover:text-white"
+                  className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white"
                   onClick={() => setEditing(null)}
                   disabled={saving}
                 >
@@ -469,7 +469,7 @@ export default function SkillsPanel() {
               <span className="flex items-center gap-2.5">
                 <span className="min-w-0 flex-1">
                   <input
-                    className="block w-full accent-[#0081fb]"
+                    className="block w-full accent-[#00FFAA]"
                     type="range"
                     min={0}
                     max={100}
@@ -479,7 +479,7 @@ export default function SkillsPanel() {
                   />
                 </span>
                 <input
-                  className="w-[76px] flex-none rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
+                  className="w-[76px] flex-none rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
                   type="number"
                   min={0}
                   max={100}
@@ -539,7 +539,7 @@ export default function SkillsPanel() {
           {items.map((s) => (
             <li
               key={s.id}
-              className={`${CARD} ${s.is_featured ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : ""}`}
+              className={`${CARD} ${s.is_featured ? "before:bg-[linear-gradient(90deg,#00FFAA,rgba(0,255,170,0))]" : ""}`}
             >
               <div className="flex flex-wrap items-center gap-2">
                 {s.icon_url && (
@@ -551,10 +551,10 @@ export default function SkillsPanel() {
                     loading="lazy"
                   />
                 )}
-                <span className="mr-0.5 text-[15.5px] font-[650] text-[#f4f4f6]">{s.name}</span>
-                <span className={`${BADGE} border-line text-[#c9c9cf]`}>{s.category}</span>
+                <span className="mr-0.5 text-[15.5px] font-[650] text-[#EEF4FF]">{s.name}</span>
+                <span className={`${BADGE} border-line text-[#AFC2E6]`}>{s.category}</span>
                 {s.is_featured && (
-                  <span className={`${BADGE} border-[rgba(227,179,65,0.55)] text-gold`}>
+                  <span className={`${BADGE} border-[rgba(0,255,170,0.55)] text-gold`}>
                     ★ UNGGULAN{s.featured_order ? ` #${s.featured_order}` : ""}
                   </span>
                 )}
@@ -562,18 +562,18 @@ export default function SkillsPanel() {
               </div>
               <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
                 <span
-                  className="block h-full rounded-full bg-[linear-gradient(90deg,#0081fb,#38bdf8)]"
+                  className="block h-full rounded-full bg-[linear-gradient(90deg,#00FFAA,#009BA0)]"
                   style={{ width: `${Math.max(0, Math.min(100, s.level))}%` }}
                 />
               </div>
               {s.description_id && (
-                <p className="mt-2.5 mb-0 text-[13px] leading-[1.55] text-[#c6c6cf]">{s.description_id}</p>
+                <p className="mt-2.5 mb-0 text-[13px] leading-[1.55] text-[#AFC2E6]">{s.description_id}</p>
               )}
-              <p className="mt-[7px] mb-0 flex flex-wrap gap-3.5 text-xs text-[#9a9aa6]">
+              <p className="mt-[7px] mb-0 flex flex-wrap gap-3.5 text-xs text-[#93A9D1]">
                 <span>Urutan {s.sort_order}</span>
                 {s.updated_at && <span>Diubah {fmtDate(s.updated_at)}</span>}
               </p>
-              <div className="mt-3.5 flex items-center gap-3 border-t border-[#202026] pt-2.5 pb-3">
+              <div className="mt-3.5 flex items-center gap-3 border-t border-[#16296B] pt-2.5 pb-3">
                 {confirmId === s.id ? (
                   <span className="ml-auto inline-flex flex-none items-center gap-1.5">
                     <span className="mr-0.5 text-[12.5px] text-[#f0b4b4]">Hapus skill ini?</span>

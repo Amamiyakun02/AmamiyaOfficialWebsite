@@ -249,7 +249,7 @@ function MessageText({ text }: { text: string }) {
         if (i % 2 === 1) {
           const code = seg.replace(/^[a-zA-Z0-9_-]*\n/, "");
           return (
-            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#0a0a0c] px-3 py-2.5 text-[13px] whitespace-pre">
+            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#050E2E] px-3 py-2.5 text-[13px] whitespace-pre">
               {code}
             </pre>
           );
@@ -877,10 +877,10 @@ export default function AssistantChat({
   const renderHitlCard = (card: HitlCard) => (
     <div key={card.id} className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+      <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
       <div className="flex min-w-0 flex-col items-start">
         {card.status === "cancelled" ? (
-          <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8b8b94]">
+          <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8298C0]">
             {card.kind === "form"
               ? "Pertanyaan ini sudah tidak berlaku."
               : "Permintaan persetujuan ini sudah tidak berlaku."}
@@ -888,10 +888,10 @@ export default function AssistantChat({
         ) : card.kind === "form" && card.form ? (
           <div
             className={
-              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#34d399] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
+              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#00FFAA] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
             }
           >
-            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#f2f2f4]">
+            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#EEF4FF]">
               <MessageCircle size={15} className="flex-none text-accent3" />
               <span>{card.form.title || "Pertanyaan dari agent"}</span>
             </div>
@@ -931,7 +931,7 @@ export default function AssistantChat({
                   : "";
               return (
                 <div key={f.key} className="mb-3.5">
-                  <div className="mb-[3px] text-[13.5px] font-semibold text-[#e6e6e9]">{f.title}</div>
+                  <div className="mb-[3px] text-[13.5px] font-semibold text-[#DCE7FA]">{f.title}</div>
                   {f.description && (
                     <div className="mb-2 text-[12.5px] leading-[1.5] text-fog">{f.description}</div>
                   )}
@@ -949,8 +949,8 @@ export default function AssistantChat({
                               disabled={locked}
                               className={
                                 selected
-                                  ? "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-accent bg-[rgba(0,129,251,0.14)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-75"
-                                  : "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-line3 bg-[rgba(255,255,255,0.03)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-75"
+                                  ? "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-accent bg-[rgba(0,255,170,0.14)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-75"
+                                  : "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border border-line3 bg-[rgba(255,255,255,0.03)] px-3 py-[9px] text-left [font:inherit] enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-75"
                               }
                               onClick={() => {
                                 if (isMulti) {
@@ -1003,7 +1003,7 @@ export default function AssistantChat({
                                 <button
                                   key={v}
                                   type="button"
-                                  className="inline-flex cursor-pointer items-center gap-[5px] rounded-full border border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.14)] px-[9px] py-[3px] text-[12.5px] text-[#cfe4ff] disabled:cursor-default disabled:opacity-75"
+                                  className="inline-flex cursor-pointer items-center gap-[5px] rounded-full border border-[rgba(0,255,170,0.45)] bg-[rgba(0,255,170,0.14)] px-[9px] py-[3px] text-[12.5px] text-[#C8F7E6] disabled:cursor-default disabled:opacity-75"
                                   disabled={locked}
                                   onClick={() =>
                                     updateMulti((arr) =>
@@ -1019,7 +1019,7 @@ export default function AssistantChat({
                       {f.custom &&
                         (isMulti ? (
                           <input
-                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
+                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
                             placeholder="atau tulis jawabanmu sendiri, Enter untuk menambahkan…"
                             defaultValue=""
@@ -1035,7 +1035,7 @@ export default function AssistantChat({
                           />
                         ) : (
                           <input
-                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
+                            className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
                             placeholder="atau tulis jawabanmu sendiri…"
                             value={customValue}
@@ -1057,7 +1057,7 @@ export default function AssistantChat({
                     </>
                   ) : f.type === "textarea" ? (
                     <textarea
-                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70"
+                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70"
                       rows={3}
                       disabled={locked}
                       value={value}
@@ -1075,7 +1075,7 @@ export default function AssistantChat({
                     />
                   ) : (
                     <input
-                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#f2f2f4] focus:border-line focus:outline-none disabled:opacity-70"
+                      className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70"
                       disabled={locked}
                       value={value}
                       onChange={(e) => setField(e.target.value)}
@@ -1094,7 +1094,7 @@ export default function AssistantChat({
               );
             })}
             {card.status === "answered" ? (
-              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#00FFAA]">
                 <Check size={14} /> Sudah dijawab — agent melanjutkan
                 pekerjaannya.
               </div>
@@ -1113,7 +1113,7 @@ export default function AssistantChat({
                   ) && (
                     <button
                       type="button"
-                      className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-white enabled:hover:border-[#0064e0] enabled:hover:bg-[#0064e0] disabled:cursor-default disabled:opacity-50"
+                      className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-[#052A1E] enabled:hover:border-[#00BBA2] enabled:hover:bg-[#00BBA2] disabled:cursor-default disabled:opacity-50"
                       disabled={
                         card.status !== "pending" ||
                         !formComplete(card.form, hitlAnswers[card.id] ?? {})
@@ -1125,7 +1125,7 @@ export default function AssistantChat({
                   )}
                   <button
                     type="button"
-                    className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#e6e6e9]"
+                    className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#DCE7FA]"
                     disabled={card.status === "sending"}
                     onClick={() => void cancelForm(card)}
                   >
@@ -1139,14 +1139,14 @@ export default function AssistantChat({
         ) : card.kind === "permission" && card.permission ? (
           <div
             className={
-              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#34d399] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
+              card.status === "answered" ? "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-[#00FFAA] opacity-85" : "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px] border-l-accent"
             }
           >
-            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#f2f2f4]">
+            <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#EEF4FF]">
               <ShieldAlert size={15} className="flex-none text-accent3" />
               <span>Persetujuan aksi</span>
             </div>
-            <div className="mb-1.5 font-semibold break-anywhere text-[#e6e6e9]">{card.permission.action}</div>
+            <div className="mb-1.5 font-semibold break-anywhere text-[#DCE7FA]">{card.permission.action}</div>
             {card.permission.resources &&
               card.permission.resources.length > 0 && (
                 <ul className="m-0 mb-1.5 pl-[18px] text-[12.5px] break-anywhere text-fog">
@@ -1156,7 +1156,7 @@ export default function AssistantChat({
                 </ul>
               )}
             {card.status === "answered" ? (
-              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#00FFAA]">
                 <Check size={14} /> Keputusan terkirim:{" "}
                 {card.decision === "once"
                   ? "diizinkan sekali"
@@ -1169,7 +1169,7 @@ export default function AssistantChat({
               <div className="mt-1 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-white enabled:hover:border-[#0064e0] enabled:hover:bg-[#0064e0] disabled:cursor-default disabled:opacity-50"
+                  className="cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-[#052A1E] enabled:hover:border-[#00BBA2] enabled:hover:bg-[#00BBA2] disabled:cursor-default disabled:opacity-50"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "once")}
                 >
@@ -1177,7 +1177,7 @@ export default function AssistantChat({
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#e6e6e9]"
+                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#DCE7FA]"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "always")}
                 >
@@ -1185,7 +1185,7 @@ export default function AssistantChat({
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#f87171]"
+                  className="cursor-pointer rounded-full border px-4 py-2 text-[13.5px] font-semibold enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-50 border-line3 bg-[rgba(255,255,255,0.04)] text-[#f87171]"
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "reject")}
                 >
@@ -1202,7 +1202,7 @@ export default function AssistantChat({
 
   return (
     <div className={embedded ? "flex min-h-0 w-full flex-1 flex-col px-3 pt-2 pb-3" : "mx-auto flex min-h-0 w-full max-w-[880px] flex-1 flex-col px-4 pt-3.5 pb-4 max-[760px]:px-3 max-[760px]:pt-2.5 max-[760px]:pb-3"}>
-      <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#1d1d21] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#1d1d21] pb-3"}>
+      <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#16296B] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#16296B] pb-3"}>
         <Link href="/#tools" className={embedded ? "hidden" : "mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white max-[760px]:mr-0"}>
           <ArrowLeft size={16} /> Semua tools
         </Link>
@@ -1224,10 +1224,10 @@ export default function AssistantChat({
           <div className={m.sender === "user" ? "flex max-w-[85%] self-end max-[760px]:max-w-[92%]" : "flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]"}>
             {m.sender === "ai" && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+              <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
             )}
             <div className={m.sender === "user" ? "flex min-w-0 flex-col items-end" : "flex min-w-0 flex-col items-start"}>
-              <div className={m.sender === "user" ? "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-white" : "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#eeeef2]"}>
+              <div className={m.sender === "user" ? "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#052A1E]" : "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#DCE7FA]"}>
                 {m.sender === "ai" ? (
                   <ChatMarkdown text={m.text} streaming={m.id === streamId} />
                 ) : (
@@ -1236,7 +1236,7 @@ export default function AssistantChat({
                 {m.id === streamId && <span className="msg-caret" aria-hidden="true" />}
               </div>
               <FileCards files={m.files} />
-              <div className="mt-[5px] text-[11.5px] text-[#77777f]">
+              <div className="mt-[5px] text-[11.5px] text-[#67799F]">
                 <span>{m.timestamp}</span>
                 {m.meta && (
                   <span>
@@ -1276,13 +1276,13 @@ export default function AssistantChat({
         {waiting && !toolName && (
           <div className="flex max-w-[85%] flex-row gap-2 self-start max-[760px]:max-w-[92%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
+            <img className="mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover" src="/vienna.svg" alt="" width={26} height={26} />
             <div className="flex min-w-0 flex-col items-start">
               {/* Kelas msg-typing dipertahankan sebagai kait CSS
                   vanilla untuk animasi titik ketik (.msg-typing .dot,
                   keyframes + tunda per titik) — gaya kotaknya sendiri
                   sudah dinyatakan utilitas di sini. */}
-              <div className="msg-typing inline-flex items-center gap-[5px] rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#eeeef2]">
+              <div className="msg-typing inline-flex items-center gap-[5px] rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#DCE7FA]">
                 <span className="dot" />
                 <span className="dot" />
                 <span className="dot" />
@@ -1318,7 +1318,7 @@ export default function AssistantChat({
       {messages.length <= 1 && (
         <div className="flex flex-wrap gap-2 pt-1 pb-2.5">
           {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" className="cursor-pointer rounded-full border border-line bg-panel2 px-3 py-1.5 text-[13px] text-[#c9c9d2] hover:border-accent hover:text-white disabled:cursor-default disabled:opacity-50" onClick={() => void send(s)} disabled={busy}>
+            <button key={s} type="button" className="cursor-pointer rounded-full border border-line bg-panel2 px-3 py-1.5 text-[13px] text-[#AFC2E6] hover:border-accent hover:text-white disabled:cursor-default disabled:opacity-50" onClick={() => void send(s)} disabled={busy}>
               {s}
             </button>
           ))}
@@ -1333,7 +1333,7 @@ export default function AssistantChat({
         }}
       >
         <textarea
-          className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent px-0 py-[7px] [font-family:inherit] text-[15px] leading-[1.45] text-[#eeeef2] outline-none placeholder:text-fog"
+          className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent px-0 py-[7px] [font-family:inherit] text-[15px] leading-[1.45] text-[#DCE7FA] outline-none placeholder:text-fog"
           ref={inputRef}
           value={input}
           onChange={(e) => {
@@ -1354,7 +1354,7 @@ export default function AssistantChat({
           rows={1}
           maxLength={4000}
         />
-        <button type="submit" className="inline-flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-white disabled:cursor-default disabled:opacity-45" disabled={busy || !input.trim()} aria-label="Kirim pesan">
+        <button type="submit" className="inline-flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-[#052A1E] disabled:cursor-default disabled:opacity-45" disabled={busy || !input.trim()} aria-label="Kirim pesan">
           <SendHorizontal size={17} />
         </button>
       </form>

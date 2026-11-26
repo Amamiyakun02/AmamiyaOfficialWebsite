@@ -107,13 +107,13 @@ const PLATFORM_META: Record<
   },
   threads: {
     label: "Threads",
-    badgeClass: "bg-[#f4f4f5] text-[#18181b]",
-    chipClass: "text-[#e8e8ee]",
+    badgeClass: "bg-[#EEF4FF] text-[#11245F]",
+    chipClass: "text-[#DCE7FA]",
     Icon: ({ size = 11 }) => <AtSign size={size} />,
   },
   facebook: {
     label: "Facebook",
-    badgeClass: "bg-[#2563eb] text-white",
+    badgeClass: "bg-[#006E9B] text-white",
     chipClass: "text-accent3",
     Icon: ({ size = 11 }) => <FacebookIcon width={size} height={size} />,
   },
@@ -260,11 +260,11 @@ export default function VideoDownloader() {
         </Link>
 
         <div className="mt-4 flex items-start gap-3.5">
-          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] text-accent2">
+          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.1)] text-accent2">
             <Clapperboard size={26} />
           </span>
           <div>
-            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#f2f2f5]">Video Downloader</h1>
+            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#EEF4FF]">Video Downloader</h1>
             <p className="mt-[5px] max-w-[560px] text-[13.5px] leading-[1.6] text-fog">
               Unduh video dari YouTube, Instagram, Threads &amp; Facebook
               sebagai MP4 atau MP3. Tempel tautan, pratinjau, lalu simpan.
@@ -275,7 +275,7 @@ export default function VideoDownloader() {
               ).map((p) => {
                 const { label, Icon, chipClass } = PLATFORM_META[p];
                 return (
-                  <span key={p} className={`inline-flex items-center gap-[5px] rounded-lg border border-line bg-[#0a0a0c] px-[9px] py-1 text-[10px] font-bold ${chipClass}`}>
+                  <span key={p} className={`inline-flex items-center gap-[5px] rounded-lg border border-line bg-[#050E2E] px-[9px] py-1 text-[10px] font-bold ${chipClass}`}>
                     <Icon size={11} />
                     {label}
                   </span>
@@ -294,7 +294,7 @@ export default function VideoDownloader() {
               </label>
               <div className="flex flex-col gap-2 min-[560px]:flex-row">
                 <input
-                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#0a0a0c] px-[13px] py-[11px] text-[12.5px] text-[#eeeef2] outline-none placeholder:text-[#5c5c66] focus:border-line"
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#050E2E] px-[13px] py-[11px] text-[12.5px] text-[#DCE7FA] outline-none placeholder:text-[#4C63A0] focus:border-line"
                   id="vd-url"
                   type="url"
                   value={url}
@@ -309,7 +309,7 @@ export default function VideoDownloader() {
                   type="button"
                   onClick={handleCheck}
                   disabled={checking || !url.trim()}
-                  className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] flex-shrink-0 bg-accent px-4 py-[11px] text-white enabled:hover:bg-[#1a8fff]"
+                  className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] flex-shrink-0 bg-accent px-4 py-[11px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
                 >
                   {checking ? (
                     <>
@@ -336,13 +336,13 @@ export default function VideoDownloader() {
                       )}
                       Format
                     </span>
-                    <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-[#0a0a0c] p-1">
+                    <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-[#050E2E] p-1">
                       {(["mp4", "mp3"] as const).map((f) => (
                         <button
                           key={f}
                           type="button"
                           onClick={() => setFormat(f)}
-                          className={`cursor-pointer rounded-lg border-0 bg-transparent px-0 py-2 text-xs font-extrabold tracking-[0.06em] uppercase hover:text-white ${format === f ? "bg-accent text-white" : "text-fog"}`}
+                          className={`cursor-pointer rounded-lg border-0 bg-transparent px-0 py-2 text-xs font-extrabold tracking-[0.06em] uppercase hover:text-[#052A1E] ${format === f ? "bg-accent text-[#052A1E]" : "text-fog"}`}
                         >
                           {f}
                         </button>
@@ -355,7 +355,7 @@ export default function VideoDownloader() {
                       value={quality}
                       onChange={(e) => setQuality(e.target.value)}
                       disabled={format === "mp3"}
-                      className="w-full rounded-xl border border-line bg-[#0a0a0c] px-3 py-2.5 text-[12.5px] text-[#eeeef2] outline-none focus:border-line disabled:opacity-40"
+                      className="w-full rounded-xl border border-line bg-[#050E2E] px-3 py-2.5 text-[12.5px] text-[#DCE7FA] outline-none focus:border-line disabled:opacity-40"
                       aria-label="Kualitas"
                     >
                       {format === "mp3" ? (
@@ -378,7 +378,7 @@ export default function VideoDownloader() {
                     type="button"
                     onClick={handleDownload}
                     disabled={downloading}
-                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] w-full bg-accent px-4 py-[13px] text-white enabled:hover:bg-[#1a8fff]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] w-full bg-accent px-4 py-[13px] text-[#052A1E] enabled:hover:bg-[#00BBA2]"
                   >
                     {downloading ? (
                       <>
@@ -401,12 +401,12 @@ export default function VideoDownloader() {
                     type="button"
                     onClick={handleReset}
                     disabled={downloading || checking}
-                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1b1b1f] disabled:text-[#6d6d76] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
+                    className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#16296B] disabled:text-[#5D7099] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
                   >
                     Tautan Baru
                   </button>
                   {fromCache !== null && (
-                    <p className="text-center text-[11px] text-[#6d6d76]">
+                    <p className="text-center text-[11px] text-[#5D7099]">
                       {fromPlatform ? `${fromPlatform} · ` : ""}
                       {fromCache ? "dari cache — instan" : "baru diunduh"}
                     </p>
@@ -414,7 +414,7 @@ export default function VideoDownloader() {
                 </div>
               )}
 
-              <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-[1.55] text-[#6d6d76]">
+              <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-[1.55] text-[#5D7099]">
                 <Globe size={11} className="mt-0.5 flex-shrink-0" />
                 <span>
                   Konten privat atau yang butuh login tidak bisa diunduh.
@@ -437,7 +437,7 @@ export default function VideoDownloader() {
           {/* Kolom kanan: pratinjau */}
           <div className="flex min-w-0 flex-col gap-3.5">
             {!info ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line px-6 py-12 text-center text-[#6d6d76]">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line px-6 py-12 text-center text-[#5D7099]">
                 <Clapperboard size={40} strokeWidth={1.2} />
                 <p className="max-w-[300px] text-xs leading-[1.6]">
                   Tempel tautan video di atas lalu tekan Cek Video untuk
@@ -447,7 +447,7 @@ export default function VideoDownloader() {
             ) : (
               <div className="overflow-hidden rounded-2xl border border-line bg-panel">
                 {info.thumbnail && (
-                  <div className="relative aspect-[16/9] bg-[#0a0a0c]">
+                  <div className="relative aspect-[16/9] bg-[#050E2E]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className="block h-full w-full object-cover" src={info.thumbnail} alt={info.title} />
                     {platMeta && (
@@ -465,7 +465,7 @@ export default function VideoDownloader() {
                   </div>
                 )}
                 <div className="p-[18px]">
-                  <h2 className="text-[16.5px] leading-[1.45] font-bold text-[#f2f2f5]">{info.title}</h2>
+                  <h2 className="text-[16.5px] leading-[1.45] font-bold text-[#EEF4FF]">{info.title}</h2>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[11.5px] text-fog">
                     {info.uploader && (
                       <span className="inline-flex items-center gap-1.5">

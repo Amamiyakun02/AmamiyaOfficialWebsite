@@ -502,11 +502,11 @@ export default function AiProvidersPanel() {
     provider: Provider | null,
   ) => (
     <div
-      className={`mb-4 rounded-[14px] border bg-[rgba(0,129,251,0.05)] px-4 py-3.5 ${role === "admin" ? "border-[rgba(167,139,250,0.35)]" : "border-[rgba(0,129,251,0.28)]"}`}
+      className={`mb-4 rounded-[14px] border bg-[rgba(0,255,170,0.05)] px-4 py-3.5 ${role === "admin" ? "border-[rgba(0,155,160,0.35)]" : "border-[rgba(0,255,170,0.28)]"}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#8a8a92]">{label}</div>
+          <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#8298C0]">{label}</div>
           <div className="mt-1 text-[15.5px] font-semibold text-paper [font-family:ui-monospace,monospace]">
             {provider
               ? `${provider.provider_key}/${provider.default_model ?? "—"}`
@@ -527,7 +527,7 @@ export default function AiProvidersPanel() {
         )}
       </div>
       {publishArmRole === role && (
-        <div className="mt-3 border-t border-dashed border-[rgba(0,129,251,0.3)] pt-3 text-[13.5px] leading-[1.6] text-[#c9c9cf]">
+        <div className="mt-3 border-t border-dashed border-[rgba(0,255,170,0.3)] pt-3 text-[13.5px] leading-[1.6] text-[#AFC2E6]">
           <p>
             Publish menulis ulang config opencode{" "}
             {role === "admin" ? "administrator" : "publik (anonim)"} dari
@@ -588,7 +588,7 @@ export default function AiProvidersPanel() {
       {publishError && <p className={`${ERR} mt-3`}>{publishError}</p>}
 
       {publishResult && (
-        <div className="mt-3 rounded-xl border border-[rgba(53,208,127,0.3)] bg-[rgba(53,208,127,0.06)] px-[15px] py-[13px] text-[13.5px] leading-[1.6] text-[#c9c9cf]">
+        <div className="mt-3 rounded-xl border border-[rgba(53,208,127,0.3)] bg-[rgba(53,208,127,0.06)] px-[15px] py-[13px] text-[13.5px] leading-[1.6] text-[#AFC2E6]">
           <div className="flex items-center justify-between gap-2.5 text-paper">
             <b>
               Publish {publishResult.role === "admin" ? "administrator" : "publik"}{" "}
@@ -754,7 +754,7 @@ export default function AiProvidersPanel() {
                   (editingProvider.auth_env_present ? (
                     <>
                       {" "}
-                      <span className="text-[#35d07f]">
+                      <span className="text-[#00FFAA]">
                         ✓ Variabel tersimpan terisi di backend.
                       </span>
                     </>
@@ -773,12 +773,12 @@ export default function AiProvidersPanel() {
               <div className="flex flex-col gap-2">
                 {form.models.map((m, idx) => (
                   <div className="flex gap-2" key={idx}>
-                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.id}
                       onChange={(e) => setModel(idx, "id", e.target.value)}
                       placeholder="id model — mis. mercury-3"
                     />
-                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#0c0c0e] px-3 py-[9px] text-sm text-paper outline-none"
+                    <input className="min-w-0 flex-1 rounded-[10px] border border-line bg-[#050E2E] px-3 py-[9px] text-sm text-paper outline-none"
                       value={m.name}
                       onChange={(e) => setModel(idx, "name", e.target.value)}
                       placeholder="Nama tampil — mis. Mercury 3"
@@ -830,7 +830,7 @@ export default function AiProvidersPanel() {
                 <option value="inactive">Inactive</option>
               </select>
             </label>
-            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#c9c9cf] max-[640px]:col-span-1">
+            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#AFC2E6] max-[640px]:col-span-1">
               <input className="mt-[3px]"
                 type="checkbox"
                 checked={form.is_default}
@@ -843,7 +843,7 @@ export default function AiProvidersPanel() {
                 provider ini sesudah Publish.
               </span>
             </label>
-            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#c9c9cf] max-[640px]:col-span-1">
+            <label className="col-span-2 flex cursor-pointer items-start gap-[9px] text-[13.5px] leading-[1.5] text-[#AFC2E6] max-[640px]:col-span-1">
               <input className="mt-[3px]"
                 type="checkbox"
                 checked={form.is_default_admin}
@@ -887,7 +887,7 @@ export default function AiProvidersPanel() {
             return (
               <li
                 key={p.id}
-                className={`${CARD} ${p.is_default && p.is_default_admin ? "before:bg-[linear-gradient(90deg,#e8b93e,#a78bfa)]" : p.is_default ? "before:bg-[linear-gradient(90deg,#e8b93e,rgba(232,185,62,0))]" : p.is_default_admin ? "before:bg-[linear-gradient(90deg,#a78bfa,rgba(167,139,250,0))]" : ""}`}
+                className={`${CARD} ${p.is_default && p.is_default_admin ? "before:bg-[linear-gradient(90deg,#00FFAA,#009BA0)]" : p.is_default ? "before:bg-[linear-gradient(90deg,#00FFAA,rgba(0,255,170,0))]" : p.is_default_admin ? "before:bg-[linear-gradient(90deg,#009BA0,rgba(0,155,160,0))]" : ""}`}
               >
                 <div className={DCARD_HEAD}>
                   <span className={DCARD_NAME}>{p.name}</span>
@@ -898,12 +898,12 @@ export default function AiProvidersPanel() {
                     {p.status}
                   </span>
                   {p.is_default && (
-                    <span className={`${BADGE} border-[rgba(227,179,65,0.55)] text-gold`}>
+                    <span className={`${BADGE} border-[rgba(0,255,170,0.55)] text-gold`}>
                       ★ Default publik
                     </span>
                   )}
                   {p.is_default_admin && (
-                    <span className={`${BADGE} border-[rgba(167,139,250,0.45)] text-[#c4b5fd]`}>
+                    <span className={`${BADGE} border-[rgba(0,155,160,0.45)] text-[#c4b5fd]`}>
                       ★ Default admin
                     </span>
                   )}
@@ -925,15 +925,15 @@ export default function AiProvidersPanel() {
                     <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-paper">{p.base_url}</span>
                   )}
                   {p.package && (
-                    <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-[#6d6d78]">{p.package}</span>
+                    <span className="[font-family:ui-monospace,monospace] text-[12.5px] text-[#5D7099]">{p.package}</span>
                   )}
                 </p>
-                <div className="mt-3 flex items-baseline gap-2.5 rounded-[10px] border border-[#222228] bg-[rgba(255,255,255,0.03)] px-3 py-2">
-                  <span className="flex-none text-[10.5px] tracking-[0.08em] uppercase text-[#8a8a96]">Model default</span>
+                <div className="mt-3 flex items-baseline gap-2.5 rounded-[10px] border border-[#16296B] bg-[rgba(255,255,255,0.03)] px-3 py-2">
+                  <span className="flex-none text-[10.5px] tracking-[0.08em] uppercase text-[#8298C0]">Model default</span>
                   <span className="[font-family:ui-monospace,monospace] text-[13.5px] text-white">
                     {p.default_model ?? "—"}
                   </span>
-                  <span className="ml-auto text-xs text-[#8a8a96]">
+                  <span className="ml-auto text-xs text-[#8298C0]">
                     {p.models?.length ?? 0} model
                     {p.updated_at
                       ? ` · diubah ${fmtDateTime(p.updated_at)}`
@@ -946,7 +946,7 @@ export default function AiProvidersPanel() {
                     {p.last_tested_at || tr ? (
                       tr ? (
                         tr.ok ? (
-                          <span className="text-[#35d07f]">
+                          <span className="text-[#00FFAA]">
                             ✓ Test barusan: HTTP {tr.status_code}
                             {tr.latency_ms != null
                               ? ` · ${tr.latency_ms} ms`
@@ -962,7 +962,7 @@ export default function AiProvidersPanel() {
                           </span>
                         )
                       ) : p.last_test_ok ? (
-                        <span className="text-[#35d07f]">
+                        <span className="text-[#00FFAA]">
                           ✓ Test terakhir berhasil ·{" "}
                           {fmtDateTime(p.last_tested_at)}
                         </span>
@@ -973,7 +973,7 @@ export default function AiProvidersPanel() {
                         </span>
                       )
                     ) : (
-                      <span className="text-[#6d6d78]">Belum pernah dites</span>
+                      <span className="text-[#5D7099]">Belum pernah dites</span>
                     )}
                   </span>
                   {confirmId === p.id ? (

@@ -47,10 +47,10 @@ function StaticProjects({
           <button
             key={f}
             type="button"
-            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#4a4a55] ${
+            className={`cursor-pointer rounded-full border px-[15px] py-[7px] text-[13px] font-semibold hover:border-[#41538A] ${
               filter === f
-                ? "border-accent bg-accent text-white"
-                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#d7d7dd]"
+                ? "border-accent bg-accent text-[#052A1E]"
+                : "border-line3 bg-[rgba(16,16,20,0.7)] text-[#C3D2F0]"
             }`}
             onClick={() => setFilter(f)}
           >
@@ -65,18 +65,18 @@ function StaticProjects({
           return (
             <article
               key={p.id}
-              className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#3d3d47]"
+              className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#354C8C]"
             >
               <div className="flex items-center gap-2.5">
-                <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.12)] text-accent3">
+                <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.12)] text-accent3">
                   <Icon size={20} />
                 </span>
                 {p.featured && (
-                  <span className="text-[11px] font-bold tracking-[0.03em] text-[#fbbf24]">
+                  <span className="text-[11px] font-bold tracking-[0.03em] text-[#00FFAA]">
                     ★ Unggulan
                   </span>
                 )}
-                <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
+                <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
                   {p.category}
                 </span>
               </div>
@@ -89,23 +89,23 @@ function StaticProjects({
                   {p.title}
                 </button>
               </h3>
-              <p className="m-0 mb-2 text-[13.5px] font-semibold text-[#d7d7dd]">
+              <p className="m-0 mb-2 text-[13.5px] font-semibold text-[#C3D2F0]">
                 {p.tagline.id}
               </p>
-              <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#a7a7b0]">
+              <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#9DB1D9]">
                 {p.description.id}
               </p>
               <div className="mt-[14px] flex flex-wrap gap-1.5">
                 {p.tech.slice(0, 4).map((t) => (
                   <span
                     key={t}
-                    className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]"
+                    className="rounded-full border border-[#1E3066] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#AFC2E6]"
                   >
                     {t}
                   </span>
                 ))}
                 {p.tech.length > 4 && (
-                  <span className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]">
+                  <span className="rounded-full border border-[#1E3066] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#AFC2E6]">
                     +{p.tech.length - 4}
                   </span>
                 )}
@@ -154,7 +154,7 @@ export function PublicProjectCard({ p }: { p: PublicProject }) {
   // kosong = kartu polos persis tampilan lama.
   const cardImage = p.image_url ?? p.demo_video_thumbnail;
   return (
-    <article className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#3d3d47]">
+    <article className="flex flex-col rounded-2xl border border-line2 bg-[rgba(13,13,16,0.78)] p-[18px] transition-[border-color,transform] duration-[250ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-[3px] hover:border-[#354C8C]">
       {cardImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -165,21 +165,21 @@ export function PublicProjectCard({ p }: { p: PublicProject }) {
         />
       )}
       <div className="flex items-center gap-2.5">
-        <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.12)] text-accent3">
+        <span className="inline-grid h-10 w-10 place-items-center rounded-[11px] border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.12)] text-accent3">
           <Layers size={20} />
         </span>
         {p.is_featured && (
-          <span className="text-[11px] font-bold tracking-[0.03em] text-[#fbbf24]">
+          <span className="text-[11px] font-bold tracking-[0.03em] text-[#00FFAA]">
             ★ TOP{p.featured_order ? ` #${p.featured_order}` : ""}
           </span>
         )}
-        <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8b8b94] uppercase">
+        <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
           {STATUS_LABEL[p.status] ?? p.status}
         </span>
       </div>
       <h3 className="mt-[14px] mb-[6px] text-[17px] font-bold">{p.name}</h3>
       {p.description && (
-        <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#a7a7b0]">
+        <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#9DB1D9]">
           {p.description}
         </p>
       )}
@@ -188,13 +188,13 @@ export function PublicProjectCard({ p }: { p: PublicProject }) {
           {tech.slice(0, 4).map((t) => (
             <span
               key={t}
-              className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]"
+              className="rounded-full border border-[#1E3066] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#AFC2E6]"
             >
               {t}
             </span>
           ))}
           {tech.length > 4 && (
-            <span className="rounded-full border border-[#26262c] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#c9c9d0]">
+            <span className="rounded-full border border-[#1E3066] bg-white/[0.05] px-[9px] py-[3px] text-[11px] font-semibold text-[#AFC2E6]">
               +{tech.length - 4}
             </span>
           )}
@@ -275,7 +275,7 @@ export default function ProjectsSection({
   return (
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Projects" />
-      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+      <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
         Project unggulan yang kupilih langsung dari dashboard-ku — empat
         terbaik yang sedang dan sudah kubangun. Daftar lengkapnya ada di
         halaman Projects.
@@ -304,7 +304,7 @@ export default function ProjectsSection({
 
       {phase === "live" &&
         (items.length === 0 ? (
-          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+          <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
             Belum ada project unggulan yang di-pin dari dashboard.
           </p>
         ) : (
@@ -318,7 +318,7 @@ export default function ProjectsSection({
       {phase === "live" && (
         <div className="mt-[22px] flex justify-center">
           <Link
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,129,251,0.55)] bg-[rgba(0,129,251,0.12)] px-[26px] py-[11px] text-[14.5px] font-bold text-[#7db9ff] no-underline transition-[background,border-color,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-accent hover:bg-[rgba(0,129,251,0.22)] hover:text-[#cfe6ff]"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,255,170,0.55)] bg-[rgba(0,255,170,0.12)] px-[26px] py-[11px] text-[14.5px] font-bold text-[#5EEAD0] no-underline transition-[background,border-color,color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-accent hover:bg-[rgba(0,255,170,0.22)] hover:text-[#C8F7E6]"
             href="/projects"
           >
             More Projects →

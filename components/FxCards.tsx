@@ -66,7 +66,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       const steps = 48;
       const CHUNK = 4;
       ctx!.lineCap = "round";
-      ctx!.shadowColor = "rgba(245,245,255,0.85)";
+      ctx!.shadowColor = "rgba(238,244,255,0.85)";
       for (let a = 0; a < 4; a++) {
         const off = (a * Math.PI) / 2;
         for (let s0 = 0; s0 < steps; s0 += CHUNK) {
@@ -84,14 +84,14 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
           }
           ctx!.shadowBlur = 0;
           ctx!.lineWidth = Math.max(1.2 * K, 0.38 * rMid);
-          ctx!.strokeStyle = "rgba(245,245,255,0.15)";
+          ctx!.strokeStyle = "rgba(238,244,255,0.15)";
           ctx!.stroke(path);
           ctx!.lineWidth = Math.max(1 * K, 0.2 * rMid);
-          ctx!.strokeStyle = "rgba(245,245,255,0.32)";
+          ctx!.strokeStyle = "rgba(238,244,255,0.32)";
           ctx!.stroke(path);
           ctx!.shadowBlur = 5 * K;
           ctx!.lineWidth = Math.max(1.1 * K, 0.07 * rMid);
-          ctx!.strokeStyle = "rgba(245,245,255,0.95)";
+          ctx!.strokeStyle = "rgba(238,244,255,0.95)";
           ctx!.stroke(path);
           ctx!.shadowBlur = 0;
           const hsh = Math.sin(a * 127.1 + s0 * 311.7) * 43758.5453;
@@ -105,7 +105,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
             const wy = cy + bx * Math.sin(rot + off) + by * Math.cos(rot + off);
             ctx!.beginPath();
             ctx!.arc(wx, wy, 0.7 + h1 * 0.9, 0, Math.PI * 2);
-            ctx!.fillStyle = "rgba(245,245,255,0.85)";
+            ctx!.fillStyle = "rgba(238,244,255,0.85)";
             ctx!.fill();
           }
         }
@@ -117,7 +117,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.beginPath();
       ctx!.ellipse(0, 0, R * 0.24, R * 0.13, 0, 0, Math.PI * 2);
       ctx!.shadowBlur = 8 * K;
-      ctx!.fillStyle = "rgba(245,245,255,0.8)";
+      ctx!.fillStyle = "rgba(238,244,255,0.8)";
       ctx!.fill();
       ctx!.restore();
       ctx!.shadowBlur = 0;
@@ -142,9 +142,9 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.quadraticCurveTo(-rx * p, ry * p, -rx, 0);
       ctx!.quadraticCurveTo(-rx * p, -ry * p, 0, -ry);
       ctx!.closePath();
-      ctx!.shadowColor = "rgba(245,245,255,0.85)";
+      ctx!.shadowColor = "rgba(238,244,255,0.85)";
       ctx!.shadowBlur = 4 * K;
-      ctx!.fillStyle = `rgba(245,245,255,${0.92 + 0.08 * Math.sin(now / 260)})`;
+      ctx!.fillStyle = `rgba(238,244,255,${0.92 + 0.08 * Math.sin(now / 260)})`;
       ctx!.fill();
       ctx!.restore();
       ctx!.shadowBlur = 0;
@@ -154,10 +154,10 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       const R = H * 0.37;
       const f = 0.25;
       const rot = now / 1400;
-      ctx!.shadowColor = "rgba(245,245,255,0.85)";
+      ctx!.shadowColor = "rgba(238,244,255,0.85)";
       ctx!.shadowBlur = 4 * K;
-      ctx!.strokeStyle = "rgba(245,245,255,0.95)";
-      ctx!.fillStyle = "rgba(245,245,255,0.95)";
+      ctx!.strokeStyle = "rgba(238,244,255,0.95)";
+      ctx!.fillStyle = "rgba(238,244,255,0.95)";
       ctx!.lineWidth = Math.max(0.7, 1.6 * K);
       for (let k = 0; k < 3; k++) {
         const ang = rot + (k * Math.PI) / 3;
@@ -194,18 +194,18 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       const bandRy = Math.max(1 * K, R * 0.18);
       const band = (mul: number) => {
         const gr = ctx!.createLinearGradient(cx - bandRx, cy, cx + bandRx, cy);
-        gr.addColorStop(0, "rgba(245,245,255,0)");
-        gr.addColorStop(0.16, `rgba(245,245,255,${0.28 * mul})`);
-        gr.addColorStop(0.5, `rgba(245,245,255,${0.85 * mul})`);
-        gr.addColorStop(0.84, `rgba(245,245,255,${0.28 * mul})`);
-        gr.addColorStop(1, "rgba(245,245,255,0)");
+        gr.addColorStop(0, "rgba(238,244,255,0)");
+        gr.addColorStop(0.16, `rgba(238,244,255,${0.28 * mul})`);
+        gr.addColorStop(0.5, `rgba(238,244,255,${0.85 * mul})`);
+        gr.addColorStop(0.84, `rgba(238,244,255,${0.28 * mul})`);
+        gr.addColorStop(1, "rgba(238,244,255,0)");
         return gr;
       };
       const hC = (n: number) => {
         const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
         return v - Math.floor(v);
       };
-      ctx!.shadowColor = "rgba(245,245,255,0.85)";
+      ctx!.shadowColor = "rgba(238,244,255,0.85)";
       ctx!.beginPath();
       ctx!.ellipse(cx, cy, bandRx, bandRy, 0, 0, Math.PI * 2);
       ctx!.fillStyle = band(0.55);
@@ -218,7 +218,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ]) {
         ctx!.beginPath();
         ctx!.arc(cx, cy, ringR * p.m, 0, Math.PI * 2);
-        ctx!.strokeStyle = `rgba(245,245,255,${p.a})`;
+        ctx!.strokeStyle = `rgba(238,244,255,${p.a})`;
         ctx!.lineWidth = Math.max(0.7 * K, R * p.w);
         ctx!.stroke();
       }
@@ -228,11 +228,11 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ]) {
         ctx!.beginPath();
         ctx!.arc(cx, cy, ringR, seg.a0, seg.a1);
-        ctx!.strokeStyle = "rgba(245,245,255,0.85)";
+        ctx!.strokeStyle = "rgba(238,244,255,0.85)";
         ctx!.lineWidth = Math.max(0.8 * K, R * 0.2);
         ctx!.stroke();
       }
-      ctx!.fillStyle = "rgba(245,245,255,0.9)";
+      ctx!.fillStyle = "rgba(238,244,255,0.9)";
       for (let i = 0; i < 8; i++) {
         const rf = 0.92 + hC(i * 3 + 1) * 0.16;
         const th = hC(i * 7 + 2) * Math.PI * 2 - now * 0.0012;
@@ -246,7 +246,7 @@ function GlyphCanvas({ kind }: { kind: Kind }) {
       ctx!.fill();
       ctx!.beginPath();
       ctx!.arc(cx, cy, R * 1.02, 0, Math.PI * 2);
-      ctx!.strokeStyle = "rgba(245,245,255,0.9)";
+      ctx!.strokeStyle = "rgba(238,244,255,0.9)";
       ctx!.lineWidth = Math.max(0.8 * K, R * 0.12);
       ctx!.stroke();
       ctx!.beginPath();

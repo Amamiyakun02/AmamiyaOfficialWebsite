@@ -64,12 +64,12 @@ export default function FeedbackForm() {
         </Link>
 
         <div className="mt-4 flex items-start gap-3.5">
-          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,129,251,0.25)] bg-[rgba(0,129,251,0.1)] text-accent2">
+          <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-[14px] border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.1)] text-accent2">
             <MessageSquare size={22} />
           </span>
           <div>
-            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#f2f2f5]">Feedback</h1>
-            <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#a7a7b0]">
+            <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#EEF4FF]">Feedback</h1>
+            <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
               Kirim ulasan dan masukan tentang situs dan tool-tool di
               sini — pesanmu masuk ke inbox-ku dan kubaca langsung.
             </p>
@@ -79,10 +79,10 @@ export default function FeedbackForm() {
         {sent ? (
           <div className="max-w-[720px] rounded-2xl border border-[rgba(52,211,153,0.35)] bg-[rgba(13,13,16,0.78)] p-[22px]">
             <h2 className="m-0 mb-2 text-lg">Feedback Terkirim</h2>
-            <p className="m-0 mb-4 text-sm text-[#a7a7b0]">Terima kasih atas masukannya — sangat membantu.</p>
+            <p className="m-0 mb-4 text-sm text-[#9DB1D9]">Terima kasih atas masukannya — sangat membantu.</p>
             <button
               type="button"
-              className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#d7d7dd] hover:border-[#4a4a55]"
+              className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
               onClick={() => {
                 setSent(false);
                 setName("");
@@ -96,7 +96,7 @@ export default function FeedbackForm() {
           </div>
         ) : (
           <form className="flex max-w-[720px] flex-col gap-4" onSubmit={submit}>
-            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
               Nama Anda
               <input
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
@@ -107,7 +107,7 @@ export default function FeedbackForm() {
                 autoComplete="name"
               />
             </label>
-            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
               Penilaianmu
               <span className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
                 {[1, 2, 3, 4, 5].map((n) => (
@@ -128,7 +128,7 @@ export default function FeedbackForm() {
                 </span>
               </span>
             </label>
-            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
               Kategori
               <select
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
@@ -142,7 +142,7 @@ export default function FeedbackForm() {
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#d7d7dd]">
+            <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
               Pesan / masukan
               <textarea
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
@@ -156,7 +156,7 @@ export default function FeedbackForm() {
             {error && <p className="m-0 text-[13px] text-[#f87171]">{error}</p>}
             <button
               type="submit"
-              className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-white no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#4a4a55] hover:bg-[#0064e0]"
+              className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-[#052A1E] no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#41538A] hover:bg-[#00BBA2]"
               disabled={submitting || rating === 0}
             >
               {submitting ? "Mengirim..." : "Kirim Feedback"}

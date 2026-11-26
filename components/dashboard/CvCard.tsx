@@ -115,29 +115,29 @@ export default function CvCard() {
   }
 
   return (
-    <div className="mb-3 rounded-[14px] border border-[#26262c] bg-[linear-gradient(180deg,#131318,#0e0e11)] px-[18px] py-4">
-      <h3 className="mb-2 flex items-center gap-2 text-[13px] font-bold tracking-[0.02em] text-[#f2f2f4]">
-        <FileText size={15} className="text-[#8ab6ff]" />
+    <div className="mb-3 rounded-[14px] border border-[#1E3066] bg-[linear-gradient(180deg,#0D1E52,#0A1847)] px-[18px] py-4">
+      <h3 className="mb-2 flex items-center gap-2 text-[13px] font-bold tracking-[0.02em] text-[#EEF4FF]">
+        <FileText size={15} className="text-[#5EEAD0]" />
         CV Situs
       </h3>
       {!loaded ? (
-        <p className="text-[13px] leading-[1.55] text-[#8b8b93]">
+        <p className="text-[13px] leading-[1.55] text-[#8298C0]">
           Memuat URL CV…
         </p>
       ) : current ? (
-        <p className="m-0 text-[13px] leading-[1.55] text-[#8b8b93]">
+        <p className="m-0 text-[13px] leading-[1.55] text-[#8298C0]">
           Aktif:{" "}
           <a
             href={current}
             target="_blank"
             rel="noreferrer"
-            className="break-all text-[#58a6ff] no-underline hover:underline"
+            className="break-all text-[#00BBA2] no-underline hover:underline"
           >
             {current}
           </a>
         </p>
       ) : (
-        <p className="m-0 text-[13px] leading-[1.55] text-[#8b8b93]">
+        <p className="m-0 text-[13px] leading-[1.55] text-[#8298C0]">
           Belum diatur — tombol Unduh CV di situs sedang disembunyikan.
         </p>
       )}
@@ -155,7 +155,7 @@ export default function CvCard() {
         </span>
         <button
           type="button"
-          className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-white hover:bg-[#1a8dff] disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border-none bg-accent px-4 py-[9px] text-sm font-semibold text-[#052A1E] hover:bg-[#00BBA2] disabled:cursor-default disabled:opacity-60"
           disabled={busy || !loaded}
           onClick={() => void save()}
         >
@@ -163,7 +163,7 @@ export default function CvCard() {
         </button>
         <button
           type="button"
-          className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#c9c9cf] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
           disabled={busy || !loaded || (!current && !input)}
           onClick={() => void clear()}
         >
@@ -181,7 +181,7 @@ export default function CvCard() {
         />
         <button
           type="button"
-          className="cursor-pointer rounded-lg border border-line bg-[rgba(16,16,19,0.7)] px-3.5 py-2 text-[13px] text-[#c9c9cf] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-[rgba(10,24,71,0.7)] px-3.5 py-2 text-[13px] text-[#AFC2E6] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-60"
           disabled={busy || !loaded}
           onClick={() => fileRef.current?.click()}
         >

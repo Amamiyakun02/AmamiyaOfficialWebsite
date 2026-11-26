@@ -80,7 +80,7 @@ export default function PortfolioHome() {
       {selectedId && (
         <section
           id="case-study"
-          className="relative scroll-mt-[70px] border-t border-[#141417]"
+          className="relative scroll-mt-[70px] border-t border-[#0D1E52]"
         >
           <ProjectDetailSection
             projectId={selectedId}
@@ -104,7 +104,7 @@ export default function PortfolioHome() {
         <ContactSection />
       </LazySection>
 
-      <footer className="mx-auto flex w-[min(1200px,100%)] flex-wrap justify-between gap-2.5 border-t border-[#141417] px-7 pt-[26px] pb-9 text-[12.5px] text-[#8b8b94] max-[760px]:px-[18px]">
+      <footer className="mx-auto flex w-[min(1200px,100%)] flex-wrap justify-between gap-2.5 border-t border-[#0D1E52] px-7 pt-[26px] pb-9 text-[12.5px] text-[#8298C0] max-[760px]:px-[18px]">
         <span>
           © {new Date().getFullYear()} Amamiya
         </span>

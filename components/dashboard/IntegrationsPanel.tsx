@@ -529,7 +529,7 @@ export default function IntegrationsPanel() {
                       {i.auth_env_var ? ` · env ${i.auth_env_var} · ` : " · "}
                       {i.auth_env_var &&
                         (i.auth_env_present ? (
-                          <span className="text-[#35d07f]">
+                          <span className="text-[#00FFAA]">
                             ✓ tersedia di backend
                           </span>
                         ) : (
@@ -549,7 +549,7 @@ export default function IntegrationsPanel() {
                     {i.last_tested_at || tr ? (
                       tr ? (
                         tr.ok ? (
-                          <span className="text-[#35d07f]">
+                          <span className="text-[#00FFAA]">
                             ✓ Test barusan: HTTP {tr.status_code}
                             {tr.latency_ms != null
                               ? ` · ${tr.latency_ms} ms`
@@ -562,7 +562,7 @@ export default function IntegrationsPanel() {
                           </span>
                         )
                       ) : i.last_test_ok ? (
-                        <span className="text-[#35d07f]">
+                        <span className="text-[#00FFAA]">
                           ✓ Test terakhir berhasil ·{" "}
                           {fmtDateTime(i.last_tested_at)}
                         </span>
@@ -573,7 +573,7 @@ export default function IntegrationsPanel() {
                         </span>
                       )
                     ) : (
-                      <span className="text-[#6d6d78]">Belum pernah dites</span>
+                      <span className="text-[#5D7099]">Belum pernah dites</span>
                     )}
                   </span>
                   {confirmId === i.id ? (

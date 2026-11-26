@@ -135,7 +135,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="relative z-[5] flex flex-none items-center justify-between border-b border-[#1f1f23] bg-[rgba(13,13,15,0.94)] px-7 py-3 max-[760px]:px-[18px] max-[760px]:py-2.5">
+      <header className="relative z-[5] flex flex-none items-center justify-between border-b border-[#16296B] bg-[rgba(13,13,15,0.94)] px-7 py-3 max-[760px]:px-[18px] max-[760px]:py-2.5">
         <div className="flex items-center gap-[30px] max-[760px]:gap-[14px]">
           <Link
             href="/#home"
@@ -154,7 +154,7 @@ export default function Navbar() {
               <Link
                 key={l.id}
                 href={`/#${l.id}`}
-                className={`text-[15px] text-[#e6e6e9] no-underline hover:underline${
+                className={`text-[15px] text-[#DCE7FA] no-underline hover:underline${
                   current === l.id
                     ? " text-white underline decoration-accent underline-offset-[5px]"
                     : ""
@@ -169,7 +169,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {cvUrl && (
             <a
-              className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#e6e6e9] no-underline hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
+              className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#DCE7FA] no-underline hover:border-[#41538A] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
               href={cvUrl}
               target="_blank"
               rel="noreferrer"
@@ -179,7 +179,7 @@ export default function Navbar() {
             </a>
           )}
           <a
-            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-line3 bg-white/[0.03] text-[#e6e6e9] hover:border-[#4a4a55] hover:bg-white/[0.07] hover:text-white"
+            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-line3 bg-white/[0.03] text-[#DCE7FA] hover:border-[#41538A] hover:bg-white/[0.07] hover:text-white"
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
@@ -189,7 +189,7 @@ export default function Navbar() {
           </a>
           <button
             type="button"
-            className="hidden cursor-pointer items-center justify-center rounded-[9px] border border-[#2a2a31] bg-transparent p-2 text-[#e6e6e9] max-[760px]:inline-flex"
+            className="hidden cursor-pointer items-center justify-center rounded-[9px] border border-[#22336A] bg-transparent p-2 text-[#DCE7FA] max-[760px]:inline-flex"
             aria-label="Buka menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}
@@ -209,14 +209,14 @@ export default function Navbar() {
         aria-hidden="true"
       />
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[60] flex w-[min(300px,84vw)] flex-col border-r border-[#1f1f23] bg-[#0e0e11] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.24,1)] min-[761px]:hidden motion-reduce:transition-none ${
+        className={`fixed top-0 bottom-0 left-0 z-[60] flex w-[min(300px,84vw)] flex-col border-r border-[#16296B] bg-[#0A1847] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.24,1)] min-[761px]:hidden motion-reduce:transition-none ${
           open
             ? "pointer-events-auto translate-x-0 shadow-[24px_0_48px_rgba(0,0,0,0.45)]"
             : "pointer-events-none -translate-x-[105%]"
         }`}
         aria-hidden={!open}
       >
-        <div className="flex items-center justify-between border-b border-[#1c1c20] px-[18px] py-[13px]">
+        <div className="flex items-center justify-between border-b border-[#16296B] px-[18px] py-[13px]">
           <Link
             href="/#home"
             className="inline-flex items-center gap-[9px] text-[17px] font-bold tracking-[0.01em] text-white no-underline"
@@ -244,8 +244,8 @@ export default function Navbar() {
               href={`/#${l.id}`}
               className={`block px-5 py-[11px] text-[15.5px] no-underline hover:bg-white/[0.04] hover:text-white ${
                 current === l.id
-                  ? "bg-[rgba(0,129,251,0.1)] text-white shadow-[inset_2.5px_0_0_#0081fb]"
-                  : "text-[#c6c6cd]"
+                  ? "bg-[rgba(0,255,170,0.1)] text-white shadow-[inset_2.5px_0_0_#00FFAA]"
+                  : "text-[#AFC2E6]"
               }`}
               onClick={(e) => {
                 go(e, l.id);
@@ -256,10 +256,10 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto flex gap-[10px] border-t border-[#1c1c20] px-[18px] pt-4 pb-5">
+        <div className="mt-auto flex gap-[10px] border-t border-[#16296B] px-[18px] pt-4 pb-5">
           {cvUrl && (
             <a
-              className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
+              className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#41538A] hover:bg-white/[0.08]"
               href={cvUrl}
               target="_blank"
               rel="noreferrer"
@@ -269,7 +269,7 @@ export default function Navbar() {
             </a>
           )}
           <a
-            className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#4a4a55] hover:bg-white/[0.08]"
+            className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#41538A] hover:bg-white/[0.08]"
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"

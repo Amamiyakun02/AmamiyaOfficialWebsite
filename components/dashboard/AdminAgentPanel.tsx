@@ -472,7 +472,7 @@ function MessageText({ text }: { text: string }) {
         if (i % 2 === 1) {
           const code = seg.replace(/^[a-zA-Z0-9_-]*\n/, "");
           return (
-            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#0a0a0c] px-3 py-2.5 text-[13px] whitespace-pre">
+            <pre key={i} className="my-2 overflow-x-auto rounded-lg border border-line bg-[#050E2E] px-3 py-2.5 text-[13px] whitespace-pre">
               {code}
             </pre>
           );
@@ -494,35 +494,35 @@ const MSG_AI =
 const MSG_COL_USER = "flex min-w-0 flex-col items-end";
 const MSG_COL_AI = "flex min-w-0 flex-col items-start";
 const MSG_AVATAR =
-  "mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#0a0a0c] object-cover";
+  "mt-0.5 h-[26px] w-[26px] flex-none rounded-full border border-line bg-[#050E2E] object-cover";
 const BUBBLE_USER =
-  "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-white";
+  "rounded-[14px] rounded-br-[4px] bg-accent px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#052A1E]";
 const BUBBLE_AI =
-  "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#eeeef2]";
+  "rounded-[14px] rounded-bl-[4px] border border-line bg-panel2 px-3.5 py-2.5 text-[15px] leading-[1.55] text-[#DCE7FA]";
 const HITL_CARD =
   "min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] bg-panel2 px-4 py-3.5 text-[14.5px]";
 const HITL_HEAD =
-  "mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#f2f2f4] [&_svg]:flex-none [&_svg]:text-accent3";
+  "mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#EEF4FF] [&_svg]:flex-none [&_svg]:text-accent3";
 const HITL_INPUT =
-  "w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] text-sm text-[#f2f2f4] [font:inherit] focus:border-line focus:outline-none disabled:opacity-70";
+  "w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] text-sm text-[#EEF4FF] [font:inherit] focus:border-line focus:outline-none disabled:opacity-70";
 const HITL_BTN =
-  "cursor-pointer rounded-full border border-line3 bg-[rgba(255,255,255,0.04)] px-4 py-2 text-[13.5px] font-semibold text-[#e6e6e9] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50";
+  "cursor-pointer rounded-full border border-line3 bg-[rgba(255,255,255,0.04)] px-4 py-2 text-[13.5px] font-semibold text-[#DCE7FA] enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-50";
 const HITL_BTN_PRIMARY =
-  "cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-white enabled:hover:border-[#0064e0] enabled:hover:bg-[#0064e0] disabled:cursor-default disabled:opacity-50";
+  "cursor-pointer rounded-full border border-accent bg-accent px-4 py-2 text-[13.5px] font-semibold text-[#052A1E] enabled:hover:border-[#00BBA2] enabled:hover:bg-[#00BBA2] disabled:cursor-default disabled:opacity-50";
 const HITL_BTN_DANGER =
-  "cursor-pointer rounded-full border border-line3 bg-[rgba(255,255,255,0.04)] px-4 py-2 text-[13.5px] font-semibold text-[#f87171] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-50";
+  "cursor-pointer rounded-full border border-line3 bg-[rgba(255,255,255,0.04)] px-4 py-2 text-[13.5px] font-semibold text-[#f87171] enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-50";
 const HITL_OPTION =
-  "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border px-3 py-[9px] text-left text-[#e6e6e9] [font:inherit] enabled:hover:border-[#4a4a55] disabled:cursor-default disabled:opacity-75";
+  "flex cursor-pointer flex-col items-start gap-px rounded-[10px] border px-3 py-[9px] text-left text-[#DCE7FA] [font:inherit] enabled:hover:border-[#41538A] disabled:cursor-default disabled:opacity-75";
 const TOOL_BTN =
-  "inline-flex h-9 w-9 flex-[0_0_auto] cursor-pointer items-center justify-center rounded-[10px] border border-line bg-transparent text-[#a7a7ae] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-45";
+  "inline-flex h-9 w-9 flex-[0_0_auto] cursor-pointer items-center justify-center rounded-[10px] border border-line bg-transparent text-[#9DB1D9] hover:border-steel hover:text-white disabled:cursor-default disabled:opacity-45";
 const QP_SEND =
-  "inline-flex h-9 w-9 flex-[0_0_auto] cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-white disabled:cursor-default disabled:opacity-45";
+  "inline-flex h-9 w-9 flex-[0_0_auto] cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-[#052A1E] disabled:cursor-default disabled:opacity-45";
 const NEW_BTN =
-  "inline-flex cursor-pointer items-center gap-[7px] rounded-lg border border-[#2a2a30] bg-[#17171b] px-3 py-[7px] text-[13px] text-[#ececf0] transition-all duration-[120ms] hover:border-[#3d3d46] hover:bg-[rgba(255,255,255,0.05)]";
+  "inline-flex cursor-pointer items-center gap-[7px] rounded-lg border border-[#22336A] bg-[#11245F] px-3 py-[7px] text-[13px] text-[#DCE7FA] transition-all duration-[120ms] hover:border-[#354C8C] hover:bg-[rgba(255,255,255,0.05)]";
 const SESS_ICON =
-  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-transparent bg-transparent text-[#9a9aa4] hover:border-[#2a2a30] hover:text-[#e8e8ec]";
+  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-transparent bg-transparent text-[#93A9D1] hover:border-[#22336A] hover:text-[#DCE7FA]";
 const SESS_ICON_DANGER =
-  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-transparent bg-transparent text-[#ff7a7a] hover:border-[#2a2a30]";
+  "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-transparent bg-transparent text-[#ff7a7a] hover:border-[#22336A]";
 
 export default function AdminAgentPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1707,7 +1707,7 @@ export default function AdminAgentPanel() {
       <img className={MSG_AVATAR} src="/vienna.svg" alt="" width={26} height={26} />
       <div className={MSG_COL_AI}>
         {card.status === "cancelled" ? (
-          <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8b8b94]">
+          <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8298C0]">
             {card.kind === "form"
               ? "Pertanyaan ini sudah tidak berlaku."
               : "Permintaan persetujuan ini sudah tidak berlaku."}
@@ -1715,7 +1715,7 @@ export default function AdminAgentPanel() {
         ) : card.kind === "form" && card.form ? (
           <div
             className={
-              card.status === "answered" ? `${HITL_CARD} border-l-[#34d399] opacity-85` : `${HITL_CARD} border-l-accent`
+              card.status === "answered" ? `${HITL_CARD} border-l-[#00FFAA] opacity-85` : `${HITL_CARD} border-l-accent`
             }
           >
             <div className={HITL_HEAD}>
@@ -1758,7 +1758,7 @@ export default function AdminAgentPanel() {
                   : "";
               return (
                 <div key={f.key} className="mb-3.5">
-                  <div className="mb-[3px] text-[13.5px] font-semibold text-[#e6e6e9]">{f.title}</div>
+                  <div className="mb-[3px] text-[13.5px] font-semibold text-[#DCE7FA]">{f.title}</div>
                   {f.description && (
                     <div className="mb-2 text-[12.5px] leading-[1.5] text-fog">{f.description}</div>
                   )}
@@ -1776,7 +1776,7 @@ export default function AdminAgentPanel() {
                               disabled={locked}
                               className={
                                 selected
-                                  ? `${HITL_OPTION} border-accent bg-[rgba(0,129,251,0.14)]`
+                                  ? `${HITL_OPTION} border-accent bg-[rgba(0,255,170,0.14)]`
                                   : `${HITL_OPTION} border-line3 bg-[rgba(255,255,255,0.03)]`
                               }
                               onClick={() => {
@@ -1826,7 +1826,7 @@ export default function AdminAgentPanel() {
                                 <button
                                   key={v}
                                   type="button"
-                                  className="inline-flex cursor-pointer items-center gap-[5px] rounded-full border border-[rgba(0,129,251,0.45)] bg-[rgba(0,129,251,0.14)] px-[9px] py-[3px] text-[12.5px] text-[#cfe4ff] disabled:cursor-default disabled:opacity-75"
+                                  className="inline-flex cursor-pointer items-center gap-[5px] rounded-full border border-[rgba(0,255,170,0.45)] bg-[rgba(0,255,170,0.14)] px-[9px] py-[3px] text-[12.5px] text-[#C8F7E6] disabled:cursor-default disabled:opacity-75"
                                   disabled={locked}
                                   onClick={() =>
                                     updateMulti((arr) =>
@@ -1917,7 +1917,7 @@ export default function AdminAgentPanel() {
               );
             })}
             {card.status === "answered" ? (
-              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#00FFAA]">
                 <Check size={14} /> Sudah dijawab — agent melanjutkan
                 pekerjaannya.
               </div>
@@ -1962,14 +1962,14 @@ export default function AdminAgentPanel() {
         ) : card.kind === "permission" && card.permission ? (
           <div
             className={
-              card.status === "answered" ? `${HITL_CARD} border-l-[#34d399] opacity-85` : `${HITL_CARD} border-l-accent`
+              card.status === "answered" ? `${HITL_CARD} border-l-[#00FFAA] opacity-85` : `${HITL_CARD} border-l-accent`
             }
           >
             <div className={HITL_HEAD}>
               <ShieldAlert size={15} />
               <span>Persetujuan aksi</span>
             </div>
-            <div className="mb-1.5 font-semibold break-anywhere text-[#e6e6e9]">{card.permission.action}</div>
+            <div className="mb-1.5 font-semibold break-anywhere text-[#DCE7FA]">{card.permission.action}</div>
             {card.permission.resources &&
               card.permission.resources.length > 0 && (
                 <ul className="m-0 mb-1.5 pl-[18px] text-[12.5px] break-anywhere text-fog">
@@ -1979,7 +1979,7 @@ export default function AdminAgentPanel() {
                 </ul>
               )}
             {card.status === "answered" ? (
-              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#34d399]">
+              <div className="flex items-center gap-[7px] text-[13px] font-semibold text-[#00FFAA]">
                 <Check size={14} /> Keputusan terkirim:{" "}
                 {card.decision === "once"
                   ? "diizinkan sekali"
@@ -2045,17 +2045,17 @@ export default function AdminAgentPanel() {
       }}
     >
       {dragOver && (
-        <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-[rgba(0,129,251,0.12)] text-[15px] font-semibold text-[#cfe7ff]">Lepaskan file untuk melampirkan</div>
+        <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-[rgba(0,255,170,0.12)] text-[15px] font-semibold text-[#C8F7E6]">Lepaskan file untuk melampirkan</div>
       )}
       {/* Kepala chat gaya aplikasi chat umum (permintaan user
           18 Nov): judul sesi + status instance di kiri; pemilih
           sesi & tombol sesi baru di kanan. */}
-      <div className="flex flex-wrap items-center gap-3.5 border-b border-[#202026] bg-[rgba(255,255,255,0.015)] px-[18px] py-3">
+      <div className="flex flex-wrap items-center gap-3.5 border-b border-[#16296B] bg-[rgba(255,255,255,0.015)] px-[18px] py-3">
         <div className="min-w-0">
-          <div className="max-w-[430px] truncate text-[16.5px] font-[650] text-[#f4f4f6]">{sessionTitle}</div>
-          <div className="mt-0.5 flex items-center gap-[7px] text-[12.5px] text-[#9a9aa6]">
+          <div className="max-w-[430px] truncate text-[16.5px] font-[650] text-[#EEF4FF]">{sessionTitle}</div>
+          <div className="mt-0.5 flex items-center gap-[7px] text-[12.5px] text-[#93A9D1]">
             <span
-              className={`h-2 w-2 flex-none rounded-full ${instStatus === "ok" ? "bg-[#34d399]" : instStatus === "unreachable" ? "bg-[#f87171]" : "bg-[#55555f]"}`}
+              className={`h-2 w-2 flex-none rounded-full ${instStatus === "ok" ? "bg-[#00FFAA]" : instStatus === "unreachable" ? "bg-[#f87171]" : "bg-[#4C63A0]"}`}
               aria-hidden="true"
             />
             {instStatus === null
@@ -2086,21 +2086,21 @@ export default function AdminAgentPanel() {
                   className="fixed inset-0 z-40"
                   onClick={() => setSessOpen(false)}
                 />
-                <div className="absolute top-[calc(100%+8px)] right-0 z-[41] max-h-[380px] w-[min(360px,86vw)] overflow-y-auto rounded-xl border border-[#2a2a30] bg-panel p-2 shadow-[0_18px_48px_rgba(0,0,0,0.55)]">
-                  <div className="px-2 pt-1.5 pb-2 text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9a9aa4]">Sesi chat tersimpan</div>
+                <div className="absolute top-[calc(100%+8px)] right-0 z-[41] max-h-[380px] w-[min(360px,86vw)] overflow-y-auto rounded-xl border border-[#22336A] bg-panel p-2 shadow-[0_18px_48px_rgba(0,0,0,0.55)]">
+                  <div className="px-2 pt-1.5 pb-2 text-[11px] font-semibold tracking-[0.08em] uppercase text-[#93A9D1]">Sesi chat tersimpan</div>
                   {sessions.length === 0 && (
-                    <div className="px-2 pt-1 pb-2.5 text-[13px] text-[#9a9aa4]">
+                    <div className="px-2 pt-1 pb-2.5 text-[13px] text-[#93A9D1]">
                       Belum ada sesi tersimpan.
                     </div>
                   )}
                   {sessions.map((s) => (
                     <div
                       key={s.id}
-                      className={`flex items-center gap-1.5 rounded-[9px] px-0.5 py-0.5 pl-1 ${s.id === currentSession ? "bg-[#17171b] shadow-[inset_2px_0_0_#0081fb]" : "hover:bg-[#17171b]"}`}
+                      className={`flex items-center gap-1.5 rounded-[9px] px-0.5 py-0.5 pl-1 ${s.id === currentSession ? "bg-[#11245F] shadow-[inset_2px_0_0_#00FFAA]" : "hover:bg-[#11245F]"}`}
                     >
                       <button
                         type="button"
-                        className="flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-px border-none px-1 py-1.5 text-left text-[#e8e8ec] [background:none]"
+                        className="flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-px border-none px-1 py-1.5 text-left text-[#DCE7FA] [background:none]"
                         disabled={busy}
                         onClick={() => {
                           setSessOpen(false);
@@ -2111,7 +2111,7 @@ export default function AdminAgentPanel() {
                         <span className="max-w-full truncate text-[13px] font-medium">
                           {s.title || s.id}
                         </span>
-                        <span className="text-[11px] text-[#9a9aa4]">
+                        <span className="text-[11px] text-[#93A9D1]">
                           {formatSessionTime(s.time?.updated)}
                         </span>
                       </button>
@@ -2167,7 +2167,7 @@ export default function AdminAgentPanel() {
       </div>
 
       <div
-        className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto border-b border-[#202026] px-[18px] py-4 [scrollbar-width:thin] [scrollbar-color:#2e2e35_transparent] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-[99px] [&::-webkit-scrollbar-thumb]:bg-[#2e2e35] [&::-webkit-scrollbar-track]:bg-transparent"
+        className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto border-b border-[#16296B] px-[18px] py-4 [scrollbar-width:thin] [scrollbar-color:#2C3F78_transparent] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-[99px] [&::-webkit-scrollbar-thumb]:bg-[#2C3F78] [&::-webkit-scrollbar-track]:bg-transparent"
         ref={logRef}
         onScroll={(e) => {
           const el = e.currentTarget;
@@ -2200,14 +2200,14 @@ export default function AdminAgentPanel() {
                 {m.attachments && m.attachments.length > 0 && (
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {m.attachments.map((a, j) => (
-                      <span key={j} className="inline-flex items-center gap-[5px] rounded-full border border-line bg-[rgba(255,255,255,0.05)] px-[9px] py-[3px] text-xs text-[#c9c9d2]">
+                      <span key={j} className="inline-flex items-center gap-[5px] rounded-full border border-line bg-[rgba(255,255,255,0.05)] px-[9px] py-[3px] text-xs text-[#AFC2E6]">
                         <Paperclip size={12} /> {a.name} ·{" "}
                         {formatSize(a.size)}
                       </span>
                     ))}
                   </div>
                 )}
-                <div className="mt-[5px] text-[11.5px] text-[#77777f]">
+                <div className="mt-[5px] text-[11.5px] text-[#67799F]">
                   <span>{m.timestamp}</span>
                   {m.meta && (
                     <span>
@@ -2293,7 +2293,7 @@ export default function AdminAgentPanel() {
             <button
               key={s}
               type="button"
-              className="cursor-pointer rounded-full border border-line bg-panel2 px-3 py-1.5 text-[13px] text-[#c9c9d2] hover:border-accent hover:text-white disabled:cursor-default disabled:opacity-50"
+              className="cursor-pointer rounded-full border border-line bg-panel2 px-3 py-1.5 text-[13px] text-[#AFC2E6] hover:border-accent hover:text-white disabled:cursor-default disabled:opacity-50"
               onClick={() => void send(s)}
               disabled={busy}
             >
@@ -2308,7 +2308,7 @@ export default function AdminAgentPanel() {
           {pending.map((p) => (
             <span
               key={p.localId}
-              className={`inline-flex max-w-full items-center gap-1.5 rounded-full border bg-panel2 py-1 pr-1.5 pl-2.5 text-[12.5px] ${p.status === "error" ? "border-[rgba(255,110,110,0.5)] text-[#ff9c9c]" : "border-line text-[#d7d7de]"}`}
+              className={`inline-flex max-w-full items-center gap-1.5 rounded-full border bg-panel2 py-1 pr-1.5 pl-2.5 text-[12.5px] ${p.status === "error" ? "border-[rgba(255,110,110,0.5)] text-[#ff9c9c]" : "border-line text-[#C3D2F0]"}`}
               title={p.error || p.name}
             >
               {p.status === "uploading" ? (
@@ -2319,7 +2319,7 @@ export default function AdminAgentPanel() {
                 <FileText size={13} />
               )}
               <span className="max-w-[220px] truncate">{p.name}</span>
-              <span className="text-[11.5px] text-[#8a8a92]">{formatSize(p.size)}</span>
+              <span className="text-[11.5px] text-[#8298C0]">{formatSize(p.size)}</span>
               <button
                 type="button"
                 className="inline-flex h-[18px] w-[18px] flex-none cursor-pointer items-center justify-center rounded-full border-none bg-[rgba(255,255,255,0.06)] text-inherit"
@@ -2361,7 +2361,7 @@ export default function AdminAgentPanel() {
           <Paperclip size={17} />
         </button>
         <textarea
-          className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent py-[7px] text-[15px] leading-[1.45] text-[#eeeef2] outline-none [font-family:inherit] placeholder:text-fog"
+          className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent py-[7px] text-[15px] leading-[1.45] text-[#DCE7FA] outline-none [font-family:inherit] placeholder:text-fog"
           ref={inputRef}
           value={input}
           onChange={(e) => {
@@ -2448,7 +2448,7 @@ export default function AdminAgentPanel() {
         />
       )}
       {reviewNotice && (
-        <div className="fixed bottom-[26px] left-1/2 z-[70] max-w-[min(92vw,560px)] -translate-x-1/2 rounded-full border border-[#4d3f16] bg-[#1d1a12] px-4 py-2.5 text-center text-[0.82rem] font-semibold text-[#e8cf8f] shadow-[0_16px_40px_rgba(0,0,0,0.5)]" role="status">
+        <div className="fixed bottom-[26px] left-1/2 z-[70] max-w-[min(92vw,560px)] -translate-x-1/2 rounded-full border border-[#0F3D2C] bg-[#0B2E24] px-4 py-2.5 text-center text-[0.82rem] font-semibold text-[#7CF7CF] shadow-[0_16px_40px_rgba(0,0,0,0.5)]" role="status">
           {reviewNotice}
         </div>
       )}
