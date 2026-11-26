@@ -52,9 +52,9 @@ const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
 const WAVE_BOOST = 0.45; // tambahan opasitas sel saat dilewati gelombang sapuan (0,26 -> 0,45: efek jalan dari sudut DIPERJELAS, permintaan user 30 Okt)
 const WAVE_BAND = 200; // lebar pita gelombang (px, dalam jarak diagonal dari sudut asal) — dipersempit dari 260 agar garis depannya lebih tegas
 const HOLE_MAX_W = 660; // lebar maksimum lubang tengah (px)
-const HOLE_MAX_H = 210; // tinggi maksimum lubang tengah (px)
+const HOLE_MAX_H = 470; // tinggi maksimum lubang tengah (px) — dinaikkan 26 Nov 2026: tumpukan hero kini tinggi (logo 3x di atas kata)
 const HOLE_W_RATIO = 0.86; // lebar lubang relatif ke layar (bila layar sempit)
-const HOLE_H_RATIO = 0.36; // tinggi lubang relatif ke layar
+const HOLE_H_RATIO = 0.62; // tinggi lubang relatif ke layar (0,36 -> 0,62 pada 26 Nov 2026, mengikuti HOLE_MAX_H)
 const HOLE_RADIUS = 28; // radius sudut lubang (px)
 const WAVE_TICK_MS = 110; // interval langkah gelombang sapuan (dari 80: sapuan lebih santai)
 const WAVE_GAP_MS = 3500; // jeda diam antar sapuan gelombang
@@ -772,7 +772,10 @@ export default function WonderScene({
       // ramping dari sebelumnya yang selebar seluruh kata) dan lebih
       // RENDAH, karena margin kosong di sekeliling kata tengah terasa
       // terlalu besar di layar portrait (koreksi user 31 Okt).
-      const holeCols = Math.min(4, cols);
+      // 26 Nov 2026 (user): DESKTOP dipersempit jadi 2 LAJUR saja —
+      // komposisi tengah kini logo besar (3x) + kata selebar emblem;
+      // ponsel tetap 4 lajur seperti sebelumnya.
+      const holeCols = viewW < 640 ? Math.min(4, cols) : Math.min(2, cols);
       const holeW = holeCols * CW;
       const holeHBase =
         viewW < 640
