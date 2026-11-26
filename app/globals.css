@@ -381,8 +381,8 @@ body {
   /* margin atas diperbesar sedikit (31 Okt): blok tengah digeser
      turun agar ruang di atas kata besar lebih lega.
      26 Nov 2026 (user): arahnya dibalik — tumpukan logo+kata kini
-     dinaikkan sedikit (dari +10 ke -14 = naik 24px). */
-  transform: translateY(-14px);
+     dinaikkan (dari +10 ke -34 = naik 44px; dua putaran koreksi user). */
+  transform: translateY(-34px);
 }
 
 .stage-title h1 {
@@ -660,6 +660,10 @@ h1.t-instant .t-block {
   width: min(390px, 82vw);
   aspect-ratio: 1;
   height: auto;
+  /* margin bawah negatif (user 26 Nov 2026): kata ditarik naik 38px
+     menelan ruang kosong SVG di bawah emblem — celah tampak emblem->
+     kata menyusut dari ±50px menjadi ±12px */
+  margin-bottom: -38px;
   margin-top: 10px;
   justify-self: center;
   pointer-events: none;
