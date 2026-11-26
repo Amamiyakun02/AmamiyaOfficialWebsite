@@ -4029,6 +4029,33 @@ code {
   color: #93A9D1;
   margin-top: -6px;
 }
+/* Kepala merek form login (26 Nov 2026): logo kaku + nama + label.
+   Sengaja ringkas — form pernah menjorok di layar pendek. */
+.login-brand {
+  text-align: center;
+}
+.login-brand-logo {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  margin: 0 auto 6px;
+}
+.login-brand-name {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #EEF4FF;
+  line-height: 1.15;
+}
+.login-brand-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #00BBA2;
+  margin-top: 3px;
+}
 .login-field {
   display: flex;
   flex-direction: column;

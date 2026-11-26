@@ -54,7 +54,14 @@ export default function DashboardLoginForm() {
 
   return (
     <form className="login-form" onSubmit={onSubmit}>
-      <p className="login-form-title">System Dashboard</p>
+      {/* Kepala merek di dalam form (permintaan user 26 Nov 2026):
+          logo + nama Amamiya + label Dashboard System, menggantikan
+          judul teks lama "System Dashboard". */}
+      <div className="login-brand">
+        <img src="/favicon.png" alt="" className="login-brand-logo" />
+        <p className="login-brand-name">Amamiya</p>
+        <p className="login-brand-sub">Dashboard System</p>
+      </div>
       <p className="login-form-sub">Masuk untuk mengelola sistem.</p>
       <label className="login-field">
         <span>Username</span>
