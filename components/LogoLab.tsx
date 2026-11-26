@@ -4,29 +4,101 @@ import { useState } from "react";
 
 // Halaman coba-coba logo Amamiya (SVG kaku final, disetujui user
 // 25 Nov 2026): pratinjau interaktif untuk menguji ukuran, padding,
-// dan latar sebelum logo dipakai di tempat lain. Markup SVG di bawah
-// persis file amamiya-logo-kaku-nobg.svg (3 path + 3 gradasi
+// latar, dan animasi sebelum logo dipakai di tempat lain. Markup SVG
+// di bawah persis file amamiya-logo-kaku-nobg.svg (3 path + 3 gradasi
 // #00FFAA -> #003796); LOGO_SVG adalah string aslinya untuk unduhan.
 const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"><linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><path fill-rule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z"/><path fill-rule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z"/><path fill-rule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z"/></svg>`;
 
-function LogoSvg() {
+// Animasi memakai CSS keyframes pada grup per elemen (transform-box:
+// fill-box supaya tiap elemen berputar/berskala pada porosnya sendiri)
+// + SMIL untuk aliran warna gradasi. Semua kelas diawali .logo-lab-
+// dan hanya hidup di halaman ini.
+const ANIM_CSS = `
+.logo-lab-el { transform-box: fill-box; transform-origin: center; }
+.anim-rakit .el-a { animation: lab-rakit-a calc(1.15s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-rakit .el-b { animation: lab-rakit-b calc(1.15s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.14s / var(--lab-speed, 1)) both; }
+.anim-rakit .el-c { animation: lab-rakit-c calc(1.15s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.28s / var(--lab-speed, 1)) both; }
+@keyframes lab-rakit-a { from { opacity: 0; transform: translateY(-46px) rotate(-32deg) scale(0.72); } to { opacity: 1; transform: none; } }
+@keyframes lab-rakit-b { from { opacity: 0; transform: translate(-40px, 34px) rotate(28deg) scale(0.72); } to { opacity: 1; transform: none; } }
+@keyframes lab-rakit-c { from { opacity: 0; transform: translate(40px, 34px) rotate(-28deg) scale(0.72); } to { opacity: 1; transform: none; } }
+.anim-putar { animation: lab-putar 14s linear infinite; }
+.anim-gabungan { animation: lab-putar calc(14s / var(--lab-speed, 1)) linear calc(1.45s / var(--lab-speed, 1)) infinite; }
+@keyframes lab-putar { to { transform: rotate(360deg); } }
+.anim-denyut { animation: lab-denyut 2.2s ease-in-out infinite alternate; }
+@keyframes lab-denyut { from { transform: scale(1); } to { transform: scale(1.07); } }
+.anim-melayang { animation: lab-melayang 3.2s ease-in-out infinite alternate; }
+@keyframes lab-melayang { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
+`;
+
+type AnimKey = "diam" | "rakit" | "putar" | "gabungan" | "denyut" | "melayang" | "gradasi";
+const ANIM: Record<AnimKey, { label: string; kelas: string }> = {
+  diam: { label: "Diam", kelas: "" },
+  rakit: { label: "Rakit masuk", kelas: "anim-rakit" },
+  gabungan: { label: "Rakit → Putar", kelas: "anim-rakit anim-gabungan" },
+  putar: { label: "Putar pelan", kelas: "anim-putar" },
+  denyut: { label: "Denyut", kelas: "anim-denyut" },
+  melayang: { label: "Melayang", kelas: "anim-melayang" },
+  gradasi: { label: "Gradasi mengalir", kelas: "" },
+};
+
+function LogoSvg({ anim = "diam", speed = 1 }: { anim?: AnimKey; speed?: number }) {
+  const grad = anim === "gradasi";
+  const dur = `${(6 / speed).toFixed(2)}s`;
   return (
-    <svg viewBox="0 0 1600 1600" className="block h-full w-full" role="img" aria-label="Logo Amamiya">
+    <svg
+      viewBox="0 0 1600 1600"
+      className={`block h-full w-full ${ANIM[anim].kelas}`}
+      style={
+        {
+          "--lab-speed": speed,
+          animationDuration:
+            anim === "putar"
+              ? `${14 / speed}s`
+              : anim === "gabungan"
+                ? undefined
+              : anim === "denyut"
+                ? `${2.2 / speed}s`
+                : anim === "melayang"
+                  ? `${3.2 / speed}s`
+                  : undefined,
+        } as React.CSSProperties
+      }
+      role="img"
+      aria-label="Logo Amamiya"
+    >
       <linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa" />
-        <stop offset="1" stopColor="#003796" />
+        <stop offset="0" stopColor="#00ffaa">
+          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
+        </stop>
+        <stop offset="1" stopColor="#003796">
+          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
+        </stop>
       </linearGradient>
       <linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa" />
-        <stop offset="1" stopColor="#003796" />
+        <stop offset="0" stopColor="#00ffaa">
+          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
+        </stop>
+        <stop offset="1" stopColor="#003796">
+          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
+        </stop>
       </linearGradient>
       <linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa" />
-        <stop offset="1" stopColor="#003796" />
+        <stop offset="0" stopColor="#00ffaa">
+          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
+        </stop>
+        <stop offset="1" stopColor="#003796">
+          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
+        </stop>
       </linearGradient>
-      <path fillRule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z" />
-      <path fillRule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z" />
-      <path fillRule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
+      <g className="logo-lab-el el-a">
+        <path fillRule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z" />
+      </g>
+      <g className="logo-lab-el el-b">
+        <path fillRule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z" />
+      </g>
+      <g className="logo-lab-el el-c">
+        <path fillRule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
+      </g>
     </svg>
   );
 }
@@ -69,6 +141,9 @@ export default function LogoLab() {
   const [size, setSize] = useState(320);
   const [padding, setPadding] = useState(8);
   const [bg, setBg] = useState<BgKey>("hitam");
+  const [anim, setAnim] = useState<AnimKey>("gabungan");
+  const [speed, setSpeed] = useState(1);
+  const [replay, setReplay] = useState(0);
 
   const unduhSvg = () =>
     unduh("amamiya-logo-coba.svg", new Blob([buildExportSvg(padding, BG[bg].hex)], { type: "image/svg+xml" }));
@@ -88,13 +163,19 @@ export default function LogoLab() {
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   };
 
+  const chip = (aktif: boolean) =>
+    `cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold ${
+      aktif ? "border-accent bg-accent text-[#052A1E]" : "border-line bg-transparent text-fog hover:text-paper"
+    }`;
+
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
+      <style>{ANIM_CSS}</style>
       <div className="mx-auto max-w-[1100px] px-5 py-8">
         <h1 className="text-[28px] font-bold text-paper">Logo Lab</h1>
         <p className="mt-1 max-w-[640px] text-sm leading-relaxed text-fog">
-          Halaman coba-coba untuk SVG logo Amamiya: atur ukuran, padding, dan latar untuk melihat
-          hasilnya sebelum dipakai. Tidak ada tautan ke sini dari navbar — halaman ini hanya
+          Halaman coba-coba untuk SVG logo Amamiya: atur ukuran, padding, latar, dan animasi untuk
+          melihat hasilnya sebelum dipakai. Tidak ada tautan ke sini dari navbar — halaman ini hanya
           dijangkau lewat URL langsung.
         </p>
 
@@ -104,13 +185,45 @@ export default function LogoLab() {
             className="flex items-center justify-center rounded-2xl border border-line2 p-6"
             style={{ background: BG[bg].css, minHeight: 420 }}
           >
-            <div style={{ width: size, height: size, padding: `${padding}%` }} className="box-border">
-              <LogoSvg />
+            <div
+              key={`${anim}-${replay}`}
+              style={{ width: size, height: size, padding: `${padding}%` }}
+              className="box-border"
+            >
+              <LogoSvg anim={anim} speed={speed} />
             </div>
           </div>
 
           {/* Kontrol */}
           <div className="flex flex-col gap-5 rounded-2xl border border-line2 bg-panel p-5">
+            <div>
+              <span className="mb-1.5 block text-[13px] font-semibold text-paper">Animasi</span>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(ANIM) as AnimKey[]).map((k) => (
+                  <button key={k} onClick={() => setAnim(k)} className={chip(anim === k)}>
+                    {ANIM[k].label}
+                  </button>
+                ))}
+              </div>
+              <label className="mt-3 block">
+                <span className="mb-1 flex justify-between text-xs text-fog">
+                  Kecepatan <span>{speed.toFixed(2)}×</span>
+                </span>
+                <input
+                  type="range" min={0.25} max={2.5} step={0.25} value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  className="w-full accent-[#00FFAA]"
+                />
+              </label>
+              {(anim === "rakit" || anim === "gabungan") && (
+                <button
+                  onClick={() => setReplay((r) => r + 1)}
+                  className="mt-1 cursor-pointer rounded-lg border border-line bg-transparent px-3 py-1.5 text-xs font-semibold text-paper hover:border-steel"
+                >
+                  Putar ulang dari awal
+                </button>
+              )}
+            </div>
             <label className="block">
               <span className="mb-1.5 flex justify-between text-[13px] font-semibold text-paper">
                 Ukuran pratinjau <span className="text-fog">{size} px</span>
@@ -138,15 +251,7 @@ export default function LogoLab() {
               <span className="mb-1.5 block text-[13px] font-semibold text-paper">Latar</span>
               <div className="flex flex-wrap gap-1.5">
                 {(Object.keys(BG) as BgKey[]).map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => setBg(k)}
-                    className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                      bg === k
-                        ? "border-accent bg-accent text-[#052A1E]"
-                        : "border-line bg-transparent text-fog hover:text-paper"
-                    }`}
-                  >
+                  <button key={k} onClick={() => setBg(k)} className={chip(bg === k)}>
                     {BG[k].label}
                   </button>
                 ))}
@@ -167,6 +272,7 @@ export default function LogoLab() {
               </button>
               <span className="text-xs leading-relaxed text-dim">
                 Unduhan mengikuti padding + latar yang sedang dipilih (latar Transparan = PNG tanpa latar).
+                Animasi hanya untuk pratinjau di halaman ini.
               </span>
             </div>
           </div>
