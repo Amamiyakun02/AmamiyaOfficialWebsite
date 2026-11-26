@@ -10,9 +10,10 @@ import { useState } from "react";
 const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"><linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><path fill-rule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z"/><path fill-rule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z"/><path fill-rule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z"/></svg>`;
 
 // Animasi memakai CSS keyframes pada grup per elemen (transform-box:
-// fill-box supaya tiap elemen berputar/berskala pada porosnya sendiri)
-// + SMIL untuk aliran warna gradasi. Semua kelas diawali .logo-lab-
-// dan hanya hidup di halaman ini.
+// fill-box supaya tiap elemen berputar/berskala pada porosnya sendiri).
+// Fokus animasi (keputusan user 26 Nov 2026): keluarga "rakit" (masuk
+// terakit, beberapa varian) + "putar pelan". Semua kelas hanya hidup
+// di halaman ini.
 const ANIM_CSS = `
 .logo-lab-el { transform-box: fill-box; transform-origin: center; }
 .anim-rakit .el-a { animation: lab-rakit-a calc(1.15s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
@@ -21,75 +22,71 @@ const ANIM_CSS = `
 @keyframes lab-rakit-a { from { opacity: 0; transform: translateY(-46px) rotate(-32deg) scale(0.72); } to { opacity: 1; transform: none; } }
 @keyframes lab-rakit-b { from { opacity: 0; transform: translate(-40px, 34px) rotate(28deg) scale(0.72); } to { opacity: 1; transform: none; } }
 @keyframes lab-rakit-c { from { opacity: 0; transform: translate(40px, 34px) rotate(-28deg) scale(0.72); } to { opacity: 1; transform: none; } }
-.anim-putar { animation: lab-putar 14s linear infinite; }
-.anim-gabungan { animation: lab-putar calc(14s / var(--lab-speed, 1)) linear calc(1.45s / var(--lab-speed, 1)) infinite; }
+.logo-lab-spin { transform-box: fill-box; transform-origin: center; }
+.anim-putar .logo-lab-spin { animation: lab-putar calc(14s / var(--lab-speed, 1)) linear infinite; }
+.anim-gabungan .logo-lab-spin { animation: lab-putar calc(14s / var(--lab-speed, 1)) linear calc(1.45s / var(--lab-speed, 1)) infinite; }
 @keyframes lab-putar { to { transform: rotate(360deg); } }
-.anim-denyut { animation: lab-denyut 2.2s ease-in-out infinite alternate; }
-@keyframes lab-denyut { from { transform: scale(1); } to { transform: scale(1.07); } }
-.anim-melayang { animation: lab-melayang 3.2s ease-in-out infinite alternate; }
-@keyframes lab-melayang { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
+.anim-rakit-putar .el-a { animation: lab-swirl-a calc(1.3s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-rakit-putar .el-b { animation: lab-swirl-b calc(1.3s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.13s / var(--lab-speed, 1)) both; }
+.anim-rakit-putar .el-c { animation: lab-swirl-c calc(1.3s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.26s / var(--lab-speed, 1)) both; }
+@keyframes lab-swirl-a { from { opacity: 0; transform: translateY(-300px) rotate(-120deg) scale(0.5); } to { opacity: 1; transform: none; } }
+@keyframes lab-swirl-b { from { opacity: 0; transform: translate(-260px, 190px) rotate(120deg) scale(0.5); } to { opacity: 1; transform: none; } }
+@keyframes lab-swirl-c { from { opacity: 0; transform: translate(260px, 190px) rotate(-120deg) scale(0.5); } to { opacity: 1; transform: none; } }
+.anim-rakit-jatuh .el-a { animation: lab-jatuh-a calc(1.05s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-rakit-jatuh .el-b { animation: lab-jatuh-b calc(1.05s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.16s / var(--lab-speed, 1)) both; }
+.anim-rakit-jatuh .el-c { animation: lab-jatuh-c calc(1.05s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.32s / var(--lab-speed, 1)) both; }
+@keyframes lab-jatuh-a { 0% { opacity: 0; transform: translateY(-430px); } 55% { opacity: 1; transform: translateY(14px); } 78% { transform: translateY(-7px); } 100% { opacity: 1; transform: none; } }
+@keyframes lab-jatuh-b { 0% { opacity: 0; transform: translateY(-430px); } 55% { opacity: 1; transform: translateY(14px); } 78% { transform: translateY(-7px); } 100% { opacity: 1; transform: none; } }
+@keyframes lab-jatuh-c { 0% { opacity: 0; transform: translateY(-430px); } 55% { opacity: 1; transform: translateY(14px); } 78% { transform: translateY(-7px); } 100% { opacity: 1; transform: none; } }
+.anim-rakit-pusat .el-a { animation: lab-pusat-a calc(1.1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-rakit-pusat .el-b { animation: lab-pusat-b calc(1.1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.1s / var(--lab-speed, 1)) both; }
+.anim-rakit-pusat .el-c { animation: lab-pusat-c calc(1.1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.2s / var(--lab-speed, 1)) both; }
+@keyframes lab-pusat-a { from { opacity: 0; transform: translateY(330px) scale(0.35); } to { opacity: 1; transform: none; } }
+@keyframes lab-pusat-b { from { opacity: 0; transform: translate(320px, -185px) scale(0.35); } to { opacity: 1; transform: none; } }
+@keyframes lab-pusat-c { from { opacity: 0; transform: translate(-295px, -170px) scale(0.35); } to { opacity: 1; transform: none; } }
+.anim-rakit-geser .el-a { animation: lab-geser-a calc(1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-rakit-geser .el-b { animation: lab-geser-b calc(1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.14s / var(--lab-speed, 1)) both; }
+.anim-rakit-geser .el-c { animation: lab-geser-c calc(1s / var(--lab-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc(0.28s / var(--lab-speed, 1)) both; }
+@keyframes lab-geser-a { from { opacity: 0; transform: translateY(-380px); } to { opacity: 1; transform: none; } }
+@keyframes lab-geser-b { from { opacity: 0; transform: translateX(-380px); } to { opacity: 1; transform: none; } }
+@keyframes lab-geser-c { from { opacity: 0; transform: translateX(380px); } to { opacity: 1; transform: none; } }
 `;
 
-type AnimKey = "diam" | "rakit" | "putar" | "gabungan" | "denyut" | "melayang" | "gradasi";
+type AnimKey =
+  | "diam" | "rakit" | "rakit-putar" | "rakit-jatuh" | "rakit-pusat" | "rakit-geser" | "putar" | "gabungan";
 const ANIM: Record<AnimKey, { label: string; kelas: string }> = {
   diam: { label: "Diam", kelas: "" },
   rakit: { label: "Rakit masuk", kelas: "anim-rakit" },
-  gabungan: { label: "Rakit → Putar", kelas: "anim-rakit anim-gabungan" },
+  "rakit-putar": { label: "Rakit berputar", kelas: "anim-rakit-putar" },
+  "rakit-jatuh": { label: "Rakit jatuh", kelas: "anim-rakit-jatuh" },
+  "rakit-pusat": { label: "Rakit dari pusat", kelas: "anim-rakit-pusat" },
+  "rakit-geser": { label: "Rakit geser", kelas: "anim-rakit-geser" },
   putar: { label: "Putar pelan", kelas: "anim-putar" },
-  denyut: { label: "Denyut", kelas: "anim-denyut" },
-  melayang: { label: "Melayang", kelas: "anim-melayang" },
-  gradasi: { label: "Gradasi mengalir", kelas: "" },
+  gabungan: { label: "Rakit → Putar", kelas: "anim-rakit anim-gabungan" },
 };
 
 function LogoSvg({ anim = "diam", speed = 1 }: { anim?: AnimKey; speed?: number }) {
-  const grad = anim === "gradasi";
-  const dur = `${(6 / speed).toFixed(2)}s`;
   return (
     <svg
       viewBox="0 0 1600 1600"
       className={`block h-full w-full ${ANIM[anim].kelas}`}
-      style={
-        {
-          "--lab-speed": speed,
-          animationDuration:
-            anim === "putar"
-              ? `${14 / speed}s`
-              : anim === "gabungan"
-                ? undefined
-              : anim === "denyut"
-                ? `${2.2 / speed}s`
-                : anim === "melayang"
-                  ? `${3.2 / speed}s`
-                  : undefined,
-        } as React.CSSProperties
-      }
+      style={{ "--lab-speed": speed } as React.CSSProperties}
       role="img"
       aria-label="Logo Amamiya"
     >
       <linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa">
-          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
-        </stop>
-        <stop offset="1" stopColor="#003796">
-          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
-        </stop>
+        <stop offset="0" stopColor="#00ffaa" />
+        <stop offset="1" stopColor="#003796" />
       </linearGradient>
       <linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa">
-          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
-        </stop>
-        <stop offset="1" stopColor="#003796">
-          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
-        </stop>
+        <stop offset="0" stopColor="#00ffaa" />
+        <stop offset="1" stopColor="#003796" />
       </linearGradient>
       <linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028">
-        <stop offset="0" stopColor="#00ffaa">
-          {grad && <animate attributeName="stop-color" values="#00ffaa;#5eead0;#00ffaa" dur={dur} repeatCount="indefinite" />}
-        </stop>
-        <stop offset="1" stopColor="#003796">
-          {grad && <animate attributeName="stop-color" values="#003796;#006e9b;#003796" dur={dur} repeatCount="indefinite" />}
-        </stop>
+        <stop offset="0" stopColor="#00ffaa" />
+        <stop offset="1" stopColor="#003796" />
       </linearGradient>
+      <g className="logo-lab-spin">
       <g className="logo-lab-el el-a">
         <path fillRule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z" />
       </g>
@@ -98,6 +95,7 @@ function LogoSvg({ anim = "diam", speed = 1 }: { anim?: AnimKey; speed?: number 
       </g>
       <g className="logo-lab-el el-c">
         <path fillRule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
+      </g>
       </g>
     </svg>
   );
@@ -215,7 +213,7 @@ export default function LogoLab() {
                   className="w-full accent-[#00FFAA]"
                 />
               </label>
-              {(anim === "rakit" || anim === "gabungan") && (
+              {anim !== "diam" && anim !== "putar" && (
                 <button
                   onClick={() => setReplay((r) => r + 1)}
                   className="mt-1 cursor-pointer rounded-lg border border-line bg-transparent px-3 py-1.5 text-xs font-semibold text-paper hover:border-steel"
