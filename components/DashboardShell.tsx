@@ -283,14 +283,14 @@ export default function DashboardShell() {
         <div className={`flex items-center gap-[11px] px-2 py-0.5 max-[920px]:p-0 ${sideCollapsed ? "min-[921px]:flex-col min-[921px]:gap-3 min-[921px]:px-0" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="flex-none rounded-lg border border-line"
+            className="flex-none rounded-lg"
             src="/favicon.png"
             alt=""
-            width={30}
-            height={30}
+            width={36}
+            height={36}
           />
           <div className={`flex flex-col leading-[1.25] ${sideCollapsed ? "min-[921px]:hidden" : ""}`}>
-            <span className="text-[14.5px] font-bold tracking-[-0.01em] text-[#EEF4FF]">Amamiya</span>
+            <span className="text-[14.5px] font-bold tracking-[-0.01em] text-[#EEF4FF]">AMAMIYA</span>
             <span className="text-[11.5px] text-[#8298C0]">System Dashboard</span>
           </div>
           <button
