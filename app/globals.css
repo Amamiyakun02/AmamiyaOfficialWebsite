@@ -379,8 +379,10 @@ body {
   text-align: center;
   pointer-events: none;
   /* margin atas diperbesar sedikit (31 Okt): blok tengah digeser
-     turun agar ruang di atas kata besar lebih lega */
-  transform: translateY(10px);
+     turun agar ruang di atas kata besar lebih lega.
+     26 Nov 2026 (user): arahnya dibalik — tumpukan logo+kata kini
+     dinaikkan sedikit (dari +10 ke -14 = naik 24px). */
+  transform: translateY(-14px);
 }
 
 .stage-title h1 {
@@ -399,7 +401,7 @@ body {
      lebar emblem logo di atasnya (logo diperbesar 3x = kotak 354px,
      emblem tampak ±284px; kata = 7 slot x 0,95em = 6,65em, jadi font
      ±43px) dan lubang menyempit jadi 2 lajur. */
-  font-size: clamp(24px, 3.05vw, 43px);
+  font-size: clamp(26px, 3.36vw, 47px);
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: 0;
@@ -653,8 +655,9 @@ h1.t-instant .t-block {
    (mulai +0,1 dtk, selesai ±1,26 dtk) -> KATA besar dibangun di
    bawah logo (jenjang huruf ditunda +1,35 dtk) -> CTA (+2,7 dtk). */
 .hero-logo {
-  /* 118px -> 354px (3x, user 26 Nov 2026); dibatasi 82vw di layar sempit */
-  width: min(354px, 82vw);
+  /* 118px -> 354px (3x) -> 390px (sedikit lebih besar lagi, user
+     26 Nov 2026); dibatasi 82vw di layar sempit */
+  width: min(390px, 82vw);
   aspect-ratio: 1;
   height: auto;
   margin-top: 10px;
