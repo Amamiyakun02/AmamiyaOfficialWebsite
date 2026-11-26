@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Archivo_Black } from "next/font/google";
-import FxCards from "./FxCards";
+import HeroLogo from "./HeroLogo";
 import HeroCtas from "./HeroCtas";
 
 // Font balok untuk kata besar di tengah lubang (permintaan user 31 Okt)
@@ -618,16 +618,16 @@ export default function WonderScene({
   }, []);
 
   // Hover huruf aktif hanya setelah seluruh intro selesai dimainkan.
-  // Durasi total memakai rumus yang sama persis dengan SectionTitle
-  // (620 + jumlah huruf x jenjang + 150) agar intro AMAMIYA dan intro
-  // judul section satu irama (penyelarasan 16 Nov).
+  // Durasi total memakai rumus SectionTitle (620 + jumlah huruf x
+  // jenjang + 150) DITAMBAH 1350 ms tunggu logo selesai terakit —
+  // sejak 26 Nov 2026 kata dibangun SETELAH logo (lihat globals.css).
   useEffect(() => {
     if (!titlePlay) return;
     if (reducedMotion) {
       setTitleReady(true);
       return;
     }
-    const t = window.setTimeout(() => setTitleReady(true), 620 + 7 * 85 + 150);
+    const t = window.setTimeout(() => setTitleReady(true), 1350 + 620 + 7 * 85 + 150);
     return () => window.clearTimeout(t);
   }, [titlePlay, reducedMotion]);
 
@@ -3001,10 +3001,11 @@ export default function WonderScene({
     <main className="stage">
       <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" />
 
-      {/* Di dalam lubang grid: kata besar AMAMIYA berfont balok + cip
-          efek + tombol aksi pertama. (Pill status & teks peran dihapus
-          31 Okt; tombol CTA kembali 2 Nov atas pilihan user, bentuknya
-          kini baris pil ringkas di bawah cip — lihat HeroCtas.) */}
+      {/* Di dalam lubang grid: kata besar AMAMIYA berfont balok + logo
+          Amamiya (pengganti cip efek sejak 26 Nov 2026) + tombol aksi
+          pertama. (Pill status & teks peran dihapus 31 Okt; tombol CTA
+          kembali 2 Nov atas pilihan user, bentuknya kini baris pil
+          ringkas di bawah logo — lihat HeroCtas.) */}
       <div
         className={`stage-title ${blockFont.variable}${titlePlay ? " title-on" : ""}`}
       >
@@ -3013,6 +3014,10 @@ export default function WonderScene({
           belowChips
         ) : (
           <>
+            {/* Logo Amamiya masuk PERTAMA (terakit acak), kata besar
+                menyusul di BAWAHNYA — alur entrance pilihan user
+                26 Nov 2026: kolom grid -> logo -> kata -> CTA. */}
+            <HeroLogo />
             <h1
               className={
                 !titlePlay
@@ -3029,8 +3034,6 @@ export default function WonderScene({
             >
               <TitleWord enabled={mouseOn && !reducedMotion && titleReady} />
             </h1>
-            {/* 3 ikon efek berjejer tepat di bawah kata besar (31 Okt) */}
-            <FxCards />
             {/* Tombol aksi pertama (2 Nov, pilihan user): Proyek + Assistant + CV.
                 Halaman login dashboard menggantinya dengan form (belowChips). */}
             {belowChips ?? <HeroCtas />}

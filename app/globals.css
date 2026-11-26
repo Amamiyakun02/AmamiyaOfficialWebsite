@@ -483,15 +483,15 @@ h1.t-pre .t-char {
 }
 h1.t-play .t-char {
   animation: tCharIn 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 h1.t-play .t-dots {
   animation: tDots 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 h1.t-play .t-block {
   animation: tBlock 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 h1.t-instant .t-dots,
 h1.t-instant .t-block {
@@ -637,6 +637,58 @@ h1.t-instant .t-block {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* LOGO AMAMIYA DI HERO (26 Nov 2026) — menggantikan cip elemen kosmis
+   (.fx-cards di atas kini tidak dipakai lagi, aturannya dibiarkan
+   sebagai jaring pengaman sesuai kebiasaan berkas ini). Logo masuk
+   TERAKIT dengan salah satu dari 3 varian yang dipilih acak per muat
+   halaman (komponen HeroLogo): rakit masuk / rakit jatuh / rakit
+   geser — keyframes yang sama dengan Logo Lab, digerbang .title-on.
+   Alur entrance (user 26 Nov 2026): kolom grid -> LOGO terakit
+   (mulai +0,1 dtk, selesai ±1,26 dtk) -> KATA besar dibangun di
+   bawah logo (jenjang huruf ditunda +1,35 dtk) -> CTA (+2,7 dtk). */
+.hero-logo {
+  width: 118px;
+  height: 118px;
+  margin-top: 10px;
+  justify-self: center;
+  pointer-events: none;
+}
+.hero-logo-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero-logo-el {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.stage-title:not(.title-on) .hero-logo-el,
+.hero-logo:not(.hero-logo-rakit):not(.hero-logo-jatuh):not(.hero-logo-geser) .hero-logo-el {
+  opacity: 0;
+}
+.stage-title.title-on .hero-logo-rakit .el-a { animation: heroRakitA 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
+.stage-title.title-on .hero-logo-rakit .el-b { animation: heroRakitB 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.23s both; }
+.stage-title.title-on .hero-logo-rakit .el-c { animation: heroRakitC 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both; }
+@keyframes heroRakitA { from { opacity: 0; transform: translateY(-46px) rotate(-32deg) scale(0.72); } to { opacity: 1; transform: none; } }
+@keyframes heroRakitB { from { opacity: 0; transform: translate(-40px, 34px) rotate(28deg) scale(0.72); } to { opacity: 1; transform: none; } }
+@keyframes heroRakitC { from { opacity: 0; transform: translate(40px, 34px) rotate(-28deg) scale(0.72); } to { opacity: 1; transform: none; } }
+.stage-title.title-on .hero-logo-jatuh .el-a { animation: heroJatuh 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
+.stage-title.title-on .hero-logo-jatuh .el-b { animation: heroJatuh 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both; }
+.stage-title.title-on .hero-logo-jatuh .el-c { animation: heroJatuh 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.38s both; }
+@keyframes heroJatuh { 0% { opacity: 0; transform: translateY(-430px); } 55% { opacity: 1; transform: translateY(14px); } 78% { transform: translateY(-7px); } 100% { opacity: 1; transform: none; } }
+.stage-title.title-on .hero-logo-geser .el-a { animation: heroGeserA 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
+.stage-title.title-on .hero-logo-geser .el-b { animation: heroGeserB 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.23s both; }
+.stage-title.title-on .hero-logo-geser .el-c { animation: heroGeserC 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both; }
+@keyframes heroGeserA { from { opacity: 0; transform: translateY(-380px); } to { opacity: 1; transform: none; } }
+@keyframes heroGeserB { from { opacity: 0; transform: translateX(-380px); } to { opacity: 1; transform: none; } }
+@keyframes heroGeserC { from { opacity: 0; transform: translateX(380px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .stage-title .hero-logo-el {
+    opacity: 1 !important;
+    animation: none !important;
+  }
 }
 
 code {
@@ -2724,15 +2776,15 @@ code {
 }
 .st-title.st-play .t-char {
   animation: tCharIn 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 .st-title.st-play .t-dots {
   animation: tDots 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 .st-title.st-play .t-block {
   animation: tBlock 0.6s ease both;
-  animation-delay: calc(var(--i) * var(--sd, 85ms));
+  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
 }
 .st-title.st-instant .t-dots,
 .st-title.st-instant .t-block {
@@ -3684,15 +3736,15 @@ code {
     padding-top: 70px;
   }
 }
-/* Muncul terakhir: setelah kata + cip selesai masuk (gerbang .title-on,
-   pola yang sama dengan .fx-card), pudar + naik lembut tanpa glitch. */
+/* Muncul terakhir: setelah logo terakit + kata selesai dibangun
+   (gerbang .title-on), pudar + naik lembut tanpa glitch. */
 .stage-title:not(.title-on) .hero-ctas {
   opacity: 0;
   pointer-events: none;
 }
 .stage-title.title-on .hero-ctas {
   animation: chipIn 0.5s ease backwards;
-  animation-delay: 1.85s;
+  animation-delay: 2.7s;
 }
 @media (prefers-reduced-motion: reduce) {
   .stage-title .hero-ctas {
