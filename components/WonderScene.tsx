@@ -788,11 +788,35 @@ export default function WonderScene({
       // ikut dikosongkan (jarak pas, tidak terlalu jauh — koreksi
       // user putaran kedua); form duduk tepat di tengah lubang.
       let holeH = holeHBase;
+      let holeYOff: number | null = null;
       if (loginMode) {
         const formEl =
           cvs!.parentElement?.querySelector<HTMLElement>(".login-form");
         const fh = formEl?.offsetHeight ?? 0;
         if (fh > 0) holeH = fh + 2 * CH;
+      } else if (viewW >= 640) {
+        // Beranda desktop (user 26 Nov 2026): lubang MENGIKUTI tumpukan
+        // hero yang diukur langsung — dari puncak TAMPAK emblem logo
+        // (kotak SVG-nya punya ruang kosong 288/1600 di atas emblem)
+        // sampai bawah tombol CTA, masing-masing + 0,55 baris napas.
+        // Sebelumnya tinggi lubang tetap (maks 480px) menyisakan pita
+        // kosong lebar di atas logo yang diminta user tetap diisi kata
+        // grid. Pola ukur DOM yang sama dengan mode login di atas;
+        // bila elemen tidak ditemukan, kembali ke rumus dasar.
+        const parent = cvs!.parentElement;
+        const logoEl = parent?.querySelector<HTMLElement>(".hero-logo");
+        const ctaEl = parent?.querySelector<HTMLElement>(".hero-ctas");
+        if (logoEl && ctaEl) {
+          const base = cvs!.getBoundingClientRect();
+          const lr = logoEl.getBoundingClientRect();
+          const cr = ctaEl.getBoundingClientRect();
+          const top = lr.top - base.top + lr.height * (288 / 1600) - CH * 0.55;
+          const bottom = cr.bottom - base.top + CH * 0.55;
+          if (bottom > top + 120) {
+            holeH = bottom - top;
+            holeYOff = top;
+          }
+        }
       }
       // (Ponsel: lubang WAJIB lebih tinggi dari blok judul + ikon
       // (±50px) tapi tidak kelewat tinggi — rumus persen murni pernah
@@ -806,7 +830,7 @@ export default function WonderScene({
       // keluar lubang dan menimpa baris grid. Lantai ini memastikan
       // lubang tidak pernah lebih kecil dari isinya.)
       const holeX = CW + ((cols - holeCols) / 2) * CW;
-      const holeY = (viewH - holeH) / 2;
+      const holeY = holeYOff ?? (viewH - holeH) / 2;
       const inHole = (px: number, py: number) => {
         if (px < holeX || px > holeX + holeW || py < holeY || py > holeY + holeH)
           return false;
