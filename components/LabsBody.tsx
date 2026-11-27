@@ -181,7 +181,7 @@ export default function LabsBody() {
           <p className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
             <KataRender
               kata="AMAMIYA"
-              mulai={1.35}
+              mulai={0.95}
               titik="rgba(238,238,248,0.95)"
               blokTerang="#C3D2F0"
               blokGelap="#8298C0"
@@ -190,7 +190,7 @@ export default function LabsBody() {
           <p className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
-              mulai={2.15}
+              mulai={1.8}
               titik="rgba(0,187,162,0.95)"
               blokTerang="#00BBA2"
               blokGelap="#00675A"
