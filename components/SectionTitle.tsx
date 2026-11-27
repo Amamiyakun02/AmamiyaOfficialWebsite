@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 
 // Judul section dengan animasi tampil seperti header section di
 // halaman Wonder (permintaan user 31 Okt, dari video referensi Meta):
@@ -84,7 +84,8 @@ export default function SectionTitle({ text }: { text: string }) {
     >
       <span aria-hidden="true">
         {words.map((word, wi) => (
-          <span key={wi} className="st-word">
+          <Fragment key={wi}>
+          <span className="st-word">
             {word.split("").map((ch, ci) => {
               const i = idx++;
               return (
@@ -99,8 +100,9 @@ export default function SectionTitle({ text }: { text: string }) {
                 </span>
               );
             })}
-            {wi < words.length - 1 ? " " : null}
           </span>
+          {wi < words.length - 1 ? " " : null}
+          </Fragment>
         ))}
       </span>
     </h2>
