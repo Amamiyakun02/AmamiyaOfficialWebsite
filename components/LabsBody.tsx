@@ -32,11 +32,11 @@ export default function LabsBody() {
             className="absolute -top-[0.25em] -left-[0.1em] h-[2.5em] w-[2.5em] max-w-none"
           />
         </div>
-        <div className="ml-[0.12em] flex h-[2em] flex-col justify-between">
+        <div className="ml-[0.12em] flex h-[2em] translate-y-[0.1em] flex-col justify-between">
           <p className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
             AMAMIYA
           </p>
-          <p className="m-0 text-[1em] leading-none font-bold tracking-[0.42em] text-accent2">
+          <p className="m-0 text-[1em] leading-none font-bold tracking-[0.16em] text-accent2">
             LABS
           </p>
         </div>
