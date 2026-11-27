@@ -46,7 +46,7 @@ const HEAT_RY = 57; // (idem)
 // MENYAMPING tegak lurus arah gerak kursor dalam radius petak huruf.
 const RIPPLE_R = 7; // radius gelombang: 7 petak huruf dari kursor (10 terasa terlalu luas, kata user)
 const RIPPLE_STAGGER_MS = 150; // jeda mulai per petak sepanjang sumbu sapuan — 60ms terasa BARANGAN kata user (fase antar petak cuma beda 7% dari durasi 800ms); 150ms membuat tiap petak jelas bergiliran: satu petak sudah berbalok saat petak berikutnya baru bertitik
-const SHOW_HERO_CTA = false; // tombol "Lihat Proyek" DISEMBUNYIKAN sementara (user 26 Nov 2026: "hide dulu buttonnya, isi kekosongannya dengan amamiya") — balikkan ke true untuk menampilkan lagi; komponen HeroCtas dibiarkan utuh
+const SHOW_HERO_CTA = false; // dock tombol hero: disembunyikan (user 26 Nov 2026). Sempat ditampilkan lagi 27 Nov 2026 dengan dua aksi (Projects + Labs), lalu user memilih jalan ke Labs/Projects lewat NAVBAR saja — komponen HeroCtas dua-aksi dibiarkan utuh, balikkan ke true untuk menampilkan lagi
 const MAT_MS = 800; // durasi materialisasi per huruf — diperlambat dari 600ms intro judul agar perubahan titik->balok->karakter sempat terlihat (permintaan user)
 const MAT_HOLD_MS = 250; // huruf terang utuh sejenak setelah terbangun
 const MAT_FADE_MS = 350; // lalu memudar kembali ke huruf dasar grid
@@ -831,6 +831,18 @@ export default function WonderScene({
             holeCols = Math.min(
               cols,
               Math.max(2, Math.ceil(emblemW / CW)),
+            );
+          }
+          // Dock tombol (bila tampil) adalah kapsul kaca buram yang
+          // LEBIH LEBAR dari emblem di semua ukuran — lubang wajib
+          // menutupinya juga, kalau tidak kata grid menempel ke
+          // sisi-sisi kapsul. Lebar emblem sendiri tidak diubah
+          // (di desktop tetap 2 lajur sesuai persetujuan user).
+          if (ctaEl) {
+            const dockW = ctaEl.getBoundingClientRect().width;
+            holeCols = Math.min(
+              cols,
+              Math.max(holeCols, Math.ceil(dockW / CW)),
             );
           }
         }

@@ -323,6 +323,10 @@ export const DICT = {
   "file.minimize": { en: "Minimize", id: "Perkecil" },
   "file.dragResize": { en: "Drag to resize", id: "Seret untuk mengubah ukuran" },
 
+  // ===== Hero (dock tombol di bawah kata AMAMIYA) =====
+  "hero.ctaProjects": { en: "View Projects", id: "Lihat Proyek" },
+  "hero.ctaLabs": { en: "Visit Labs", id: "Kunjungi Labs" },
+
   // ===== Labs (/labs — calon beranda labs.amamiya.web.id) =====
   "labs.kicker": { en: "AMAMIYA LABS", id: "AMAMIYA LABS" },
   "labs.title": { en: "Labs", id: "Labs" },

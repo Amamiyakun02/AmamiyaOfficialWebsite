@@ -173,6 +173,16 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {/* Labs bukan section beranda melainkan permukaan
+                sendiri (landing /labs) — tautan halaman biasa,
+                ditambahkan 27 Nov 2026 atas permintaan user agar
+                Labs terjangkau dari navbar. */}
+            <Link
+              href="/labs"
+              className="text-[15px] text-[#DCE7FA] no-underline hover:underline"
+            >
+              Labs
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
@@ -270,6 +280,13 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          <Link
+            href="/labs"
+            className="block px-5 py-[11px] text-[15.5px] text-[#AFC2E6] no-underline hover:bg-white/[0.04] hover:text-white"
+            onClick={() => setOpen(false)}
+          >
+            Labs
+          </Link>
         </nav>
         <div className="mt-auto border-t border-[#1e1e22] px-[18px] pt-4 pb-5">
           <div className="mb-3.5">
