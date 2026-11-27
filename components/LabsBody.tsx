@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // Badan halaman /labs: landing kosong calon subdomain lab —
 // logo berdampingan kata AMAMIYA LABS. Tanpa navbar: Navbar dan
@@ -9,20 +9,21 @@ import { useEffect, useRef, useState } from "react";
 // ENTRANCE meniru halaman utama (permintaan user 27 Nov 2026):
 // logo SVG terakit dengan varian ACAK per muat (rakit masuk /
 // jatuh / geser — keyframes yang sama dengan hero, jarak tempuh
-// diskala ke ukuran logo di sini), lalu kata AMAMIYA dibangun
-// huruf demi huruf, disusul LABS. Ukuran dikunci ke emblem
-// visual: font AMAMIYA = setengah tinggi emblem (80px pada
-// emblem 160px), semua dalam em supaya rasio terkunci.
-// SVG memakai viewBox potong emblem yang sama dengan HeroLogo
-// (99 228 1402 1235): kotak 2.515em x 2.215em digeser -0.108em
-// menelan bantalan crop, menyisakan emblem tepat 2.3em x 2em.
+// diskala ke ukuran logo di sini), lalu kata AMAMIYA dan LABS
+// di-RENDER huruf demi huruf dengan efek render karakter ala
+// grid halaman utama: tiap huruf melewati fase titik -> balok
+// dua warna -> karakter jadi. Warna render mengikuti font
+// wordmark: AMAMIYA putih kertas, LABS teal aksen2.
+// Latar SENGAJA polos: grid latar + highlight pointer sempat
+// dibuat lalu dimatikan user di hari yang sama — efek render
+// hanya untuk lockup ini, bukan background.
 //
-// LATAR: efek render karakter seperti grid halaman utama
-// (permintaan user 27 Nov 2026) — kata-kata termaterialisasi
-// lewat fase titik -> balok dua warna -> karakter, mengikuti
-// sapuan berkala dan pointer. Warna mengikuti font wordmark:
-// AMAMIYA putih kertas, LABS teal aksen2. Ada lubang di tengah
-// (diukur dari elemen lockup) supaya grid tidak menabrak logo.
+// Ukuran dikunci ke emblem visual: font AMAMIYA = setengah
+// tinggi emblem (80px pada emblem 160px), semua dalam em
+// supaya rasio terkunci. SVG memakai viewBox potong emblem
+// yang sama dengan HeroLogo (99 228 1402 1235): kotak 2.515em
+// x 2.215em digeser -0.108em menelan bantalan crop, menyisakan
+// emblem tepat 2.3em x 2em.
 
 const VARIANTS = ["rakit", "jatuh", "geser"] as const;
 type Variant = (typeof VARIANTS)[number];
@@ -46,249 +47,91 @@ const ANIM_CSS = `
 @keyframes labsGeserA { from { opacity: 0; transform: translateY(-230px); } to { opacity: 1; transform: none; } }
 @keyframes labsGeserB { from { opacity: 0; transform: translateX(-230px); } to { opacity: 1; transform: none; } }
 @keyframes labsGeserC { from { opacity: 0; transform: translateX(230px); } to { opacity: 1; transform: none; } }
-.labs-huruf { display: inline-block; animation: labsHuruf 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes labsHuruf { from { opacity: 0; transform: translateY(0.16em); } to { opacity: 1; transform: none; } }
-.labs-grid { animation: labsFade 0.9s ease both; }
-@keyframes labsFade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .labs-logo-el, .labs-huruf { opacity: 1 !important; animation: none !important; }
+  .labs-logo-el { opacity: 1 !important; animation: none !important; }
 }
 `;
 
-function Huruf({
+// Satu kata yang hurufnya di-render satu per satu:
+// fase 0 kosong -> 1 titik -> 2 balok dua warna -> 3 karakter.
+// Huruf asli menjadi pengukur lebar (opacity 0) supaya kata
+// tidak bergeser saat fase berganti.
+function KataRender({
   kata,
   mulai,
-  jeda,
+  terang,
+  gelap,
 }: {
   kata: string;
-  mulai: number;
-  jeda: number;
+  mulai: number; // detik
+  terang: string;
+  gelap: string;
 }) {
+  const [fase, setFase] = useState<number[]>(() => kata.split("").map(() => 0));
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setFase(kata.split("").map(() => 3));
+      return;
+    }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const set = (i: number, f: number) =>
+      setFase((prev) => {
+        const next = [...prev];
+        next[i] = f;
+        return next;
+      });
+    kata.split("").forEach((_, i) => {
+      const base = (mulai + i * 0.09) * 1000;
+      timers.push(setTimeout(() => set(i, 1), base));
+      timers.push(setTimeout(() => set(i, 2), base + 130));
+      timers.push(setTimeout(() => set(i, 3), base + 300));
+    });
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       {kata.split("").map((h, i) => (
-        <span
-          key={i}
-          className="labs-huruf"
-          style={{ animationDelay: `${mulai + i * jeda}s` }}
-        >
-          {h}
+        <span key={i} className="relative inline-block">
+          <span className={fase[i] === 3 ? undefined : "opacity-0"}>{h}</span>
+          {fase[i] === 1 && (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span
+                className="block h-[0.09em] w-[0.09em] rounded-full"
+                style={{ background: terang }}
+              />
+            </span>
+          )}
+          {fase[i] === 2 && (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span
+                className="block h-[0.68em] w-[0.6em]"
+                style={{
+                  background: `linear-gradient(90deg, ${terang} 62%, ${gelap} 62%)`,
+                }}
+              />
+            </span>
+          )}
         </span>
       ))}
     </>
   );
 }
 
-// ===== Latar grid render karakter (canvas) =====
-const GRID_COLORS = {
-  amamiya: [238, 244, 255],
-  labs: [0, 187, 162],
-} as const;
-
-function LabsGrid({
-  holeRef,
-}: {
-  holeRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    let W = 0;
-    let H = 0;
-    let cols = 0;
-    let rows = 0;
-    let cellW = 0;
-    let cellH = 0;
-    let fontPx = 16;
-    let words: { text: string; labs: boolean }[] = [];
-    let heat = new Float32Array(0);
-    let hole = { x: 0, y: 0, w: 0, h: 0 };
-    const pointer = { x: -9999, y: -9999 };
-
-    const hash = (n: number) => {
-      const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-      return x - Math.floor(x);
-    };
-
-    const resize = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-      const rect = parent.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      W = rect.width;
-      H = rect.height;
-      canvas.width = Math.max(1, Math.round(W * dpr));
-      canvas.height = Math.max(1, Math.round(H * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cellW = Math.max(118, Math.min(178, W / 8));
-      cellH = Math.round(cellW * 0.34);
-      fontPx = Math.max(13, Math.min(18, cellW / 9.6));
-      cols = Math.ceil(W / cellW) + 1;
-      rows = Math.ceil(H / cellH) + 1;
-      words = [];
-      heat = new Float32Array(cols * rows);
-      for (let i = 0; i < cols * rows; i++) {
-        const labs = hash(i) < 0.24;
-        words.push({ text: labs ? "LABS" : "AMAMIYA", labs });
-      }
-      const el = holeRef.current;
-      if (el) {
-        const r = el.getBoundingClientRect();
-        hole = {
-          x: r.left - rect.left - 26,
-          y: r.top - rect.top - 22,
-          w: r.width + 52,
-          h: r.height + 44,
-        };
-      }
-    };
-
-    const inHole = (cx: number, cy: number) =>
-      cx > hole.x && cx < hole.x + hole.w && cy > hole.y && cy < hole.y + hole.h;
-
-    const drawWord = (
-      x: number,
-      y: number,
-      w: { text: string; labs: boolean },
-      alpha: number,
-    ) => {
-      const c = w.labs ? GRID_COLORS.labs : GRID_COLORS.amamiya;
-      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
-      ctx.fillText(w.text, x, y);
-    };
-
-    const draw = (t: number) => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.font = `${fontPx}px monospace`;
-      try {
-        (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "3px";
-      } catch {
-        /* abaikan: peramban tanpa letterSpacing canvas */
-      }
-      ctx.textBaseline = "middle";
-      // Sapuan materialisasi berkala (diagonal), berhenti 3 dtk.
-      const diag = cols + rows;
-      const cycle = (t / 1000) % 7;
-      const front = cycle < 3.4 ? (cycle / 3.4) * (diag + 4) - 2 : -99;
-      for (let gy = 0; gy < rows; gy++) {
-        for (let gx = 0; gx < cols; gx++) {
-          const i = gy * cols + gx;
-          const cx = gx * cellW + cellW / 2;
-          const cy = gy * cellH + cellH / 2;
-          if (inHole(cx, cy)) continue;
-          const w = words[i];
-          // Panas dari sapuan + pointer.
-          if (Math.abs(gx + gy - front) < 1.1) heat[i] = Math.max(heat[i], 0.92);
-          const dx = (cx - pointer.x) / cellW;
-          const dy = (cy - pointer.y) / cellH;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 7.3) heat[i] = Math.max(heat[i], 1 - d2 / 7.3);
-          const h = heat[i];
-          heat[i] = h * 0.965;
-          const x = gx * cellW + 8;
-          const c = w.labs ? GRID_COLORS.labs : GRID_COLORS.amamiya;
-          if (h < 0.04) {
-            drawWord(x, cy, w, w.labs ? 0.32 : 0.27);
-          } else if (h < 0.38) {
-            // Fase titik.
-            const r = 1 + (h / 0.38) * 5;
-            ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.3 + h})`;
-            ctx.beginPath();
-            ctx.arc(x + fontPx * 0.4, cy, r, 0, Math.PI * 2);
-            ctx.fill();
-          } else if (h < 0.72) {
-            // Fase balok dua warna selebar kata.
-            const frac = (h - 0.38) / 0.34;
-            const tw = ctx.measureText(w.text).width + 12;
-            const bh = fontPx * 1.5;
-            ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.88)`;
-            ctx.fillRect(x - 3, cy - bh / 2, tw * frac * 0.62, bh);
-            ctx.fillStyle = `rgba(${Math.round(c[0] * 0.55)},${Math.round(c[1] * 0.55)},${Math.round(c[2] * 0.55)},0.88)`;
-            ctx.fillRect(x - 3 + tw * frac * 0.62, cy - bh / 2, tw * frac * 0.38, bh);
-          } else {
-            // Fase karakter penuh.
-            drawWord(x, cy, w, 0.3 + ((h - 0.72) / 0.28) * 0.65);
-          }
-        }
-      }
-    };
-
-    let raf = 0;
-    let running = true;
-    const loop = (t: number) => {
-      if (!running) return;
-      draw(t);
-      raf = requestAnimationFrame(loop);
-    };
-    const onMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = e.clientX - rect.left;
-      pointer.y = e.clientY - rect.top;
-    };
-    const onVis = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(raf);
-      } else if (!reduced) {
-        running = true;
-        raf = requestAnimationFrame(loop);
-      }
-    };
-
-    resize();
-    if (reduced) {
-      // Satu bingkai diam: semua kata dalam keadaan istirahat.
-      heat = new Float32Array(cols * rows);
-      draw(0);
-    } else {
-      raf = requestAnimationFrame(loop);
-      window.addEventListener("pointermove", onMove, { passive: true });
-      document.addEventListener("visibilitychange", onVis);
-    }
-    window.addEventListener("resize", resize);
-    // Lubang diukur ulang sesudah font/animasi awal selesai —
-    // posisi lockup bisa bergeser sedikit saat huruf terbangun.
-    const rehole = window.setTimeout(resize, 2600);
-    return () => {
-      running = false;
-      cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("resize", resize);
-      document.removeEventListener("visibilitychange", onVis);
-      window.clearTimeout(rehole);
-    };
-  }, [holeRef]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="labs-grid pointer-events-none absolute inset-0 h-full w-full"
-      aria-hidden="true"
-    />
-  );
-}
-
 export default function LabsBody() {
   const [variant, setVariant] = useState<Variant | null>(null);
-  const lockupRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setVariant(VARIANTS[Math.floor(Math.random() * VARIANTS.length)]);
   }, []);
 
   return (
-    <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-5">
+    <main className="flex min-h-0 flex-1 items-center justify-center px-5">
       <style>{ANIM_CSS}</style>
-      <LabsGrid holeRef={lockupRef} />
       <div
-        ref={lockupRef}
-        className="relative flex items-center"
+        className="flex items-center"
         style={{ fontSize: "clamp(30px, 8.9vw, 80px)" }}
       >
         <div className="relative h-[2em] w-[2.3em] flex-none">
@@ -325,10 +168,10 @@ export default function LabsBody() {
         </div>
         <div className="ml-[0.12em] flex h-[2em] translate-y-[0.1em] flex-col justify-between">
           <p className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
-            <Huruf kata="AMAMIYA" mulai={1.3} jeda={0.055} />
+            <KataRender kata="AMAMIYA" mulai={1.3} terang="#EEF4FF" gelap="#83868C" />
           </p>
           <p className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
-            <Huruf kata="LABS" mulai={1.95} jeda={0.05} />
+            <KataRender kata="LABS" mulai={2.2} terang="#00BBA2" gelap="#00675A" />
           </p>
         </div>
       </div>
