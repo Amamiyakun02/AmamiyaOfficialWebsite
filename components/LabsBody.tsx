@@ -131,6 +131,142 @@ function KataRender({
   );
 }
 
+// Ledakan sel dari tengah (entrance KHUSUS /labs): kisi sel
+// materialisasi — matriks titik, balok dua nada, lalu karakter —
+// menyebar radial dari tengah layar lalu memudar. Isi selnya "#"
+// dulu sebagai uji coba (BUKAN kata AMAMIYA). Sekali jalan
+// sesudah halaman dimuat, bukan loop; hormati
+// prefers-reduced-motion.
+function gambarSel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cw: number,
+  ch: number,
+  p: number,
+  alpha: number,
+) {
+  if (p < 0.42) {
+    const a =
+      alpha *
+      (p < 0.12 ? p / 0.12 : p < 0.3 ? 1 : 1 - (p - 0.3) / 0.12);
+    if (a > 0.01) {
+      ctx.fillStyle = `rgba(0, 159, 138, ${(0.95 * a).toFixed(3)})`;
+      const w = cw * 0.62, h = ch * 0.4, r = Math.max(1, cw * 0.045);
+      for (let i = 0; i < 4; i++)
+        for (let j = 0; j < 2; j++) {
+          ctx.beginPath();
+          ctx.arc(
+            x - w / 2 + (w / 3) * i,
+            y - h / 2 + h * j,
+            r,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+    }
+  }
+  if (p >= 0.3 && p < 0.84) {
+    const masuk = Math.min(1, (p - 0.3) / 0.18);
+    const a = alpha * (p < 0.68 ? 1 : 1 - (p - 0.68) / 0.16);
+    if (a > 0.01) {
+      const w = cw * 0.84 * masuk, h = ch * 0.56;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "#008488";
+      ctx.fillRect(x - w / 2, y - h / 2, w * 0.55, h);
+      ctx.fillStyle = "#005e84";
+      ctx.fillRect(x - w / 2 + w * 0.55, y - h / 2, w * 0.45, h);
+      ctx.globalAlpha = 1;
+    }
+  }
+  if (p >= 0.6) {
+    const a = alpha * Math.min(1, (p - 0.6) / 0.24);
+    if (a > 0.01) {
+      ctx.fillStyle = `rgba(0, 217, 145, ${a.toFixed(3)})`;
+      ctx.font = `${Math.round(cw * 0.95)}px monospace`;
+      ctx.fillText("#", x, y + cw * 0.03);
+    }
+  }
+}
+
+function LabsLedakan() {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const cv = ref.current;
+    if (!cv) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    let W = 0, H = 0, CW = 0, CH = 0, cols = 0, rows = 0;
+    const setup = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      cv.width = Math.round(W * DPR);
+      cv.height = Math.round(H * DPR);
+      cols = Math.max(12, Math.round(W / 38));
+      CW = W / cols;
+      CH = CW * 1.3;
+      rows = Math.ceil(H / CH);
+    };
+    setup();
+    const cx = W / 2, cy = H / 2;
+    const maxD = Math.hypot(cx, cy) || 1;
+    const DUR = 900;
+    const FADE = 550;
+    const SPEED = 1500;
+    const T0 = performance.now();
+    let raf = 0;
+    const frame = (now: number) => {
+      const t = now - T0;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      let selesai = true;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = (c + 0.5) * CW, y = (r + 0.5) * CH;
+          const mulai = (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
+          const p = (t - mulai) / DUR;
+          if (p < 0) {
+            selesai = false;
+            continue;
+          }
+          if (p >= 1) {
+            const pf = (t - mulai - DUR) / FADE;
+            if (pf >= 1) continue;
+            selesai = false;
+            gambarSel(ctx, x, y, CW, CH, 1, 1 - pf);
+          } else {
+            selesai = false;
+            gambarSel(ctx, x, y, CW, CH, p, 1);
+          }
+        }
+      }
+      if (!selesai) raf = requestAnimationFrame(frame);
+      else ctx.clearRect(0, 0, W, H);
+    };
+    raf = requestAnimationFrame(frame);
+    window.addEventListener("resize", setup);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", setup);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={ref}
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    />
+  );
+}
+
 export default function LabsBody() {
   const [variant, setVariant] = useState<Variant | null>(null);
   const refA = useRef<HTMLParagraphElement>(null);
@@ -186,10 +322,11 @@ export default function LabsBody() {
   }, []);
 
   return (
-    <main className="flex min-h-0 flex-1 items-center justify-center px-5">
+    <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-5">
       <style>{ANIM_CSS}</style>
+      <LabsLedakan />
       <div
-        className="flex items-center"
+        className="relative flex items-center"
         style={{ fontSize: "clamp(30px, 8.9vw, 80px)" }}
       >
         <div className="relative h-[2em] w-[2.3em] flex-none">
