@@ -4,7 +4,7 @@ import FeedbackForm from "@/components/FeedbackForm";
 export const metadata: Metadata = {
   title: "Feedback | Amamiya",
   description:
-    "Kirim ulasan dan masukan tentang situs dan tool-tool Amamiya — masuk ke inbox dan dibaca langsung.",
+    "Send reviews and feedback about Amamiya's site and tools — it lands in the inbox and is read directly.",
 };
 
 // Halaman tool Feedback (dipindah dari antrean migrasi 20 Nov 2026):

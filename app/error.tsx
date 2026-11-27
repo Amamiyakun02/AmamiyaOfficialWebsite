@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 
 /* Batas error tingkat rute (ditambahkan 18 Nov 2026, hasil audit
    error handling pra-push): menangkap error render/runtime yang
@@ -18,6 +19,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLang();
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -25,13 +27,12 @@ export default function ErrorPage({
   return (
     <main className="errpage">
       <p className="errpage-code">Error</p>
-      <h1 className="errpage-title">Terjadi kesalahan</h1>
+      <h1 className="errpage-title">{t("err.title")}</h1>
       <p className="errpage-desc">
-        Maaf, halaman ini gagal dimuat karena kesalahan tak terduga.
-        Coba muat ulang — bila masih gagal, kembali ke beranda.
+        {t("err.body")}
       </p>
       {error.digest && (
-        <p className="errpage-digest">Kode rujukan: {error.digest}</p>
+        <p className="errpage-digest">{t("err.digest", { digest: error.digest })}</p>
       )}
       <div className="errpage-actions">
         <button
@@ -39,10 +40,10 @@ export default function ErrorPage({
           className="errpage-btn is-primary"
           onClick={() => reset()}
         >
-          Coba lagi
+          {t("err.retry")}
         </button>
         <Link className="errpage-btn" href="/">
-          Ke Beranda
+          {t("nf.home")}
         </Link>
       </div>
     </main>

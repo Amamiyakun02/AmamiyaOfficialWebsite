@@ -5,7 +5,7 @@ import AssistantChat from "@/components/AssistantChat";
 export const metadata: Metadata = {
   title: "Vienna AI Assistant | Amamiya",
   description:
-    "Obrol dengan Vienna, asisten AI Amamiya: tanya soal keahlian, proyek, dan cara menghubunginya.",
+    "Chat with Vienna, Amamiya's AI assistant: ask about his skills, projects, and how to contact him.",
 };
 
 // Halaman tool pertama yang dipindah dari WebPortofolio lama (Tahap 2):

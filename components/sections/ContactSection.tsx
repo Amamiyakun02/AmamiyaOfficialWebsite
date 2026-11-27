@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AtSign, Mail, ArrowUpRight } from "lucide-react";
 import { apiUrl } from "@/lib/api";
 import SectionTitle from "@/components/SectionTitle";
+import { useLang } from "@/lib/i18n";
 import { InstagramIcon, FacebookIcon } from "@/components/BrandIcons";
 
 // Kanal lain di samping formulir (permintaan user 16 Nov): tombol ke
@@ -47,6 +48,7 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 // backend baru (prompt serah-terima 20 Nov 2026) menyimpannya
 // sebagai field terstruktur.
 export default function ContactSection() {
+  const { t: tr } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -76,9 +78,7 @@ export default function ContactSection() {
       if (!res.ok) throw new Error("failed");
       setSent(true);
     } catch {
-      setError(
-        "Gagal mengirim pesan. Silakan coba lagi sebentar, atau hubungi lewat kanal lain.",
-      );
+      setError(tr("contact.error"));
     } finally {
       setSubmitting(false);
     }
@@ -88,17 +88,16 @@ export default function ContactSection() {
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Contact" />
       <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-        Kirim pesan lewat formulir ini — untuk peluang freelance, kolaborasi,
-        atau sekadar menyapa.
+        {tr("contact.intro")}
       </p>
 
       <div className="mt-7 grid grid-cols-[minmax(0,720px)_minmax(0,1fr)] items-start gap-[44px] max-[900px]:grid-cols-1 max-[900px]:gap-[34px]">
         <div>
       {sent ? (
         <div className="max-w-[720px] rounded-2xl border border-[rgba(52,211,153,0.35)] bg-[rgba(13,13,16,0.78)] p-[22px]">
-          <h2 className="m-0 mb-2 text-lg">Pesan Terkirim</h2>
+          <h2 className="m-0 mb-2 text-lg">{tr("contact.sentTitle")}</h2>
           <p className="m-0 mb-4 text-sm text-[#9DB1D9]">
-            Terima kasih sudah menghubungi. Saya akan membalas secepatnya.
+            {tr("contact.sentBody")}
           </p>
           <button
             type="button"
@@ -110,13 +109,13 @@ export default function ContactSection() {
               setMessage("");
             }}
           >
-            Kirim pesan lainnya
+            {tr("contact.sendAnother")}
           </button>
         </div>
       ) : (
         <form className="flex max-w-[720px] flex-col gap-4" onSubmit={submit}>
           <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-            Nama Anda
+            {tr("contact.name")}
             <input
               className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               value={name}
@@ -127,7 +126,7 @@ export default function ContactSection() {
             />
           </label>
           <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-            Email Anda
+            {tr("contact.email")}
             <input
               className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               type="email"
@@ -138,7 +137,7 @@ export default function ContactSection() {
             />
           </label>
           <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-            Pesan Anda
+            {tr("contact.message")}
             <textarea
               className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
               value={message}
@@ -156,7 +155,7 @@ export default function ContactSection() {
             className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-[#052A1E] no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#41538A] hover:bg-[#00BBA2]"
             disabled={submitting}
           >
-            {submitting ? "Mengirim..." : "Kirim Pesan"}
+            {submitting ? tr("contact.sending") : tr("contact.send")}
           </button>
         </form>
       )}
@@ -164,7 +163,7 @@ export default function ContactSection() {
 
         <aside>
           <h3 className="mt-1 mb-3.5 text-[15px] font-bold text-paper">
-            Terhubung
+            {tr("contact.connect")}
           </h3>
           <div className="flex flex-col gap-2.5">
             {SOCIALS.map(({ name, handle, href }) => (

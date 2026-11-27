@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Download } from "lucide-react";
 import { GithubIcon } from "./BrandIcons";
 import { scrollToSection } from "@/lib/scroll";
+import { useLang, LangSwitcher } from "@/lib/i18n";
 import { fetchPublicCvUrl } from "@/lib/publicCv";
 
 // Tombol kanan navbar = ikon GitHub ke profil user (permintaan user
@@ -29,6 +30,7 @@ export default function Navbar() {
   const [current, setCurrent] = useState("home");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useLang();
   // URL CV dari dashboard (GET /v1/site/cv, Modul Media): selama
   // belum diatur (null) tombol Unduh CV disembunyikan — pengganti
   // tautan statis /profesional-cv.pdf yang lama.
@@ -167,6 +169,12 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          {/* Pilihan bahasa EN/ID (27 Nov 2026) — di layar sangat
+              sempit disembunyikan dari header; salinannya ada di
+              dalam laci mobile. */}
+          <span className="max-[560px]:hidden">
+            <LangSwitcher />
+          </span>
           {cvUrl && (
             <a
               className="inline-flex h-[38px] items-center gap-[7px] whitespace-nowrap rounded-full border border-line3 bg-white/[0.03] px-4 text-[13.5px] font-semibold text-[#DCE7FA] no-underline hover:border-[#41538A] hover:bg-white/[0.07] hover:text-white max-[640px]:hidden"
@@ -175,7 +183,7 @@ export default function Navbar() {
               rel="noreferrer"
             >
               <Download size={15} />
-              Unduh CV
+              {t("nav.downloadCv")}
             </a>
           )}
           <a
@@ -190,7 +198,7 @@ export default function Navbar() {
           <button
             type="button"
             className="hidden cursor-pointer items-center justify-center rounded-[9px] border border-[#22336A] bg-transparent p-2 text-[#DCE7FA] max-[760px]:inline-flex"
-            aria-label="Buka menu"
+            aria-label={t("nav.openMenu")}
             aria-expanded={open}
             onClick={() => setOpen(true)}
           >
@@ -231,7 +239,7 @@ export default function Navbar() {
           <button
             type="button"
             className="inline-flex cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent p-[7px] text-fog hover:bg-white/[0.05] hover:text-white"
-            aria-label="Tutup menu"
+            aria-label={t("nav.closeMenu")}
             onClick={() => setOpen(false)}
           >
             <X size={20} />
@@ -256,7 +264,11 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto flex gap-[10px] border-t border-[#1e1e22] px-[18px] pt-4 pb-5">
+        <div className="mt-auto border-t border-[#1e1e22] px-[18px] pt-4 pb-5">
+          <div className="mb-3.5">
+            <LangSwitcher />
+          </div>
+          <div className="flex gap-[10px]">
           {cvUrl && (
             <a
               className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line3 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white no-underline hover:border-[#41538A] hover:bg-white/[0.08]"
@@ -265,7 +277,7 @@ export default function Navbar() {
               rel="noreferrer"
               onClick={() => setOpen(false)}
             >
-              <Download size={17} /> Unduh CV
+              <Download size={17} /> {t("nav.downloadCv")}
             </a>
           )}
           <a
@@ -277,6 +289,7 @@ export default function Navbar() {
           >
             <GithubIcon size={18} /> GitHub
           </a>
+          </div>
         </div>
       </aside>
     </>

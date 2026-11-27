@@ -4,7 +4,7 @@ import AllProjects from "@/components/AllProjects";
 export const metadata: Metadata = {
   title: "Projects | Amamiya",
   description:
-    "Semua project publik Amamiya — daftar lengkap dari registry System Dashboard, project unggulan (Top Project) tampil lebih dulu.",
+    "All of Amamiya's public projects — the full list from the System Dashboard registry, with featured projects (Top Projects) first.",
 };
 
 // Halaman daftar semua project publik (pendamping section Projects di

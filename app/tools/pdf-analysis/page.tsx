@@ -4,7 +4,7 @@ import PdfAnalysis from "@/components/PdfAnalysis";
 export const metadata: Metadata = {
   title: "PDF Analysis | Amamiya",
   description:
-    "Bedah dokumen PDF: deteksi halaman berwarna vs grayscale per halaman, metadata dokumen, dan ekstrak halaman menjadi PDF baru.",
+    "Dissect a PDF document: per-page color vs grayscale detection, document metadata, and extract pages into a new PDF.",
 };
 
 // Halaman tool keempat yang dipindah dari WebPortofolio lama (Tahap 2).

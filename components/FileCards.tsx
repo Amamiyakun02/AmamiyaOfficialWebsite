@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { HighlightedCode } from "@/components/ChatMarkdown";
 import { DICON_LAYOUT, DICON_NEUTRAL } from "./dashboard/ui";
+import { useLang } from "@/lib/i18n";
 
 const FC_BTN =
   "inline-flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-[7px] border border-line3 bg-[#17171b] text-[#AFC2E6] hover:border-steel hover:text-white";
@@ -106,16 +107,17 @@ function FileCard({
   defaultOpen: boolean;
   onReview?: (f: ChatFile) => void;
 }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(defaultOpen);
   const hasContent = typeof file.content === "string";
   const lang = langFromName(file.name);
   const Icon = lang === "text" ? FileText : FileCode;
   const omittedNote =
     file.content_omitted === "too_large"
-      ? "File terlalu besar untuk ditampilkan"
+      ? t("file.tooLarge")
       : file.content_omitted === "binary"
-        ? "File biner — pratinjau tidak tersedia"
-        : "Pratinjau tidak tersedia";
+        ? t("file.binary")
+        : t("file.noPreview");
   return (
     <div className="rounded-[10px] border border-line bg-panel px-[11px] py-[9px]">
       <div className="flex items-start gap-[9px]">
@@ -132,7 +134,7 @@ function FileCard({
             type="button"
             className={FC_BTN}
             onClick={() => onReview(file)}
-            title="Review file ini (kode + metadata lengkap)"
+            title={t("file.reviewTitle")}
           >
             <Eye size={15} />
           </button>
@@ -144,7 +146,7 @@ function FileCard({
               className={FC_BTN}
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
-              title={open ? "Tutup pratinjau" : "Lihat pratinjau"}
+              title={open ? t("file.closePreview") : t("file.viewPreview")}
             >
               <ChevronDown
                 size={15}
@@ -155,7 +157,7 @@ function FileCard({
               type="button"
               className={FC_BTN}
               onClick={() => downloadFile(file)}
-              title={`Unduh ${file.name}`}
+              title={t("file.download", { name: file.name })}
             >
               <Download size={15} />
             </button>
@@ -219,6 +221,7 @@ export default function FileCards({
    khusus untuk membaca kode. Unduh tetap bisa dari kartu
    file di chat. */
 function ReviewBody({ file, inWindow }: { file: ChatFile; inWindow?: boolean }) {
+  const { t } = useLang();
   const hasContent = typeof file.content === "string";
   const content = hasContent ? (file.content as string) : "";
   const rawLines = hasContent ? content.split("\n") : [];
@@ -230,10 +233,10 @@ function ReviewBody({ file, inWindow }: { file: ChatFile; inWindow?: boolean }) 
   const lang = langFromName(file.name);
   const omittedNote =
     file.content_omitted === "too_large"
-      ? "Konten dihilangkan — file terlalu besar (> 64 KB)"
+      ? t("file.omittedLarge")
       : file.content_omitted === "binary"
-        ? "Konten dihilangkan — file biner"
-        : "Konten tidak disertakan backend";
+        ? t("file.omittedBinary")
+        : t("file.notIncluded");
 
   if (!hasContent) {
     return <div className="mx-5 mt-3 mb-1 text-[12.5px] text-fog italic">{omittedNote}</div>;
@@ -261,6 +264,7 @@ export function FileReviewModal({
   file: ChatFile;
   onClose: () => void;
 }) {
+  const { t } = useLang();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -291,7 +295,7 @@ export function FileReviewModal({
             type="button"
             className={MODAL_X}
             onClick={onClose}
-            title="Tutup review"
+            title={t("file.closeReview")}
           >
             <X size={16} />
           </button>
@@ -327,6 +331,7 @@ export function FileReviewWindow({
   onClose: () => void;
   onFocus: () => void;
 }) {
+  const { t } = useLang();
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
@@ -434,7 +439,7 @@ export function FileReviewWindow({
             type="button"
             className={FC_BTN}
             onClick={onToggleMinimize}
-            title={minimized ? "Pulihkan jendela" : "Minimize"}
+            title={minimized ? t("file.restoreWindow") : t("file.minimize")}
           >
             {minimized ? <ChevronUp size={15} /> : <Minus size={15} />}
           </button>
@@ -442,7 +447,7 @@ export function FileReviewWindow({
             type="button"
             className={FC_BTN}
             onClick={onClose}
-            title="Tutup review"
+            title={t("file.closeReview")}
           >
             <X size={15} />
           </button>
@@ -464,7 +469,7 @@ export function FileReviewWindow({
           <div
             className="absolute right-0 bottom-0 z-[3] h-[18px] w-[18px] cursor-nwse-resize [touch-action:none] after:absolute after:right-1 after:bottom-1 after:h-2 after:w-2 after:rounded-br-[4px] after:border-r-2 after:border-b-2 after:border-[#354C8C] after:content-['']"
             onPointerDown={startResize("br")}
-            title="Seret untuk mengubah ukuran"
+            title={t("file.dragResize")}
           />
         </>
       )}

@@ -4,7 +4,7 @@ import VideoDownloader from "@/components/VideoDownloader";
 export const metadata: Metadata = {
   title: "Video Downloader | Amamiya",
   description:
-    "Unduh video dari YouTube, Instagram, Threads & Facebook sebagai MP4 atau MP3 — satu engine yt-dlp, deteksi platform otomatis.",
+    "Download videos from YouTube, Instagram, Threads & Facebook as MP4 or MP3 — one yt-dlp engine, automatic platform detection.",
 };
 
 // Halaman tool ketiga yang dipindah dari WebPortofolio lama (Tahap 2).

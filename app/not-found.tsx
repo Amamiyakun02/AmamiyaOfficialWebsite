@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import NotFoundBody from "@/components/NotFoundBody";
 
 /* Halaman 404 kustom (ditambahkan 18 Nov 2026, hasil audit error
    handling pra-push): menggantikan 404 bawaan Next.js yang generik
@@ -8,26 +8,9 @@ import Link from "next/link";
    (mis. /dashboard di domain utama). */
 
 export const metadata: Metadata = {
-  title: "404 — Halaman tidak ditemukan | Amamiya",
+  title: "404 — Page not found | Amamiya",
 };
 
 export default function NotFound() {
-  return (
-    <main className="errpage">
-      <p className="errpage-code">404</p>
-      <h1 className="errpage-title">Halaman tidak ditemukan</h1>
-      <p className="errpage-desc">
-        Alamat yang kamu tuju tidak ada atau sudah dipindahkan.
-        Periksa kembali URL-nya, atau kembali ke beranda.
-      </p>
-      <div className="errpage-actions">
-        <Link className="errpage-btn is-primary" href="/">
-          Ke Beranda
-        </Link>
-        <Link className="errpage-btn" href="/#tools">
-          Lihat Tools
-        </Link>
-      </div>
-    </main>
-  );
+  return <NotFoundBody />;
 }

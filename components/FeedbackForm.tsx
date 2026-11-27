@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, MessageSquare, Star } from "lucide-react";
 import { apiUrl } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
+import type { DictKey } from "@/lib/dict";
 
 /* Halaman tool Feedback — formulir ulasan & masukan pengunjung.
    Mengirim ke gudang yang sama dengan formulir Contact
@@ -11,14 +13,15 @@ import { apiUrl } from "@/lib/api";
    dibaca lewat tab Inbox dashboard. category mengikuti pilihan
    pengirim; source "feedback" membedakannya dari pesan kontak. */
 
-const CATEGORIES = [
-  { value: "general", label: "Umum" },
-  { value: "review", label: "Ulasan situs / tool" },
-  { value: "bug_report", label: "Laporan bug" },
-  { value: "feature_request", label: "Permintaan fitur" },
-] as const;
+const CATEGORIES: { value: string; key: DictKey }[] = [
+  { value: "general", key: "feedback.catGeneral" },
+  { value: "review", key: "feedback.catReview" },
+  { value: "bug_report", key: "feedback.catBug" },
+  { value: "feature_request", key: "feedback.catFeature" },
+];
 
 export default function FeedbackForm() {
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [category, setCategory] = useState<string>("general");
@@ -48,9 +51,7 @@ export default function FeedbackForm() {
       if (!res.ok) throw new Error("failed");
       setSent(true);
     } catch {
-      setError(
-        "Gagal mengirim feedback. Silakan coba lagi sebentar, atau hubungi lewat halaman Contact.",
-      );
+      setError(t("feedback.error"));
     } finally {
       setSubmitting(false);
     }
@@ -60,7 +61,7 @@ export default function FeedbackForm() {
     <div className="min-h-0 w-full flex-1 overflow-y-auto">
       <div className="mx-auto max-w-[1080px] px-4 pt-[18px] pb-14">
         <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
-          <ArrowLeft size={14} /> Kembali ke Tools
+          <ArrowLeft size={14} /> {t("common.backToTools")}
         </Link>
 
         <div className="mt-4 flex items-start gap-3.5">
@@ -70,16 +71,15 @@ export default function FeedbackForm() {
           <div>
             <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#EEF4FF]">Feedback</h1>
             <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-              Kirim ulasan dan masukan tentang situs dan tool-tool di
-              sini — pesanmu masuk ke inbox-ku dan kubaca langsung.
+              {t("feedback.intro")}
             </p>
           </div>
         </div>
 
         {sent ? (
           <div className="max-w-[720px] rounded-2xl border border-[rgba(52,211,153,0.35)] bg-[rgba(13,13,16,0.78)] p-[22px]">
-            <h2 className="m-0 mb-2 text-lg">Feedback Terkirim</h2>
-            <p className="m-0 mb-4 text-sm text-[#9DB1D9]">Terima kasih atas masukannya — sangat membantu.</p>
+            <h2 className="m-0 mb-2 text-lg">{t("feedback.sentTitle")}</h2>
+            <p className="m-0 mb-4 text-sm text-[#9DB1D9]">{t("feedback.sentBody")}</p>
             <button
               type="button"
               className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
@@ -91,13 +91,13 @@ export default function FeedbackForm() {
                 setContent("");
               }}
             >
-              Kirim feedback lainnya
+              {t("feedback.sendAnother")}
             </button>
           </div>
         ) : (
           <form className="flex max-w-[720px] flex-col gap-4" onSubmit={submit}>
             <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-              Nama Anda
+              {t("feedback.name")}
               <input
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={name}
@@ -108,7 +108,7 @@ export default function FeedbackForm() {
               />
             </label>
             <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-              Penilaianmu
+              {t("feedback.rating")}
               <span className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -118,18 +118,18 @@ export default function FeedbackForm() {
                     aria-checked={rating === n}
                     className={`inline-flex cursor-pointer border-0 bg-transparent p-[3px] ${n <= rating ? "text-[#e5b95f]" : "text-steel"}`}
                     onClick={() => setRating(n)}
-                    title={`${n} dari 5`}
+                    title={t("feedback.of5", { n })}
                   >
                     <Star size={22} className={n <= rating ? "[fill:currentColor]" : undefined} />
                   </button>
                 ))}
                 <span className="ml-2 text-[12.5px] text-fog">
-                  {rating > 0 ? `${rating}/5` : "Pilih rating dulu"}
+                  {rating > 0 ? `${rating}/5` : t("feedback.pickRating")}
                 </span>
               </span>
             </label>
             <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-              Kategori
+              {t("feedback.category")}
               <select
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={category}
@@ -137,13 +137,13 @@ export default function FeedbackForm() {
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>
-                    {c.label}
+                    {t(c.key)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="flex flex-col gap-[7px] text-[13px] font-semibold text-[#C3D2F0]">
-              Pesan / masukan
+              {t("feedback.message")}
               <textarea
                 className="rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-[13px] py-[11px] font-normal text-paper [font-family:inherit] [font-size:inherit] focus:border-line focus:outline-none"
                 value={content}
@@ -159,7 +159,7 @@ export default function FeedbackForm() {
               className="inline-block cursor-pointer self-start rounded-full border border-accent bg-accent px-[18px] py-[9px] text-[13.5px] font-semibold text-[#052A1E] no-underline transition-[border-color,background] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:border-[#41538A] hover:bg-[#00BBA2]"
               disabled={submitting || rating === 0}
             >
-              {submitting ? "Mengirim..." : "Kirim Feedback"}
+              {submitting ? t("feedback.sending") : t("feedback.send")}
             </button>
           </form>
         )}

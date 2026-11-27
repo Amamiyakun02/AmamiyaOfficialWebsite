@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toolsData } from "@/lib/tools";
+import { useLang } from "@/lib/i18n";
 import SectionTitle from "@/components/SectionTitle";
 
 // Halaman indeks Tools — semua tool dari WebPortofolio lama terdaftar di
@@ -13,6 +14,7 @@ import SectionTitle from "@/components/SectionTitle";
 const TOOL_LIMIT = 9;
 
 export default function ToolsSection() {
+  const { lang, t: tr } = useLang();
   const [expanded, setExpanded] = useState(false);
   const ordered = [...toolsData].sort(
     (a, b) => (a.status === "live" ? 0 : 1) - (b.status === "live" ? 0 : 1)
@@ -22,9 +24,7 @@ export default function ToolsSection() {
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Tools" />
       <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-        Tool-tool yang kubangun dan kupakai sendiri — asisten AI, pengunduh
-        video, pengolah PDF dan gambar, sampai playground MCP server-ku.
-        Semuanya sedang dipindah ke rumah baru ini secara bertahap.
+        {tr("tools.intro")}
       </p>
       <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2 min-[1080px]:grid-cols-3">
         {shown.map((t) => {
@@ -46,7 +46,7 @@ export default function ToolsSection() {
                       : "border-[rgba(251,191,36,0.3)] bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
                   }`}
                 >
-                  {live ? "Aktif" : "Tahap migrasi"}
+                  {live ? tr("tools.live") : tr("tools.migrating")}
                 </span>
               </div>
               <h3 className="mt-[14px] mb-[6px] text-[17px] font-bold">
@@ -62,7 +62,7 @@ export default function ToolsSection() {
                 )}
               </h3>
               <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#9DB1D9]">
-                {t.desc}
+                {lang === "en" ? t.descEn : t.desc}
               </p>
               {live && (
                 <div className="mt-4 flex gap-4 text-[13px] font-semibold">
@@ -70,7 +70,7 @@ export default function ToolsSection() {
                     className="text-accent3 no-underline hover:underline"
                     href={`/tools/${t.slug}`}
                   >
-                    Buka tool →
+                    {tr("tools.open")}
                   </Link>
                 </div>
               )}
@@ -85,7 +85,7 @@ export default function ToolsSection() {
             className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
             onClick={() => setExpanded((v) => !v)}
           >
-            {expanded ? "Tampilkan lebih sedikit" : "Lihat semua tool"}
+            {expanded ? tr("common.showLess") : tr("tools.showAll")}
           </button>
         </div>
       )}

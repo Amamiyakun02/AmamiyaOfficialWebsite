@@ -10,6 +10,7 @@ import {
   type PublicProject,
 } from "@/lib/publicProjects";
 import SectionTitle from "@/components/SectionTitle";
+import { useLang } from "@/lib/i18n";
 
 // Section Projects — sejak 6 Nov 2026 sumber utamanya adalah Top Project
 // yang di-pin dari System Dashboard (GET /v1/projects/featured, maks 4),
@@ -25,9 +26,13 @@ const FILTERS: ("Semua" | ProjectCategory)[] = [
   "Mobile",
 ];
 
-const STATUS_LABEL: Record<string, string> = {
-  active: "Aktif",
-  maintenance: "Pemeliharaan",
+// Label status project -> kunci kamus (lib/dict.ts).
+const STATUS_KEY: Record<
+  string,
+  "common.statusActive" | "common.statusMaintenance"
+> = {
+  active: "common.statusActive",
+  maintenance: "common.statusMaintenance",
 };
 
 function StaticProjects({
@@ -35,6 +40,7 @@ function StaticProjects({
 }: {
   onSelect: (id: string) => void;
 }) {
+  const { lang, t: tr } = useLang();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Semua");
   const shown =
     filter === "Semua"
@@ -54,7 +60,7 @@ function StaticProjects({
             }`}
             onClick={() => setFilter(f)}
           >
-            {f}
+            {f === "Semua" ? tr("common.all") : f}
           </button>
         ))}
       </div>
@@ -73,7 +79,7 @@ function StaticProjects({
                 </span>
                 {p.featured && (
                   <span className="text-[11px] font-bold tracking-[0.03em] text-[#00FFAA]">
-                    ★ Unggulan
+                    {tr("common.featured")}
                   </span>
                 )}
                 <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
@@ -90,10 +96,10 @@ function StaticProjects({
                 </button>
               </h3>
               <p className="m-0 mb-2 text-[13.5px] font-semibold text-[#C3D2F0]">
-                {p.tagline.id}
+                {p.tagline[lang]}
               </p>
               <p className="m-0 flex-1 text-[13px] leading-[1.6] text-[#9DB1D9]">
-                {p.description.id}
+                {p.description[lang]}
               </p>
               <div className="mt-[14px] flex flex-wrap gap-1.5">
                 {p.tech.slice(0, 4).map((t) => (
@@ -116,7 +122,7 @@ function StaticProjects({
                   className="cursor-pointer border-0 bg-transparent p-0 text-left [font-family:inherit] text-[13px] font-semibold text-accent3 hover:underline"
                   onClick={() => onSelect(p.id)}
                 >
-                  Studi kasus →
+                  {tr("common.caseStudy")}
                 </button>
                 {p.githubUrl && (
                   <a
@@ -148,6 +154,7 @@ function StaticProjects({
 }
 
 export function PublicProjectCard({ p }: { p: PublicProject }) {
+  const { t: tr } = useLang();
   const tech = techList(p.tech_stack);
   // Gambar kartu: image_url dari dashboard (Modul Media) lebih dulu;
   // tanpa itu, thumbnail video demo seperti sebelumnya; keduanya
@@ -174,7 +181,7 @@ export function PublicProjectCard({ p }: { p: PublicProject }) {
           </span>
         )}
         <span className="ml-auto text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
-          {STATUS_LABEL[p.status] ?? p.status}
+          {STATUS_KEY[p.status] ? tr(STATUS_KEY[p.status]) : p.status}
         </span>
       </div>
       <h3 className="mt-[14px] mb-[6px] text-[17px] font-bold">{p.name}</h3>
@@ -238,7 +245,7 @@ export function PublicProjectCard({ p }: { p: PublicProject }) {
             target="_blank"
             rel="noreferrer"
           >
-            Video demo
+            {tr("common.demoVideo")}
           </a>
         )}
       </div>
@@ -251,6 +258,7 @@ export default function ProjectsSection({
 }: {
   onSelect: (id: string) => void;
 }) {
+  const { t: tr } = useLang();
   const [phase, setPhase] = useState<"loading" | "live" | "fallback">(
     "loading",
   );
@@ -276,9 +284,7 @@ export default function ProjectsSection({
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="Projects" />
       <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-        Project unggulan yang kupilih langsung dari dashboard-ku — empat
-        terbaik yang sedang dan sudah kubangun. Daftar lengkapnya ada di
-        halaman Projects.
+        {tr("projects.intro")}
       </p>
 
       {phase === "loading" && (
@@ -305,7 +311,7 @@ export default function ProjectsSection({
       {phase === "live" &&
         (items.length === 0 ? (
           <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-            Belum ada project unggulan yang di-pin dari dashboard.
+            {tr("projects.nonePinned")}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 min-[761px]:grid-cols-2">

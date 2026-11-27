@@ -8,6 +8,7 @@ import {
   sortPublicSkills,
 } from "@/lib/publicSkills";
 import SectionTitle from "@/components/SectionTitle";
+import { useLang } from "@/lib/i18n";
 
 // Halaman Tentang — konten dari WebPortofolio lama: deskripsi profil,
 // matriks keahlian (dengan filter kategori seperti aslinya), dan
@@ -27,22 +28,31 @@ const CATS: SkillCategory[] = [
 
 const TIMELINE = [
   {
-    year: "2024 - Sekarang",
-    title: "Freelance AI & Automation Engineer",
-    subtitle: "Aplikasi AI kustom & otomatisasi",
-    desc: "Membangun alur otomatisasi, workflow RAG, dasbor agen, dan alat manajemen server.",
+    year: { en: "2024 - Present", id: "2024 - Sekarang" },
+    title: { en: "Freelance AI & Automation Engineer", id: "Freelance AI & Automation Engineer" },
+    subtitle: { en: "Custom AI apps & automation", id: "Aplikasi AI kustom & otomatisasi" },
+    desc: {
+      en: "Building automation flows, RAG workflows, agent dashboards, and server management tools.",
+      id: "Membangun alur otomatisasi, workflow RAG, dasbor agen, dan alat manajemen server.",
+    },
   },
   {
-    year: "2022 - 2024",
-    title: "Pengembang Perangkat Lunak & Seluler",
-    subtitle: "Aplikasi web & lintas-platform",
-    desc: "Membangun frontend web dan aplikasi utilitas mobile berbasis database dengan Flutter.",
+    year: { en: "2022 - 2024", id: "2022 - 2024" },
+    title: { en: "Software & Mobile Developer", id: "Pengembang Perangkat Lunak & Seluler" },
+    subtitle: { en: "Web & cross-platform apps", id: "Aplikasi web & lintas-platform" },
+    desc: {
+      en: "Building web frontends and database-backed mobile utility apps with Flutter.",
+      id: "Membangun frontend web dan aplikasi utilitas mobile berbasis database dengan Flutter.",
+    },
   },
   {
-    year: "2021",
-    title: "Linux & Otomatisasi",
-    subtitle: "Scripting & setup sistem",
-    desc: "Fokus pada shell scripting, setup server, dan alat CLI kecil.",
+    year: { en: "2021", id: "2021" },
+    title: { en: "Linux & Automation", id: "Linux & Otomatisasi" },
+    subtitle: { en: "Scripting & system setup", id: "Scripting & setup sistem" },
+    desc: {
+      en: "Focused on shell scripting, server setup, and small CLI tools.",
+      id: "Fokus pada shell scripting, setup server, dan alat CLI kecil.",
+    },
   },
 ];
 
@@ -50,6 +60,7 @@ const TIMELINE = [
 const SKILL_LIMIT = 10;
 
 export default function AboutSection() {
+  const { lang, t: tr } = useLang();
   const [cat, setCat] = useState<SkillCategory>("All");
   const [expanded, setExpanded] = useState(false);
   // Sumber utama: registry dashboard (GET /v1/skills). Data statis
@@ -85,11 +96,10 @@ export default function AboutSection() {
     <div className="mx-auto w-[min(1200px,100%)] px-7 py-16 max-[760px]:px-[18px] max-[760px]:py-11">
       <SectionTitle text="About" />
       <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-        Saya suka membangun alat praktis yang menyelesaikan masalah nyata.
-        Sekali buat, berguna selamanya.
+        {tr("about.intro")}
       </p>
 
-      <h2 className="mt-10 mb-4 text-xl font-bold">Keahlian</h2>
+      <h2 className="mt-10 mb-4 text-xl font-bold">{tr("about.skills")}</h2>
       <div className="mt-[26px] mb-[22px] flex flex-wrap gap-2">
         {CATS.map((c) => (
           <button
@@ -105,7 +115,7 @@ export default function AboutSection() {
               setExpanded(false);
             }}
           >
-            {c === "All" ? "Semua" : c}
+            {c === "All" ? tr("common.all") : c}
           </button>
         ))}
       </div>
@@ -139,7 +149,7 @@ export default function AboutSection() {
               />
             </div>
             <p className="m-0 mb-2.5 text-[12.5px] leading-[1.55] text-[#9DB1D9]">
-              {s.desc.id}
+              {s.desc[lang]}
             </p>
             <span className="text-[11px] font-bold tracking-[0.06em] text-[#8298C0] uppercase">
               {s.category}
@@ -154,28 +164,28 @@ export default function AboutSection() {
             className="cursor-pointer rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-5 py-2.5 text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
             onClick={() => setExpanded((v) => !v)}
           >
-            {expanded ? "Tampilkan lebih sedikit" : "Lihat semua keahlian"}
+            {expanded ? tr("common.showLess") : tr("about.showAllSkills")}
           </button>
         </div>
       ) : null}
 
-      <h2 className="mt-10 mb-4 text-xl font-bold">Pengalaman</h2>
+      <h2 className="mt-10 mb-4 text-xl font-bold">{tr("about.experience")}</h2>
       <div className="flex flex-col gap-3.5">
         {TIMELINE.map((t) => (
           <article
-            key={t.title}
+            key={t.title.en}
             className="flex gap-[18px] rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] px-[18px] py-4 max-[760px]:flex-col max-[760px]:gap-1.5"
           >
             <span className="w-[118px] flex-none pt-0.5 text-[12.5px] font-bold text-accent3">
-              {t.year}
+              {t.year[lang]}
             </span>
             <div>
-              <h3 className="m-0 mb-1 text-[15px]">{t.title}</h3>
+              <h3 className="m-0 mb-1 text-[15px]">{t.title[lang]}</h3>
               <p className="m-0 mb-1 text-[13px] leading-[1.6] font-semibold text-[#C3D2F0]">
-                {t.subtitle}
+                {t.subtitle[lang]}
               </p>
               <p className="m-0 text-[13px] leading-[1.6] text-[#9DB1D9]">
-                {t.desc}
+                {t.desc[lang]}
               </p>
             </div>
           </article>

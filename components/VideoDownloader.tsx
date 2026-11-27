@@ -17,6 +17,7 @@ import {
   Globe,
 } from "lucide-react";
 import { apiUrl } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 // Porting VideoDownloader lama (Tahap 2) dengan kontrak backend
 // Vienna_Agent yang sama persis (terverifikasi di routers/tools_api.py):
@@ -119,10 +120,8 @@ const PLATFORM_META: Record<
   },
 };
 
-const TOO_LONG_MSG =
-  "Media lebih dari 30 menit dan tidak bisa diunduh.";
-
 export default function VideoDownloader() {
+  const { t } = useLang();
   const [url, setUrl] = useState("");
   const [info, setInfo] = useState<MediaInfo | null>(null);
   const [format, setFormat] = useState<"mp4" | "mp3">("mp4");
@@ -160,7 +159,7 @@ export default function VideoDownloader() {
       );
       const response = await fetch(endpoint);
       if (!response.ok) {
-        throw new Error(await readError(response, "Gagal mengambil info media."));
+        throw new Error(await readError(response, t("video.errInfo")));
       }
       const data = (await response.json()) as MediaInfo;
       setInfo(data);
@@ -170,10 +169,10 @@ export default function VideoDownloader() {
           ? "720"
           : qualities[qualities.length - 1] || "best",
       );
-      if (data.too_long) setError(TOO_LONG_MSG);
+      if (data.too_long) setError(t("video.errTooLong"));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "Gagal terhubung ke layanan unduhan.");
+      setError(msg || t("video.errConnect"));
     } finally {
       setChecking(false);
     }
@@ -211,7 +210,7 @@ export default function VideoDownloader() {
         body: JSON.stringify({ url: trimmed, format, quality }),
       });
       if (!response.ok) {
-        throw new Error(await readError(response, "Unduhan gagal."));
+        throw new Error(await readError(response, t("video.errDownload")));
       }
       setFromCache(response.headers.get("X-Cache") === "HIT");
       setFromPlatform(response.headers.get("X-Platform"));
@@ -233,7 +232,7 @@ export default function VideoDownloader() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "Gagal terhubung ke layanan unduhan.");
+      setError(msg || t("video.errConnect"));
     } finally {
       setDownloading(false);
     }
@@ -256,7 +255,7 @@ export default function VideoDownloader() {
     <div className="min-h-0 w-full flex-1 overflow-y-auto">
       <div className="mx-auto max-w-[1080px] px-4 pt-[18px] pb-14">
         <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
-          <ArrowLeft size={14} /> Kembali ke Tools
+          <ArrowLeft size={14} /> {t("common.backToTools")}
         </Link>
 
         <div className="mt-4 flex items-start gap-3.5">
@@ -266,8 +265,7 @@ export default function VideoDownloader() {
           <div>
             <h1 className="text-[30px] leading-[1.15] font-extrabold text-[#EEF4FF]">Video Downloader</h1>
             <p className="mt-[5px] max-w-[560px] text-[13.5px] leading-[1.6] text-fog">
-              Unduh video dari YouTube, Instagram, Threads &amp; Facebook
-              sebagai MP4 atau MP3. Tempel tautan, pratinjau, lalu simpan.
+              {t("video.subtitle")}
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {(
@@ -302,7 +300,7 @@ export default function VideoDownloader() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleCheck();
                   }}
-                  placeholder="Tempel tautan video (YouTube, IG Reel, Threads, FB...)"
+                  placeholder={t("video.placeholder")}
                   spellCheck={false}
                 />
                 <button
@@ -314,12 +312,12 @@ export default function VideoDownloader() {
                   {checking ? (
                     <>
                       <RefreshCw size={14} className="vd-spin" />
-                      <span>Memeriksa...</span>
+                      <span>{t("video.checking")}</span>
                     </>
                   ) : (
                     <>
                       <Search size={14} />
-                      <span>Cek Video</span>
+                      <span>{t("video.check")}</span>
                     </>
                   )}
                 </button>
@@ -356,7 +354,7 @@ export default function VideoDownloader() {
                       onChange={(e) => setQuality(e.target.value)}
                       disabled={format === "mp3"}
                       className="w-full rounded-xl border border-line bg-[#0a0a0b] px-3 py-2.5 text-[12.5px] text-[#DCE7FA] outline-none focus:border-line disabled:opacity-40"
-                      aria-label="Kualitas"
+                      aria-label={t("video.quality")}
                     >
                       {format === "mp3" ? (
                         <option value="audio">192 kbps MP3</option>
@@ -383,16 +381,19 @@ export default function VideoDownloader() {
                     {downloading ? (
                       <>
                         <RefreshCw size={14} className="vd-spin" />
-                        <span>Mengunduh...</span>
+                        <span>{t("video.downloading")}</span>
                       </>
                     ) : (
                       <>
                         <Download size={14} />
                         <span>
-                          Unduh {format.toUpperCase()}
-                          {format === "mp4"
-                            ? ` ${QUALITY_LABELS[quality] || quality}`
-                            : ""}
+                          {t("video.download", {
+                            label:
+                              format.toUpperCase() +
+                              (format === "mp4"
+                                ? ` ${QUALITY_LABELS[quality] || quality}`
+                                : ""),
+                          })}
                         </span>
                       </>
                     )}
@@ -403,12 +404,12 @@ export default function VideoDownloader() {
                     disabled={downloading || checking}
                     className="inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-xl border border-transparent text-xs font-extrabold tracking-[0.06em] uppercase transition-[background,border-color] duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#1e1e22] disabled:text-[#5D7099] w-full border-line bg-transparent px-4 py-2.5 font-bold tracking-normal text-fog normal-case enabled:hover:border-steel enabled:hover:text-white"
                   >
-                    Tautan Baru
+                    {t("video.newLink")}
                   </button>
                   {fromCache !== null && (
                     <p className="text-center text-[11px] text-[#5D7099]">
                       {fromPlatform ? `${fromPlatform} · ` : ""}
-                      {fromCache ? "dari cache — instan" : "baru diunduh"}
+                      {fromCache ? t("video.fromCache") : t("video.fresh")}
                     </p>
                   )}
                 </div>
@@ -417,8 +418,7 @@ export default function VideoDownloader() {
               <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-[1.55] text-[#5D7099]">
                 <Globe size={11} className="mt-0.5 flex-shrink-0" />
                 <span>
-                  Konten privat atau yang butuh login tidak bisa diunduh.
-                  Postingan publik paling aman.
+                  {t("video.note")}
                 </span>
               </p>
             </div>
@@ -440,8 +440,7 @@ export default function VideoDownloader() {
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line px-6 py-12 text-center text-[#5D7099]">
                 <Clapperboard size={40} strokeWidth={1.2} />
                 <p className="max-w-[300px] text-xs leading-[1.6]">
-                  Tempel tautan video di atas lalu tekan Cek Video untuk
-                  melihat judul, durasi, dan kualitas yang tersedia.
+                  {t("video.emptyPreview")}
                 </p>
               </div>
             ) : (

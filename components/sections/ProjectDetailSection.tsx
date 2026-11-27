@@ -1,5 +1,8 @@
+"use client";
+
 import { projectsData } from "@/lib/projects";
 import SectionTitle from "@/components/SectionTitle";
+import { useLang } from "@/lib/i18n";
 
 /* Section studi kasus — merender SATU proyek yang dipilih dari daftar
    (bukan kesembilan proyek sekaligus). Isinya identik dengan halaman
@@ -12,6 +15,7 @@ export default function ProjectDetailSection({
   projectId: string;
   onClose: () => void;
 }) {
+  const { lang, t: tr } = useLang();
   const p = projectsData.find((x) => x.id === projectId);
   if (!p) return null;
   const Icon = p.icon;
@@ -24,16 +28,16 @@ export default function ProjectDetailSection({
         <div>
           <SectionTitle text={p.title} />
           <p className="m-0 mt-3 max-w-[640px] text-[15px] leading-[1.65] text-[#9DB1D9]">
-            {p.tagline.id}
+            {p.tagline[lang]}
           </p>
         </div>
         <button
           type="button"
           className="ml-auto flex-none cursor-pointer self-start rounded-full border border-line3 bg-[rgba(16,16,20,0.7)] px-[15px] py-[7px] text-[13px] font-semibold text-[#C3D2F0] hover:border-[#41538A]"
           onClick={onClose}
-          aria-label="Tutup studi kasus"
+          aria-label={tr("detail.closeLabel")}
         >
-          ✕ Tutup
+          {tr("detail.close")}
         </button>
       </div>
       <div className="mt-[14px] flex flex-wrap gap-1.5">
@@ -61,7 +65,7 @@ export default function ProjectDetailSection({
             target="_blank"
             rel="noreferrer"
           >
-            Kunjungi Live →
+            {tr("detail.visitLive")}
           </a>
         )}
       </div>
@@ -70,28 +74,28 @@ export default function ProjectDetailSection({
         <div className="mt-7 flex flex-wrap gap-3.5">
           {p.metrics.map((m) => (
             <div
-              key={m.label.id}
+              key={m.label.en}
               className="flex min-w-[130px] flex-1 flex-col gap-1 rounded-[14px] border border-line2 bg-[rgba(13,13,16,0.78)] px-4 py-3.5"
             >
               <span className="text-xl font-extrabold text-white">
                 {m.value}
               </span>
-              <span className="text-xs text-[#8298C0]">{m.label.id}</span>
+              <span className="text-xs text-[#8298C0]">{m.label[lang]}</span>
             </div>
           ))}
         </div>
       )}
 
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Masalah</h2>
-        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.problem.id}</p>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.problem")}</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.problem[lang]}</p>
       </section>
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Arsitektur</h2>
-        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.architecture.id}</p>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.architecture")}</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.architecture[lang]}</p>
       </section>
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Tumpukan Teknologi</h2>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.stack")}</h2>
         <div className="grid grid-cols-3 gap-4 max-[760px]:grid-cols-1">
           <div>
             <h3 className="m-0 mb-2 text-[13px] tracking-[0.08em] text-[#8298C0] uppercase">
@@ -127,7 +131,7 @@ export default function ProjectDetailSection({
       </section>
       {p.apiEndpoints.length > 0 && (
         <section className="mt-[34px]">
-          <h2 className="m-0 mb-2.5 text-lg font-bold">Endpoint API</h2>
+          <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.endpoints")}</h2>
           <ul className="m-0 list-none pl-0 text-sm leading-[1.8] text-[#AFC2E6]">
             {p.apiEndpoints.map((e) => (
               <li key={e}>
@@ -138,22 +142,22 @@ export default function ProjectDetailSection({
         </section>
       )}
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Cuplikan Kode</h2>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.code")}</h2>
         <pre className="m-0 overflow-x-auto rounded-xl border border-line2 bg-[#0a0a0b] p-4 text-[12.5px] leading-[1.6] text-[#C3D2F0]">
           <code>{p.codeSnippet.code}</code>
         </pre>
       </section>
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Langkah Demo</h2>
-        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.demoSteps.id}</p>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.demo")}</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.demoSteps[lang]}</p>
       </section>
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Hasil</h2>
-        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.results.id}</p>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.results")}</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.results[lang]}</p>
       </section>
       <section className="mt-[34px]">
-        <h2 className="m-0 mb-2.5 text-lg font-bold">Trade-off</h2>
-        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.tradeoffs.id}</p>
+        <h2 className="m-0 mb-2.5 text-lg font-bold">{tr("detail.tradeoffs")}</h2>
+        <p className="m-0 max-w-[760px] text-[14.5px] leading-[1.7] text-[#AFC2E6]">{p.tradeoffs[lang]}</p>
       </section>
     </div>
   );

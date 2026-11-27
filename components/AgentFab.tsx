@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Maximize2, X } from "lucide-react";
 import AssistantChat from "@/components/AssistantChat";
+import { useLang } from "@/lib/i18n";
+import type { DictKey } from "@/lib/dict";
 
 /* =====================================================================
    IKON MENGAMBANG + QUICK CHAT VIENNA AI ASSISTANT.
@@ -35,13 +37,16 @@ import AssistantChat from "@/components/AssistantChat";
 // section Tools (dihapus 21 Nov 2026 atas keputusan user karena
 // fungsinya tergantikan quick chat ini): promptnya yang
 // berorientasi pengunjung portofolio dipindah ke sini.
-const QUICK_PROMPTS: string[] = [
-  "Ceritakan keahlian Amamiya",
-  "Tampilkan proyek terbarunya",
-  "Bagaimana cara menghubunginya?",
+// Prompt cepat kini kunci kamus (lib/dict.ts) — teks yang dikirim
+// ke asisten mengikuti bahasa aktif situs.
+const QUICK_PROMPT_KEYS: DictKey[] = [
+  "fab.prompt1",
+  "fab.prompt2",
+  "fab.prompt3",
 ];
 
 export default function AgentFab() {
+  const { t } = useLang();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -96,13 +101,13 @@ export default function AgentFab() {
             />
             <div className="agent-panel-title">
               <strong>Vienna AI Assistant</strong>
-              <span>Asisten AI Amamiya</span>
+              <span>{t("fab.subtitle")}</span>
             </div>
             <Link
               href="/tools/assistant"
               className="agent-panel-btn"
-              aria-label="Buka halaman penuh Assistant"
-              title="Halaman penuh"
+              aria-label={t("fab.openFull")}
+              title={t("fab.fullPage")}
             >
               <Maximize2 size={16} />
             </Link>
@@ -110,8 +115,8 @@ export default function AgentFab() {
               type="button"
               className="agent-panel-btn"
               onClick={() => setOpen(false)}
-              aria-label="Tutup quick chat"
-              title="Tutup"
+              aria-label={t("fab.close")}
+              title={t("common.close")}
             >
               <X size={17} />
             </button>
@@ -129,15 +134,15 @@ export default function AgentFab() {
         onMouseLeave={() => setPeek(false)}
       >
         {!open && (
-          <div className="agent-qps" aria-label="Prompt cepat Vienna">
-            {QUICK_PROMPTS.map((p) => (
+          <div className="agent-qps" aria-label={t("fab.quickPrompts")}>
+            {QUICK_PROMPT_KEYS.map((k) => (
               <button
-                key={p}
+                key={k}
                 type="button"
                 className="agent-qp"
-                onClick={() => pickPrompt(p)}
+                onClick={() => pickPrompt(t(k))}
               >
-                {p}
+                {t(k)}
               </button>
             ))}
           </div>
@@ -147,11 +152,7 @@ export default function AgentFab() {
           className="agent-fab"
           onClick={toggle}
           aria-expanded={open}
-          aria-label={
-            open
-              ? "Tutup quick chat Vienna"
-              : "Buka quick chat Vienna AI Assistant"
-          }
+          aria-label={open ? t("fab.closeVienna") : t("fab.openVienna")}
           title="Vienna AI Assistant"
         >
           {open ? (

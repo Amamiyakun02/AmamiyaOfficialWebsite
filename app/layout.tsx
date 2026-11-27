@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import AgentFab from "@/components/AgentFab";
+import { LanguageProvider } from "@/lib/i18n";
 
 // WAJIB untuk tampilan mobile yang benar: tanpa viewport ini browser HP
 // merender halaman pada lebar virtual ±980px lalu memperkecilnya paksa —
@@ -14,9 +15,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Amamiya | Portofolio",
+  // Metadata statis berbahasa Inggris sejak 27 Nov 2026 (branding
+  // internasional; bahasa bawaan situs kini Inggris, lihat lib/dict.ts).
+  title: "Amamiya | Portfolio",
   description:
-    "Portofolio Amamiya: aplikasi AI, web & mobile, dan alat otomatisasi. Dibangun di atas panggung grid tipografi interaktif ala Muse Wonder.",
+    "Amamiya's portfolio: AI, web & mobile apps, and automation tools. Built on an interactive typographic grid stage in the style of Muse Wonder.",
   // Ikon aplikasi: logo monogram "AM" dari user (public/favicon.png,
   // ditambahkan user 2 Nov 2026 menggantikan tawaran ikon ∞ yang lama).
   icons: {
@@ -30,13 +33,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id">
+    <html lang="en">
       <body>
-        <div className="flex h-dvh flex-col">
-          <Navbar />
-          {children}
-          <AgentFab />
-        </div>
+        <LanguageProvider>
+          <div className="flex h-dvh flex-col">
+            <Navbar />
+            {children}
+            <AgentFab />
+          </div>
+        </LanguageProvider>
       </body>
     </html>
   );

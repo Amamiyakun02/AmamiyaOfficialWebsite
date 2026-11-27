@@ -17,6 +17,8 @@ import {
 import ChatMarkdown from "@/components/ChatMarkdown";
 import FileCards, { type ChatFile } from "@/components/FileCards";
 import { apiUrl } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
+import type { DictKey } from "@/lib/dict";
 
 /* =====================================================================
    Halaman chat Vienna AI Assistant.
@@ -149,10 +151,10 @@ const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4))
 const nowTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-function welcomeMessage(): Message {
+function welcomeMessage(text: string): Message {
   return {
     sender: "ai",
-    text: "Halo! Saya Vienna, asisten AI Amamiya. Tanyakan tentang keahliannya, proyeknya, atau cara menghubunginya.",
+    text,
     timestamp: nowTime(),
   };
 }
@@ -223,21 +225,26 @@ const formatCost = (cost: number): string =>
 // Label status tool (event {meta: {tool}}) selama agent bekerja —
 // status kecil yang hilang saat teks berikutnya/done tiba, bukan
 // gelembung sendiri.
-const TOOL_LABELS: Record<string, string> = {
-  write: "Menulis file…",
-  read: "Membaca file…",
-  edit: "Mengedit file…",
-  bash: "Menjalankan perintah…",
-  shell: "Menjalankan perintah…",
-  question: "Menyiapkan pertanyaan…",
-  webfetch: "Mengambil halaman web…",
-  websearch: "Mencari di web…",
-  grep: "Mencari dalam file…",
-  glob: "Mencari file…",
-  task: "Menjalankan sub-tugas…",
+const TOOL_LABEL_KEYS: Record<string, DictKey> = {
+  write: "assistant.tool.write",
+  read: "assistant.tool.read",
+  edit: "assistant.tool.edit",
+  bash: "assistant.tool.bash",
+  shell: "assistant.tool.bash",
+  question: "assistant.tool.question",
+  webfetch: "assistant.tool.webfetch",
+  websearch: "assistant.tool.websearch",
+  grep: "assistant.tool.grep",
+  glob: "assistant.tool.glob",
+  task: "assistant.tool.task",
 };
-const toolLabel = (name: string): string =>
-  TOOL_LABELS[name] ?? `Memakai tool ${name}…`;
+const toolLabel = (
+  name: string,
+  t: (key: DictKey, vars?: Record<string, string | number>) => string,
+): string =>
+  TOOL_LABEL_KEYS[name]
+    ? t(TOOL_LABEL_KEYS[name])
+    : t("assistant.toolFallback", { name });
 
 // Render teks pesan PENGGUNA (bukan markdown): blok ```...``` jadi
 // <pre>, sisanya pre-wrap biasa. Pesan AI memakai ChatMarkdown.
@@ -277,6 +284,7 @@ export default function AssistantChat({
   // (lebar penuh panel, tautan kembali hilang, kepala rata kanan).
   embedded?: boolean;
 } = {}) {
+  const { t } = useLang();
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<Message[]>([]);
@@ -305,9 +313,9 @@ export default function AssistantChat({
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
       const parsed = raw ? (JSON.parse(raw) as Message[]) : null;
-      setMessages(parsed && parsed.length > 0 ? parsed : [welcomeMessage()]);
+      setMessages(parsed && parsed.length > 0 ? parsed : [welcomeMessage(t("assistant.welcome"))]);
     } catch {
-      setMessages([welcomeMessage()]);
+      setMessages([welcomeMessage(t("assistant.welcome"))]);
     }
     setHydrated(true);
   }, []);
@@ -420,7 +428,7 @@ export default function AssistantChat({
       } catch {
         patchCard(card.id, {
           status: "pending",
-          error: "Gagal mengirim jawaban — coba lagi.",
+          error: t("assistant.errAnswer"),
         });
       }
     },
@@ -440,7 +448,7 @@ export default function AssistantChat({
       } catch {
         patchCard(card.id, {
           status: "pending",
-          error: "Gagal membatalkan — coba lagi.",
+          error: t("assistant.errCancel"),
         });
       }
     },
@@ -466,7 +474,7 @@ export default function AssistantChat({
       } catch {
         patchCard(card.id, {
           status: "pending",
-          error: "Gagal mengirim keputusan — coba lagi.",
+          error: t("assistant.errDecision"),
         });
       }
     },
@@ -645,9 +653,9 @@ export default function AssistantChat({
             /* bukan JSON */
           }
           if (response.status === 429) {
-            throw new Error(detail || "Terlalu banyak permintaan — tunggu sebentar lalu coba lagi.");
+            throw new Error(detail || t("assistant.errRate"));
           }
-          throw new Error(detail || "Gagal menghubungi server.");
+          throw new Error(detail || t("assistant.errServer"));
         }
         const reader = response.body?.getReader();
         if (!reader) throw new Error("Response body is not readable");
@@ -801,7 +809,7 @@ export default function AssistantChat({
         }
         // Stream selesai: tutup segmen aktif dengan teks gabungan
         // terakhir (meta ditempel oleh finishWith).
-        finishWith(segText || "(tidak ada jawaban)");
+        finishWith(segText || t("assistant.noAnswer"));
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
@@ -854,7 +862,7 @@ export default function AssistantChat({
     }
     setHitlCards([]);
     setHitlAnswers({});
-    const fresh = [welcomeMessage()];
+    const fresh = [welcomeMessage(t("assistant.welcome"))];
     setMessages(fresh);
     persist(fresh);
   };
@@ -882,8 +890,8 @@ export default function AssistantChat({
         {card.status === "cancelled" ? (
           <div className="min-w-[min(430px,72vw)] rounded-[14px] rounded-bl-[4px] border border-line3 border-l-[3px] border-l-steel bg-panel2 px-3.5 py-2.5 text-[13.5px] text-[#8298C0]">
             {card.kind === "form"
-              ? "Pertanyaan ini sudah tidak berlaku."
-              : "Permintaan persetujuan ini sudah tidak berlaku."}
+              ? t("assistant.formExpired")
+              : t("assistant.permExpired")}
           </div>
         ) : card.kind === "form" && card.form ? (
           <div
@@ -893,7 +901,7 @@ export default function AssistantChat({
           >
             <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#EEF4FF]">
               <MessageCircle size={15} className="flex-none text-accent3" />
-              <span>{card.form.title || "Pertanyaan dari agent"}</span>
+              <span>{card.form.title || t("assistant.formFallbackTitle")}</span>
             </div>
             {card.form.fields.map((f) => {
               const locked = card.status !== "pending";
@@ -1021,7 +1029,7 @@ export default function AssistantChat({
                           <input
                             className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
-                            placeholder="atau tulis jawabanmu sendiri, Enter untuk menambahkan…"
+                            placeholder={t("assistant.customPlaceholderEnter")}
                             defaultValue=""
                             onKeyDown={(e) => {
                               if (e.key !== "Enter") return;
@@ -1037,7 +1045,7 @@ export default function AssistantChat({
                           <input
                             className="box-border w-full rounded-[10px] border border-line3 bg-[rgba(13,13,16,0.85)] px-3 py-[9px] [font-family:inherit] [font-weight:inherit] text-sm text-[#EEF4FF] focus:border-line focus:outline-none disabled:opacity-70 mt-2"
                             disabled={locked}
-                            placeholder="atau tulis jawabanmu sendiri…"
+                            placeholder={t("assistant.customPlaceholder")}
                             value={customValue}
                             onChange={(e) => setField(e.target.value)}
                             onKeyDown={(e) => {
@@ -1120,7 +1128,7 @@ export default function AssistantChat({
                       }
                       onClick={() => void replyForm(card)}
                     >
-                      Kirim jawaban
+                      {t("assistant.sendAnswer")}
                     </button>
                   )}
                   <button
@@ -1129,7 +1137,7 @@ export default function AssistantChat({
                     disabled={card.status === "sending"}
                     onClick={() => void cancelForm(card)}
                   >
-                    Batalkan
+                    {t("assistant.cancel")}
                   </button>
                 </div>
               </>
@@ -1144,7 +1152,7 @@ export default function AssistantChat({
           >
             <div className="mb-2.5 flex items-center gap-2 text-[14.5px] font-bold text-[#EEF4FF]">
               <ShieldAlert size={15} className="flex-none text-accent3" />
-              <span>Persetujuan aksi</span>
+              <span>{t("assistant.approvalTitle")}</span>
             </div>
             <div className="mb-1.5 font-semibold break-anywhere text-[#DCE7FA]">{card.permission.action}</div>
             {card.permission.resources &&
@@ -1173,7 +1181,7 @@ export default function AssistantChat({
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "once")}
                 >
-                  Izinkan sekali
+                  {t("assistant.allowOnce")}
                 </button>
                 <button
                   type="button"
@@ -1181,7 +1189,7 @@ export default function AssistantChat({
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "always")}
                 >
-                  Selalu izinkan
+                  {t("assistant.allowAlways")}
                 </button>
                 <button
                   type="button"
@@ -1189,7 +1197,7 @@ export default function AssistantChat({
                   disabled={card.status === "sending"}
                   onClick={() => void replyPermission(card, "reject")}
                 >
-                  Tolak
+                  {t("assistant.reject")}
                 </button>
               </div>
             )}
@@ -1204,10 +1212,10 @@ export default function AssistantChat({
     <div className={embedded ? "flex min-h-0 w-full flex-1 flex-col px-3 pt-2 pb-3" : "mx-auto flex min-h-0 w-full max-w-[880px] flex-1 flex-col px-4 pt-3.5 pb-4 max-[760px]:px-3 max-[760px]:pt-2.5 max-[760px]:pb-3"}>
       <div className={embedded ? "flex flex-wrap items-center justify-end gap-2.5 border-b border-[#1e1e22] pb-2" : "flex flex-wrap items-center gap-2.5 border-b border-[#1e1e22] pb-3"}>
         <Link href="/#tools" className={embedded ? "hidden" : "mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white max-[760px]:mr-0"}>
-          <ArrowLeft size={16} /> Semua tools
+          <ArrowLeft size={16} /> {t("assistant.allTools")}
         </Link>
-        <button type="button" className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-transparent px-3 py-1.5 text-[13px] text-fog hover:border-steel hover:text-white" onClick={clearChat} title="Mulai sesi baru">
-          <Trash2 size={15} /> Sesi baru
+        <button type="button" className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-transparent px-3 py-1.5 text-[13px] text-fog hover:border-steel hover:text-white" onClick={clearChat} title={t("assistant.newSessionTitle")}>
+          <Trash2 size={15} /> {t("assistant.newSession")}
         </button>
       </div>
 
@@ -1296,7 +1304,7 @@ export default function AssistantChat({
         {toolName && busy && (
           <div className="-mt-0.5 mb-1.5 flex items-center gap-[7px] pl-9 text-[12.5px] text-fog" role="status">
             <LoaderCircle size={13} className="tool-status-spin" />
-            <span>{toolLabel(toolName)}</span>
+            <span>{toolLabel(toolName, t)}</span>
           </div>
         )}
 
@@ -1349,12 +1357,12 @@ export default function AssistantChat({
               void send(input);
             }
           }}
-          placeholder="Tulis pesan untuk Vienna…"
-          aria-label="Tulis pesan"
+          placeholder={t("assistant.inputPlaceholder")}
+          aria-label={t("assistant.inputLabel")}
           rows={1}
           maxLength={4000}
         />
-        <button type="submit" className="inline-flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-[#052A1E] disabled:cursor-default disabled:opacity-45" disabled={busy || !input.trim()} aria-label="Kirim pesan">
+        <button type="submit" className="inline-flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] border-0 bg-accent text-[#052A1E] disabled:cursor-default disabled:opacity-45" disabled={busy || !input.trim()} aria-label={t("assistant.sendLabel")}>
           <SendHorizontal size={17} />
         </button>
       </form>

@@ -31,6 +31,7 @@ import {
   MCP_CONNECT_SNIPPET,
   type McpToolCategory,
 } from "@/lib/mcpTools";
+import { useLang } from "@/lib/i18n";
 
 type Filter = "All" | McpToolCategory;
 const FILTERS: Filter[] = ["All", "math", "system", "text", "time"];
@@ -41,6 +42,7 @@ const FILTERS: Filter[] = ["All", "math", "system", "text", "time"];
 // penuh tanpa backend. Deskripsi memakai varian Bahasa Indonesia (toggle
 // EN/ID menyusul di tahap berikutnya; datanya sudah dwibahasa).
 export default function McpPlayground() {
+  const { lang, t } = useLang();
   const [filter, setFilter] = useState<Filter>("All");
   const [inputs, setInputs] = useState<Record<string, string>>(() =>
     Object.fromEntries(mcpTools.map((t) => [t.name, t.exampleInput]))
@@ -84,18 +86,16 @@ export default function McpPlayground() {
     <div className="min-h-0 w-full flex-1 overflow-y-auto">
       <div className="mx-auto max-w-[880px] px-4 pt-[18px] pb-14">
         <Link href="/#tools" className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white">
-          <ArrowLeft size={14} /> Kembali ke Tools
+          <ArrowLeft size={14} /> {t("common.backToTools")}
         </Link>
 
         <div className="mt-4 flex items-center gap-2 text-xs font-semibold tracking-[0.08em] text-accent uppercase">
           <Bot size={15} />
-          <span>Demo integrasi AI</span>
+          <span>{t("mcp.kicker")}</span>
         </div>
         <h1 className="mt-1.5 text-[32px] font-extrabold text-[#EEF4FF]">MCP Playground</h1>
         <p className="mt-2 max-w-[640px] text-sm leading-[1.6] text-fog">
-          Coba 10 tool Agent MCP langsung di sini. Ini simulasi browser dari
-          kontrak tool terketik yang sama dengan yang diekspos server Python
-          via stdio — server penuh ada di GitHub.
+          {t("mcp.intro")}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -113,7 +113,7 @@ export default function McpPlayground() {
             onClick={copySnippet}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            Salin config Claude
+            {t("mcp.copyConfig")}
           </button>
         </div>
 
@@ -130,7 +130,7 @@ export default function McpPlayground() {
               onClick={() => setFilter(f)}
               className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-40 ${filter === f ? "border-accent bg-accent text-[#052A1E]" : "border-line bg-panel2 text-[#AFC2E6]"}`}
             >
-              {f}
+              {f === "All" ? t("common.all") : f}
             </button>
           ))}
         </div>
@@ -142,7 +142,7 @@ export default function McpPlayground() {
                 <span className="font-mono text-[13.5px] font-bold text-accent2">{tool.name}</span>
                 <span className="rounded-full border border-[rgba(0,255,170,0.25)] bg-[rgba(0,255,170,0.1)] px-2 py-[3px] text-[9px] font-bold tracking-[0.08em] text-accent2 uppercase">{tool.category}</span>
               </div>
-              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-fog">{tool.description.id}</p>
+              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-fog">{tool.description[lang]}</p>
               <div className="mt-2 font-mono text-[10.5px] leading-[1.5] break-all text-[#5D7099]">{tool.schema}</div>
               <div className="mt-3 flex gap-2">
                 <input
@@ -157,8 +157,8 @@ export default function McpPlayground() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") runTool(tool.name);
                   }}
-                  placeholder="argumen..."
-                  aria-label={`Argumen ${tool.name}`}
+                  placeholder={t("mcp.argsPlaceholder")}
+                  aria-label={t("mcp.argsLabel", { name: tool.name })}
                 />
                 <button
                   type="button"
@@ -178,9 +178,7 @@ export default function McpPlayground() {
         <p className="mt-[22px] flex gap-2 text-[11.5px] leading-[1.6] text-[#5D7099]">
           <FlaskConical size={13} className="mt-0.5 flex-shrink-0" />
           <span>
-            Simulasi berjalan lokal di browser (math/text/clock sepenuhnya
-            nyata; sys_ping mengarah ke /status untuk cek asli). Server MCP
-            Python memakai nama + skema JSON yang identik via stdio.
+            {t("mcp.footer")}
           </span>
         </p>
       </div>
