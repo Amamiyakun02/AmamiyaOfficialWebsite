@@ -20,8 +20,10 @@ import { useEffect, useRef, useState } from "react";
 // RENDER HURUF = salinan persis mekanisme judul halaman utama
 // (analisa 27 Nov 2026 atas globals.css .t-dots/.t-block/.t-char
 // + drawHeatCell WonderScene): TIGA lapisan per huruf berjalan
-// serentak dalam SATU garis waktu 0,6 dtk dengan jeda jenjang
-// 85 mdtk/huruf — matriks titik 4x2 (tDots: muncul 0-12%, larut
+// serentak dalam SATU garis waktu yang DIPERCEPAT khusus
+// /labs (0,45 dtk, jeda jenjang 50 mdtk/huruf — permintaan user
+// 27 Nov sore agar total entrance tidak lama) — matriks titik
+// 4x2 (tDots: muncul 0-12%, larut
 // 30-42%), balok dua nada (tBlock: tumbuh scaleX 30-48%, larut
 // 68-84%, belah 55/45), karakter (tCharIn: masuk 60-100% sambil
 // naik 0,06em dari skala 0,94). Fase-fasenya BERTUMPUK — itu
@@ -49,9 +51,9 @@ const ANIM_CSS = `
 @keyframes labsPusatB { from { opacity: 0; transform: translate(202px, -117px) scale(0.35); } to { opacity: 1; transform: none; } }
 @keyframes labsPusatC { from { opacity: 0; transform: translate(-186px, -107px) scale(0.35); } to { opacity: 1; transform: none; } }
 .labs-dots, .labs-block { position: absolute; left: 50%; top: 50%; opacity: 0; pointer-events: none; }
-.labs-dots { width: 0.6em; height: 0.46em; transform: translate(-50%, -54%); background-size: 25% 50%; animation: labsDots 0.6s ease both; }
-.labs-block { width: 0.8em; height: 0.72em; transform: translate(-50%, -52%); border-radius: 2px; animation: labsBlock 0.6s ease both; }
-.labs-char { display: inline-block; opacity: 0; animation: labsCharIn 0.6s ease both; }
+.labs-dots { width: 0.6em; height: 0.46em; transform: translate(-50%, -54%); background-size: 25% 50%; animation: labsDots 0.45s ease both; }
+.labs-block { width: 0.8em; height: 0.72em; transform: translate(-50%, -52%); border-radius: 2px; animation: labsBlock 0.45s ease both; }
+.labs-char { display: inline-block; opacity: 0; animation: labsCharIn 0.45s ease both; }
 @keyframes labsDots {
   0% { opacity: 0; transform: translate(-50%, -54%) scale(0.6); }
   12% { opacity: 1; transform: translate(-50%, -54%) scale(1); }
@@ -78,7 +80,7 @@ const ANIM_CSS = `
 
 // Satu kata yang hurufnya di-render satu per satu ala judul
 // halaman utama: tiga lapisan (titik, balok, karakter) berbagi
-// jeda yang sama per huruf — mulai + i x 85 mdtk.
+// jeda yang sama per huruf — mulai + i x 50 mdtk.
 function KataRender({
   kata,
   mulai,
@@ -95,7 +97,7 @@ function KataRender({
   return (
     <>
       {kata.split("").map((h, i) => {
-        const delay = `${mulai + i * 0.085}s`;
+        const delay = `${mulai + i * 0.05}s`;
         return (
           <span key={i} className="relative inline-block">
             <span className="labs-char" style={{ animationDelay: delay }}>
@@ -131,6 +133,18 @@ function KataRender({
 // memudar. Isi selnya "#" dulu sebagai uji coba (BUKAN kata
 // AMAMIYA). Sekali jalan sesudah halaman dimuat, bukan loop;
 // hormati prefers-reduced-motion.
+//
+// SISA LEDAKAN (muncul PALING AKHIR, sesudah logo dan kata
+// selesai di-render — alur user: singularitas -> bigbang ->
+// logo & kata -> nebula dll): (1) NEBULA — 3 gumpalan gradasi
+// radial palet logo yang sangat samar, merangkak naik ±2,4 dtk
+// lalu diam; digambar ke canvas yang sama. (2) BINTANG — ±13%
+// sel dipilih deterministik sejak awal untuk jadi bintang di
+// posisi selnya; kemunculannya digerbang T_SISA (5,35 dtk) dan
+// tersebar ±0,7 dtk antar bintang, lalu berkelip pelan.
+// Sesudah ledakan, loop rAF berhenti dan digantikan gambar
+// ulang hemat 110 mdtk (hanya nebula + bintang) yang ikut
+// berhenti saat tab disembunyikan.
 function gambarSel(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -184,18 +198,39 @@ function gambarSel(
   }
 }
 
+type Bintang = {
+  x: number;
+  y: number;
+  tabur: number; // ms: sebaran waktu muncul antar bintang
+  lahir: number; // ms: daur selnya tuntas, bintang mengendap
+  r: number;
+  dasar: number; // alpha dasar
+  fase: number;
+  laju: number;
+  warna: string;
+};
+
 function LabsLedakan() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const cv = ref.current;
     if (!cv) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-      return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
     const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    const DUR = 900;
+    const FADE = 550;
+    const SPEED = 1500;
+    const T_SING = 500; // singularitas memadat (ms)
+    const T_FLASH = 150; // kilatan awal ledakan (ms)
+    const T_SISA = 5350; // gerbang sisa ledakan: nebula+bintang
+    // baru muncul sesudah logo bergeser & kata selesai di-render
     let W = 0, H = 0, CW = 0, CH = 0, cols = 0, rows = 0;
+    let cx = 0, cy = 0, maxD = 1;
+    let bintang: Bintang[] = [];
+    const hash = (r: number, c: number) =>
+      ((r * 73856093) ^ (c * 19349663)) >>> 0;
     const setup = () => {
       W = window.innerWidth;
       H = window.innerHeight;
@@ -205,17 +240,110 @@ function LabsLedakan() {
       CW = W / cols;
       CH = CW * 1.3;
       rows = Math.ceil(H / CH);
+      cx = W / 2;
+      cy = H / 2;
+      maxD = Math.hypot(cx, cy) || 1;
+      bintang = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const h = hash(r, c);
+          if (h % 100 >= 13) continue;
+          const x = (c + 0.5) * CW, y = (r + 0.5) * CH;
+          const mulai =
+            T_SING + (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
+          bintang.push({
+            x,
+            y,
+            tabur: (h >> 24) % 700,
+            lahir: mulai + DUR + FADE,
+            r: 0.8 + ((h >> 8) % 10) / 10,
+            dasar: 0.3 + ((h >> 12) % 40) / 100,
+            fase: ((h >> 16) % 628) / 100,
+            laju: 0.5 + ((h >> 20) % 90) / 100,
+            warna:
+              h % 5 === 0
+                ? "0, 255, 170"
+                : h % 5 === 1
+                  ? "130, 152, 192"
+                  : "238, 244, 255",
+          });
+        }
+      }
     };
     setup();
-    const cx = W / 2, cy = H / 2;
-    const maxD = Math.hypot(cx, cy) || 1;
-    const DUR = 900;
-    const FADE = 550;
-    const SPEED = 1500;
-    const T_SING = 500; // singularitas memadat (ms)
-    const T_FLASH = 150; // kilatan awal ledakan (ms)
+    // Nebula: [x, y, radius, warna rgb, alpha puncak] — posisi
+    // pecahan layar, radius terhadap sisi pendek layar.
+    const NEBULA: [number, number, number, string, number][] = [
+      [0.2, 0.26, 0.55, "0, 155, 160", 0.1],
+      [0.82, 0.74, 0.62, "0, 55, 150", 0.13],
+      [0.68, 0.14, 0.4, "10, 24, 71", 0.12],
+    ];
+    const gambarNebula = (skala: number) => {
+      const R = Math.min(W, H);
+      for (const [fx, fy, fr, rgb, puncak] of NEBULA) {
+        const rad = fr * R;
+        const g = ctx.createRadialGradient(fx * W, fy * H, 0, fx * W, fy * H, rad);
+        g.addColorStop(0, `rgba(${rgb}, ${(puncak * skala).toFixed(3)})`);
+        g.addColorStop(1, `rgba(${rgb}, 0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(fx * W - rad, fy * H - rad, rad * 2, rad * 2);
+      }
+    };
+    const gambarBintang = (t: number, mode: "endap" | "kelip") => {
+      for (const b of bintang) {
+        let a: number;
+        if (mode === "endap") {
+          // Bintang mengendap hanya sesudah gerbang T_SISA,
+          // tersebar antar bintang lewat tabur.
+          const masuk = (t - Math.max(b.lahir, T_SISA + b.tabur)) / 900;
+          if (masuk <= 0) continue;
+          a = b.dasar * Math.min(1, masuk);
+        } else {
+          a = b.dasar * (0.72 + 0.28 * Math.sin(t * 0.001 * b.laju + b.fase));
+        }
+        ctx.fillStyle = `rgba(${b.warna}, ${a.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    const bingkaiSisa = (t: number) => {
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      gambarNebula(Math.min(1, Math.max(0, (t - T_SISA) / 2400)));
+      gambarBintang(t, t < T_SISA + 1600 ? "endap" : "kelip");
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // Tanpa gerak: nebula + bintang tampil statis sekali gambar.
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      gambarNebula(1);
+      for (const b of bintang) {
+        ctx.fillStyle = `rgba(${b.warna}, ${b.dasar.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const diam = () => {
+        setup();
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, W, H);
+        gambarNebula(1);
+        for (const b of bintang) {
+          ctx.fillStyle = `rgba(${b.warna}, ${b.dasar.toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      };
+      window.addEventListener("resize", diam);
+      return () => window.removeEventListener("resize", diam);
+    }
+
     const T0 = performance.now();
     let raf = 0;
+    let sisaTimer: ReturnType<typeof setTimeout> | undefined;
+    let berhenti = false;
     // Singularitas: materi tersedot ke pusat (46 titik sudut
     // emas dalam cakram) sambil inti memadat — glow menyusut
     // 54->18 px, inti mengecil 7->3,5 px dan memutih.
@@ -255,8 +383,8 @@ function LabsLedakan() {
       ctx.arc(cx, cy, 3.6 - 1.1 * q, 0, Math.PI * 2);
       ctx.fill();
     };
-    // Kilatan ledakan: cincin terang mengembang cepat + sisa
-    // pijar inti yang memudar.
+    // Kilatan ledakan: cincin terang mengembang cepat + pijar
+    // inti yang memudar lembut.
     const gambarKilatan = (p: number) => {
       ctx.strokeStyle = `rgba(0, 255, 170, ${((1 - p) * 0.9).toFixed(3)})`;
       ctx.lineWidth = 3 - 1.8 * p;
@@ -274,12 +402,24 @@ function LabsLedakan() {
       ctx.arc(cx, cy, 20, 0, Math.PI * 2);
       ctx.fill();
     };
+    const mulaiSisa = () => {
+      const putar = () => {
+        if (berhenti) return;
+        if (!document.hidden) bingkaiSisa(performance.now() - T0);
+        sisaTimer = setTimeout(putar, 110);
+      };
+      putar();
+    };
     const frame = (now: number) => {
       const t = now - T0;
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       ctx.clearRect(0, 0, W, H);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      // Selama ledakan latar tetap hitam polos: nebula dan
+      // bintang adalah sisa ledakan yang muncul BELAKANGAN
+      // (digambar loop sisa sesudah gerbang T_SISA).
+      gambarBintang(t, "endap");
       let selesai = true;
       if (t < T_SING) {
         gambarSingularitas(t / T_SING, t);
@@ -289,36 +429,42 @@ function LabsLedakan() {
         selesai = false;
       }
       if (t >= T_SING) {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = (c + 0.5) * CW, y = (r + 0.5) * CH;
-          const mulai =
-            T_SING + (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
-          const p = (t - mulai) / DUR;
-          if (p < 0) {
-            selesai = false;
-            continue;
-          }
-          if (p >= 1) {
-            const pf = (t - mulai - DUR) / FADE;
-            if (pf >= 1) continue;
-            selesai = false;
-            gambarSel(ctx, x, y, CW, CH, 1, 1 - pf);
-          } else {
-            selesai = false;
-            gambarSel(ctx, x, y, CW, CH, p, 1);
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = (c + 0.5) * CW, y = (r + 0.5) * CH;
+            const mulai =
+              T_SING + (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
+            const p = (t - mulai) / DUR;
+            if (p < 0) {
+              selesai = false;
+              continue;
+            }
+            if (p >= 1) {
+              const pf = (t - mulai - DUR) / FADE;
+              if (pf >= 1) continue;
+              selesai = false;
+              gambarSel(ctx, x, y, CW, CH, 1, 1 - pf);
+            } else {
+              selesai = false;
+              gambarSel(ctx, x, y, CW, CH, p, 1);
+            }
           }
         }
       }
-      }
       if (!selesai) raf = requestAnimationFrame(frame);
-      else ctx.clearRect(0, 0, W, H);
+      else mulaiSisa();
     };
     raf = requestAnimationFrame(frame);
-    window.addEventListener("resize", setup);
+    const ubahUkuran = () => {
+      setup();
+      if (sisaTimer !== undefined) bingkaiSisa(performance.now() - T0);
+    };
+    window.addEventListener("resize", ubahUkuran);
     return () => {
+      berhenti = true;
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", setup);
+      if (sisaTimer !== undefined) clearTimeout(sisaTimer);
+      window.removeEventListener("resize", ubahUkuran);
     };
   }, []);
 
@@ -469,7 +615,7 @@ export default function LabsBody() {
           <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.02em] text-paper">
             <KataRender
               kata="AMAMIYA"
-              mulai={4.15}
+              mulai={4.1}
               titik="rgba(238,238,248,0.95)"
               blokTerang="#C3D2F0"
               blokGelap="#8298C0"
@@ -478,7 +624,7 @@ export default function LabsBody() {
           <p ref={refL} className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
-              mulai={5}
+              mulai={4.6}
               titik="rgba(0,187,162,0.95)"
               blokTerang="#00BBA2"
               blokGelap="#00675A"
