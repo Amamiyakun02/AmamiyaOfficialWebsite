@@ -36,6 +36,26 @@ export default function Navbar() {
   // tautan statis /profesional-cv.pdf yang lama.
   const [cvUrl, setCvUrl] = useState<string | null>(null);
   useEffect(() => {
+    // Di halaman tempat navbar tidak tampil (dashboard, /labs,
+    // /lab, host labs) tombol CV tak akan pernah dirender —
+    // jangan panggil /v1/site/cv percuma. Di situs live
+    // panggilan dari /labs itu 404 (backend VPS belum memuat
+    // Modul Media) dan mengotori konsol; terlihat user
+    // 27 Nov 2026. Dependensi pathname: komponen ini persisten
+    // di layout, jadi tiba di beranda dari halaman tersembunyi
+    // tetap harus memicu pengambilan.
+    if (
+      !pathname ||
+      pathname === "/dashboard" ||
+      pathname.startsWith("/dashboard/") ||
+      pathname === "/labs" ||
+      pathname.startsWith("/labs/") ||
+      pathname === "/lab" ||
+      pathname.startsWith("/lab/") ||
+      window.location.hostname === "labs.amamiya.web.id"
+    ) {
+      return;
+    }
     let alive = true;
     void fetchPublicCvUrl().then((url) => {
       if (alive) setCvUrl(url);
@@ -43,7 +63,7 @@ export default function Navbar() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [pathname]);
 
   // Sidebar mobile gaya situs docs (permintaan user 16 Nov): drawer
   // geser dari kiri berisi daftar menu vertikal yang bersih — bukan
