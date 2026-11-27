@@ -173,12 +173,12 @@ export default function LabsBody() {
         arah === "atas"
           ? baseline - m.actualBoundingBoxAscent
           : fs - baseline - m.actualBoundingBoxDescent;
-      // Sesudah rata tepi, kedua baris dirapatkan ke tengah sejauh
-      // RAPAT em supaya jarak antar katanya mengecil; blok kata
-      // tetap berpusat pada emblem.
-      const RAPAT = 0.14;
+      // Gap antar kata diperkecil dari sisi AMAMIYA saja: baris
+      // atas turun sejauh RAPAT em, sedangkan LABS TETAP menempel
+      // alas emblem (pilihan user — LABS tidak boleh terangkat).
+      const RAPAT = 0.28;
       const geser =
-        (arah === "atas" ? -celah / fs + RAPAT : celah / fs - RAPAT);
+        arah === "atas" ? -celah / fs + RAPAT : celah / fs;
       el.style.transform = `translateY(${geser.toFixed(4)}em)`;
     };
     sejajarkan(refA.current, "AMAMIYA", "atas");
