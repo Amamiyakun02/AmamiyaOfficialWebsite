@@ -7,7 +7,7 @@ import { useState } from "react";
 // latar, dan animasi sebelum logo dipakai di tempat lain. Markup SVG
 // di bawah persis file amamiya-logo-kaku-nobg.svg (3 path + 3 gradasi
 // #00FFAA -> #003796); LOGO_SVG adalah string aslinya untuk unduhan.
-const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"><linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><path fill-rule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z"/><path fill-rule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z"/><path fill-rule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z"/></svg>`;
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"><linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="183" y1="1387" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="1414" y1="1383" x2="797" y2="1028"><stop offset="0" stop-color="#00ffaa"/><stop offset="1" stop-color="#003796"/></linearGradient><path fill-rule="evenodd" fill="url(#g0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z"/><path fill-rule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z"/><path fill-rule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1401 L828,1401 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z"/></svg>`;
 
 // Animasi memakai CSS keyframes pada grup per elemen (transform-box:
 // fill-box supaya tiap elemen berputar/berskala pada porosnya sendiri).
@@ -94,7 +94,7 @@ function LogoSvg({ anim = "diam", speed = 1 }: { anim?: AnimKey; speed?: number 
         <path fillRule="evenodd" fill="url(#g1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z" />
       </g>
       <g className="logo-lab-el el-c">
-        <path fillRule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
+        <path fillRule="evenodd" fill="url(#g2)" d="M1120,835 L1441,1401 L828,1401 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
       </g>
       </g>
     </svg>

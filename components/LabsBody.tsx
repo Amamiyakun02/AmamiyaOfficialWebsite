@@ -173,7 +173,7 @@ export default function LabsBody() {
               <path fillRule="evenodd" fill="url(#lg1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z" />
             </g>
             <g className="labs-logo-el el-c" opacity={variant ? undefined : 0}>
-              <path fillRule="evenodd" fill="url(#lg2)" d="M1120,835 L1441,1393 L828,1403 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
+              <path fillRule="evenodd" fill="url(#lg2)" d="M1120,835 L1441,1401 L828,1401 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
             </g>
           </svg>
         </div>
