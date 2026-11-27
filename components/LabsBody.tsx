@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 
 // Badan halaman /labs: landing kosong calon subdomain lab —
 // logo berdampingan kata AMAMIYA LABS. Tanpa navbar: Navbar dan
@@ -71,10 +73,17 @@ const ANIM_CSS = `
   84% { opacity: 1; }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+.labs-btn { opacity: 0; animation: labsBtnIn 0.8s ease 5.6s both; }
+@keyframes labsBtnIn {
+  0% { opacity: 0; transform: translateY(10px); pointer-events: none; }
+  99% { pointer-events: none; }
+  100% { opacity: 1; transform: none; pointer-events: auto; }
+}
 @media (prefers-reduced-motion: reduce) {
   .labs-logo-el { opacity: 1 !important; animation: none !important; }
   .labs-dots, .labs-block { display: none !important; }
   .labs-char { opacity: 1 !important; animation: none !important; }
+  .labs-btn { opacity: 1 !important; animation: none !important; pointer-events: auto !important; }
 }
 `;
 
@@ -478,6 +487,7 @@ function LabsLedakan() {
 }
 
 export default function LabsBody() {
+  const { t } = useLang();
   const refA = useRef<HTMLParagraphElement>(null);
   const refL = useRef<HTMLParagraphElement>(null);
   // Koreografi entrance: fase 0 logo belum muncul (bungkusnya
@@ -564,8 +574,9 @@ export default function LabsBody() {
     <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-5">
       <style>{ANIM_CSS}</style>
       <LabsLedakan />
+      <div className="relative flex flex-col items-center">
       <div
-        className="relative flex items-center"
+        className="flex items-center"
         style={{ fontSize: "clamp(30px, 8.9vw, 80px)" }}
       >
         <div
@@ -631,6 +642,13 @@ export default function LabsBody() {
             />
           </p>
         </div>
+      </div>
+      <Link
+        href="/lab/logo"
+        className="labs-btn pointer-events-none mt-8 rounded-full border border-accent2/40 px-7 py-3 text-sm font-semibold tracking-[0.08em] text-paper no-underline transition-colors hover:border-accent hover:bg-accent/10 hover:text-accent"
+      >
+        {t("labs.enter")}
+      </Link>
       </div>
     </main>
   );

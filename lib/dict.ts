@@ -331,6 +331,7 @@ export const DICT = {
     id: "Taman bermain eksperimen — studi desain, prototipe, dan tool kecil yang sedang dikembangkan, jauh sebelum naik ke situs utama.",
   },
   "labs.open": { en: "Open experiment", id: "Buka eksperimen" },
+  "labs.enter": { en: "Enter the Lab", id: "Masuk ke Lab" },
   "labs.statusLive": { en: "Available", id: "Tersedia" },
   "labs.logoLabDesc": {
     en: "Playground for the Amamiya logo: size and padding previews, backgrounds, animation variants, and PNG/SVG export.",
