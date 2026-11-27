@@ -8,12 +8,13 @@ import { useEffect, useRef, useState } from "react";
 //
 // ENTRANCE berurutan (permintaan user 27 Nov 2026): ledakan
 // sel dari tengah layar lebih dulu (komponen LabsLedakan),
-// SESUDAH itu logo muncul dan terakit DI TENGAH layar (varian
-// ACAK per muat — rakit masuk / jatuh / geser, keyframes yang
-// sama dengan hero, jarak tempuh diskala ke ukuran logo di
-// sini), lalu logo BERGESER ke posisi lockup-nya sekarang,
-// dan terakhir kata AMAMIYA dan LABS di-RENDER huruf demi
-// huruf.
+// SESUDAH itu logo muncul dan terakit DI TENGAH layar dengan
+// SATU-SATUNYA animasi "rakit dari pusat" (diambil dari Logo
+// Lab /lab/logo: ketiga potongan berangkat dari gugus pusat
+// berskala 0,35 lalu menyebar ke tempatnya; offset diskala ke
+// ukuran logo di sini), lalu logo BERGESER ke posisi
+// lockup-nya sekarang, dan terakhir kata AMAMIYA dan LABS
+// di-RENDER huruf demi huruf.
 //
 // RENDER HURUF = salinan persis mekanisme judul halaman utama
 // (analisa 27 Nov 2026 atas globals.css .t-dots/.t-block/.t-char
@@ -38,28 +39,14 @@ import { useEffect, useRef, useState } from "react";
 // x 2.215em digeser -0.108em menelan bantalan crop, menyisakan
 // emblem tepat 2.3em x 2em.
 
-const VARIANTS = ["rakit", "jatuh", "geser"] as const;
-type Variant = (typeof VARIANTS)[number];
-
 const ANIM_CSS = `
 .labs-logo-el { transform-box: fill-box; transform-origin: center; }
-.labs-logo-rakit .el-a { animation: labsRakitA 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
-.labs-logo-rakit .el-b { animation: labsRakitB 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.23s both; }
-.labs-logo-rakit .el-c { animation: labsRakitC 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both; }
-@keyframes labsRakitA { from { opacity: 0; transform: translateY(-28px) rotate(-32deg) scale(0.72); } to { opacity: 1; transform: none; } }
-@keyframes labsRakitB { from { opacity: 0; transform: translate(-24px, 20px) rotate(28deg) scale(0.72); } to { opacity: 1; transform: none; } }
-@keyframes labsRakitC { from { opacity: 0; transform: translate(24px, 20px) rotate(-28deg) scale(0.72); } to { opacity: 1; transform: none; } }
-.labs-logo-jatuh .el-a, .labs-logo-jatuh .el-b, .labs-logo-jatuh .el-c { animation: labsJatuh 0.85s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.labs-logo-jatuh .el-a { animation-delay: 0.1s; }
-.labs-logo-jatuh .el-b { animation-delay: 0.24s; }
-.labs-logo-jatuh .el-c { animation-delay: 0.38s; }
-@keyframes labsJatuh { 0% { opacity: 0; transform: translateY(-260px); } 55% { opacity: 1; transform: translateY(8px); } 78% { transform: translateY(-4px); } 100% { opacity: 1; transform: none; } }
-.labs-logo-geser .el-a { animation: labsGeserA 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
-.labs-logo-geser .el-b { animation: labsGeserB 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.23s both; }
-.labs-logo-geser .el-c { animation: labsGeserC 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both; }
-@keyframes labsGeserA { from { opacity: 0; transform: translateY(-230px); } to { opacity: 1; transform: none; } }
-@keyframes labsGeserB { from { opacity: 0; transform: translateX(-230px); } to { opacity: 1; transform: none; } }
-@keyframes labsGeserC { from { opacity: 0; transform: translateX(230px); } to { opacity: 1; transform: none; } }
+.labs-logo-pusat .el-a { animation: labsPusatA 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.labs-logo-pusat .el-b { animation: labsPusatB 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both; }
+.labs-logo-pusat .el-c { animation: labsPusatC 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both; }
+@keyframes labsPusatA { from { opacity: 0; transform: translateY(208px) scale(0.35); } to { opacity: 1; transform: none; } }
+@keyframes labsPusatB { from { opacity: 0; transform: translate(202px, -117px) scale(0.35); } to { opacity: 1; transform: none; } }
+@keyframes labsPusatC { from { opacity: 0; transform: translate(-186px, -107px) scale(0.35); } to { opacity: 1; transform: none; } }
 .labs-dots, .labs-block { position: absolute; left: 50%; top: 50%; opacity: 0; pointer-events: none; }
 .labs-dots { width: 0.6em; height: 0.46em; transform: translate(-50%, -54%); background-size: 25% 50%; animation: labsDots 0.6s ease both; }
 .labs-block { width: 0.8em; height: 0.72em; transform: translate(-50%, -52%); border-radius: 2px; animation: labsBlock 0.6s ease both; }
@@ -271,7 +258,6 @@ function LabsLedakan() {
 }
 
 export default function LabsBody() {
-  const [variant, setVariant] = useState<Variant | null>(null);
   const refA = useRef<HTMLParagraphElement>(null);
   const refL = useRef<HTMLParagraphElement>(null);
   // Koreografi entrance: fase 0 logo belum muncul (bungkusnya
@@ -280,10 +266,6 @@ export default function LabsBody() {
   const [fase, setFase] = useState(0);
   const [dx, setDx] = useState(0);
   const refLogo = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setVariant(VARIANTS[Math.floor(Math.random() * VARIANTS.length)]);
-  }, []);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -305,7 +287,7 @@ export default function LabsBody() {
     ukur();
     window.addEventListener("resize", ukur);
     const t1 = setTimeout(() => setFase(1), 1400);
-    const t2 = setTimeout(() => setFase(2), 2700);
+    const t2 = setTimeout(() => setFase(2), 2850);
     return () => {
       window.removeEventListener("resize", ukur);
       clearTimeout(t1);
@@ -383,9 +365,7 @@ export default function LabsBody() {
             viewBox="99 228 1402 1235"
             role="img"
             aria-label="Logo Amamiya"
-            className={`absolute -top-[0.108em] -left-[0.108em] block h-[2.215em] w-[2.515em] max-w-none ${
-              variant ? `labs-logo-${variant}` : ""
-            }`}
+            className="labs-logo-pusat absolute -top-[0.108em] -left-[0.108em] block h-[2.215em] w-[2.515em] max-w-none"
           >
             <linearGradient id="lg0" gradientUnits="userSpaceOnUse" x1="797" y1="316" x2="797" y2="1028">
               <stop offset="0" stopColor="#00ffaa" />
@@ -399,13 +379,13 @@ export default function LabsBody() {
               <stop offset="0" stopColor="#00ffaa" />
               <stop offset="1" stopColor="#003796" />
             </linearGradient>
-            <g className="labs-logo-el el-a" opacity={variant ? undefined : 0}>
+            <g className="labs-logo-el el-a">
               <path fillRule="evenodd" fill="url(#lg0)" d="M470,845 L793,288 L1109,814 L999,966 L939,853 Z M650,732 L882,741 L932,739 L785,499 Z" />
             </g>
-            <g className="labs-logo-el el-b" opacity={variant ? undefined : 0}>
+            <g className="labs-logo-el el-b">
               <path fillRule="evenodd" fill="url(#lg1)" d="M803,1401 L159,1400 L456,864 L643,883 L575,992 Z M615,1302 L506,1097 L480,1054 L346,1302 Z" />
             </g>
-            <g className="labs-logo-el el-c" opacity={variant ? undefined : 0}>
+            <g className="labs-logo-el el-c">
               <path fillRule="evenodd" fill="url(#lg2)" d="M1120,835 L1441,1401 L828,1401 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
             </g>
           </svg>
@@ -415,7 +395,7 @@ export default function LabsBody() {
           <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.02em] text-paper">
             <KataRender
               kata="AMAMIYA"
-              mulai={3.5}
+              mulai={3.65}
               titik="rgba(238,238,248,0.95)"
               blokTerang="#C3D2F0"
               blokGelap="#8298C0"
@@ -424,7 +404,7 @@ export default function LabsBody() {
           <p ref={refL} className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
-              mulai={4.35}
+              mulai={4.5}
               titik="rgba(0,187,162,0.95)"
               blokTerang="#00BBA2"
               blokGelap="#00675A"
