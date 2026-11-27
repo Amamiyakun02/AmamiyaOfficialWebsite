@@ -6,11 +6,14 @@ import { useEffect, useRef, useState } from "react";
 // logo berdampingan kata AMAMIYA LABS. Tanpa navbar: Navbar dan
 // AgentFab ikut disembunyikan untuk awalan /labs.
 //
-// ENTRANCE meniru halaman utama (permintaan user 27 Nov 2026):
-// logo SVG terakit dengan varian ACAK per muat (rakit masuk /
-// jatuh / geser — keyframes yang sama dengan hero, jarak tempuh
-// diskala ke ukuran logo di sini), lalu kata AMAMIYA dan LABS
-// di-RENDER huruf demi huruf.
+// ENTRANCE berurutan (permintaan user 27 Nov 2026): ledakan
+// sel dari tengah layar lebih dulu (komponen LabsLedakan),
+// SESUDAH itu logo muncul dan terakit DI TENGAH layar (varian
+// ACAK per muat — rakit masuk / jatuh / geser, keyframes yang
+// sama dengan hero, jarak tempuh diskala ke ukuran logo di
+// sini), lalu logo BERGESER ke posisi lockup-nya sekarang,
+// dan terakhir kata AMAMIYA dan LABS di-RENDER huruf demi
+// huruf.
 //
 // RENDER HURUF = salinan persis mekanisme judul halaman utama
 // (analisa 27 Nov 2026 atas globals.css .t-dots/.t-block/.t-char
@@ -271,9 +274,43 @@ export default function LabsBody() {
   const [variant, setVariant] = useState<Variant | null>(null);
   const refA = useRef<HTMLParagraphElement>(null);
   const refL = useRef<HTMLParagraphElement>(null);
+  // Koreografi entrance: fase 0 logo belum muncul (bungkusnya
+  // digeser agar pusat logo tepat di tengah layar), fase 1 logo
+  // terakit di tengah, fase 2 logo bergeser ke posisi lockup.
+  const [fase, setFase] = useState(0);
+  const [dx, setDx] = useState(0);
+  const refLogo = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setVariant(VARIANTS[Math.floor(Math.random() * VARIANTS.length)]);
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setFase(2);
+      return;
+    }
+    const ukur = () => {
+      const el = refLogo.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      // Rect yang terukur sudah memuat transform berjalan, jadi
+      // pusat layout = pusat rect - dx lama; dx baru = selisih
+      // pusat layar terhadap pusat layout itu.
+      setDx((lama) => {
+        const pusat = r.left + r.width / 2 - lama;
+        return Math.round(window.innerWidth / 2 - pusat);
+      });
+    };
+    ukur();
+    window.addEventListener("resize", ukur);
+    const t1 = setTimeout(() => setFase(1), 1400);
+    const t2 = setTimeout(() => setFase(2), 2700);
+    return () => {
+      window.removeEventListener("resize", ukur);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   // Sejajarkan TINTA huruf dengan emblem, bukan kotak barisnya:
@@ -329,7 +366,19 @@ export default function LabsBody() {
         className="relative flex items-center"
         style={{ fontSize: "clamp(30px, 8.9vw, 80px)" }}
       >
-        <div className="relative h-[2em] w-[2.3em] flex-none">
+        <div
+          ref={refLogo}
+          className="relative h-[2em] w-[2.3em] flex-none"
+          style={{
+            transform:
+              fase === 2 ? "translateX(0px)" : `translateX(${dx}px)`,
+            transition:
+              fase === 2
+                ? "transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)"
+                : "none",
+          }}
+        >
+          {fase >= 1 && (
           <svg
             viewBox="99 228 1402 1235"
             role="img"
@@ -360,12 +409,13 @@ export default function LabsBody() {
               <path fillRule="evenodd" fill="url(#lg2)" d="M1120,835 L1441,1401 L828,1401 L751,1232 L879,1237 Z M1128,1047 L1005,1243 L981,1288 L1262,1280 Z" />
             </g>
           </svg>
+          )}
         </div>
         <div className="ml-[0.05em] flex h-[2em] flex-col justify-between">
           <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.02em] text-paper">
             <KataRender
               kata="AMAMIYA"
-              mulai={0.95}
+              mulai={3.5}
               titik="rgba(238,238,248,0.95)"
               blokTerang="#C3D2F0"
               blokGelap="#8298C0"
@@ -374,7 +424,7 @@ export default function LabsBody() {
           <p ref={refL} className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
-              mulai={1.8}
+              mulai={4.35}
               titik="rgba(0,187,162,0.95)"
               blokTerang="#00BBA2"
               blokGelap="#00675A"
