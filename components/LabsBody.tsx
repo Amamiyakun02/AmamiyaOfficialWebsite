@@ -10,13 +10,23 @@ import { useEffect, useState } from "react";
 // logo SVG terakit dengan varian ACAK per muat (rakit masuk /
 // jatuh / geser — keyframes yang sama dengan hero, jarak tempuh
 // diskala ke ukuran logo di sini), lalu kata AMAMIYA dan LABS
-// di-RENDER huruf demi huruf dengan efek render karakter ala
-// grid halaman utama: tiap huruf melewati fase titik -> balok
-// dua warna -> karakter jadi. Warna render mengikuti font
-// wordmark: AMAMIYA putih kertas, LABS teal aksen2.
+// di-RENDER huruf demi huruf.
+//
+// RENDER HURUF = salinan persis mekanisme judul halaman utama
+// (analisa 27 Nov 2026 atas globals.css .t-dots/.t-block/.t-char
+// + drawHeatCell WonderScene): TIGA lapisan per huruf berjalan
+// serentak dalam SATU garis waktu 0,6 dtk dengan jeda jenjang
+// 85 mdtk/huruf — matriks titik 4x2 (tDots: muncul 0-12%, larut
+// 30-42%), balok dua nada (tBlock: tumbuh scaleX 30-48%, larut
+// 68-84%, belah 55/45), karakter (tCharIn: masuk 60-100% sambil
+// naik 0,06em dari skala 0,94). Fase-fasenya BERTUMPUK — itu
+// yang membuatnya luwes, bukan langkah potong-potong.
+// Warna mengikuti font wordmark (permintaan user): AMAMIYA
+// memakai nilai judul utama apa adanya (titik 238,238,248 +
+// balok #C3D2F0/#8298C0, karakter putih kertas), LABS memakai
+// teal aksen2 untuk ketiga lapisannya (#00BBA2 / #00675A).
 // Latar SENGAJA polos: grid latar + highlight pointer sempat
-// dibuat lalu dimatikan user di hari yang sama — efek render
-// hanya untuk lockup ini, bukan background.
+// dibuat lalu dimatikan user di hari yang sama.
 //
 // Ukuran dikunci ke emblem visual: font AMAMIYA = setengah
 // tinggi emblem (80px pada emblem 160px), semua dalam em
@@ -47,75 +57,76 @@ const ANIM_CSS = `
 @keyframes labsGeserA { from { opacity: 0; transform: translateY(-230px); } to { opacity: 1; transform: none; } }
 @keyframes labsGeserB { from { opacity: 0; transform: translateX(-230px); } to { opacity: 1; transform: none; } }
 @keyframes labsGeserC { from { opacity: 0; transform: translateX(230px); } to { opacity: 1; transform: none; } }
+.labs-dots, .labs-block { position: absolute; left: 50%; top: 50%; opacity: 0; pointer-events: none; }
+.labs-dots { width: 0.6em; height: 0.46em; transform: translate(-50%, -54%); background-size: 25% 50%; animation: labsDots 0.6s ease both; }
+.labs-block { width: 0.8em; height: 0.72em; transform: translate(-50%, -52%); border-radius: 2px; animation: labsBlock 0.6s ease both; }
+.labs-char { display: inline-block; opacity: 0; animation: labsCharIn 0.6s ease both; }
+@keyframes labsDots {
+  0% { opacity: 0; transform: translate(-50%, -54%) scale(0.6); }
+  12% { opacity: 1; transform: translate(-50%, -54%) scale(1); }
+  30% { opacity: 1; }
+  42%, 100% { opacity: 0; transform: translate(-50%, -54%) scale(1); }
+}
+@keyframes labsBlock {
+  0%, 30% { opacity: 0; transform: translate(-50%, -52%) scaleX(0.15); }
+  48% { opacity: 1; transform: translate(-50%, -52%) scaleX(1); }
+  68% { opacity: 1; }
+  84%, 100% { opacity: 0; transform: translate(-50%, -52%) scaleX(1); }
+}
+@keyframes labsCharIn {
+  0%, 60% { opacity: 0; transform: translateY(0.06em) scale(0.94); }
+  84% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 @media (prefers-reduced-motion: reduce) {
   .labs-logo-el { opacity: 1 !important; animation: none !important; }
+  .labs-dots, .labs-block { display: none !important; }
+  .labs-char { opacity: 1 !important; animation: none !important; }
 }
 `;
 
-// Satu kata yang hurufnya di-render satu per satu:
-// fase 0 kosong -> 1 titik -> 2 balok dua warna -> 3 karakter.
-// Huruf asli menjadi pengukur lebar (opacity 0) supaya kata
-// tidak bergeser saat fase berganti.
+// Satu kata yang hurufnya di-render satu per satu ala judul
+// halaman utama: tiga lapisan (titik, balok, karakter) berbagi
+// jeda yang sama per huruf — mulai + i x 85 mdtk.
 function KataRender({
   kata,
   mulai,
-  terang,
-  gelap,
+  titik,
+  blokTerang,
+  blokGelap,
 }: {
   kata: string;
   mulai: number; // detik
-  terang: string;
-  gelap: string;
+  titik: string;
+  blokTerang: string;
+  blokGelap: string;
 }) {
-  const [fase, setFase] = useState<number[]>(() => kata.split("").map(() => 0));
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setFase(kata.split("").map(() => 3));
-      return;
-    }
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    const set = (i: number, f: number) =>
-      setFase((prev) => {
-        const next = [...prev];
-        next[i] = f;
-        return next;
-      });
-    kata.split("").forEach((_, i) => {
-      const base = (mulai + i * 0.09) * 1000;
-      timers.push(setTimeout(() => set(i, 1), base));
-      timers.push(setTimeout(() => set(i, 2), base + 130));
-      timers.push(setTimeout(() => set(i, 3), base + 300));
-    });
-    return () => timers.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <>
-      {kata.split("").map((h, i) => (
-        <span key={i} className="relative inline-block">
-          <span className={fase[i] === 3 ? undefined : "opacity-0"}>{h}</span>
-          {fase[i] === 1 && (
-            <span className="absolute inset-0 flex items-center justify-center">
-              <span
-                className="block h-[0.09em] w-[0.09em] rounded-full"
-                style={{ background: terang }}
-              />
+      {kata.split("").map((h, i) => {
+        const delay = `${mulai + i * 0.085}s`;
+        return (
+          <span key={i} className="relative inline-block">
+            <span className="labs-char" style={{ animationDelay: delay }}>
+              {h}
             </span>
-          )}
-          {fase[i] === 2 && (
-            <span className="absolute inset-0 flex items-center justify-center">
-              <span
-                className="block h-[0.68em] w-[0.6em]"
-                style={{
-                  background: `linear-gradient(90deg, ${terang} 62%, ${gelap} 62%)`,
-                }}
-              />
-            </span>
-          )}
-        </span>
-      ))}
+            <span
+              className="labs-dots"
+              style={{
+                animationDelay: delay,
+                backgroundImage: `radial-gradient(circle at center, ${titik} 0.036em, transparent 0.043em)`,
+              }}
+            />
+            <span
+              className="labs-block"
+              style={{
+                animationDelay: delay,
+                background: `linear-gradient(90deg, ${blokTerang} 0 55%, ${blokGelap} 55% 100%)`,
+              }}
+            />
+          </span>
+        );
+      })}
     </>
   );
 }
@@ -166,12 +177,24 @@ export default function LabsBody() {
             </g>
           </svg>
         </div>
-        <div className="ml-[0.12em] flex h-[2em] translate-y-[0.1em] flex-col justify-between">
+        <div className="ml-[0.05em] flex h-[2em] translate-y-[0.1em] flex-col justify-between">
           <p className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
-            <KataRender kata="AMAMIYA" mulai={1.3} terang="#EEF4FF" gelap="#83868C" />
+            <KataRender
+              kata="AMAMIYA"
+              mulai={1.35}
+              titik="rgba(238,238,248,0.95)"
+              blokTerang="#C3D2F0"
+              blokGelap="#8298C0"
+            />
           </p>
           <p className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
-            <KataRender kata="LABS" mulai={2.2} terang="#00BBA2" gelap="#00675A" />
+            <KataRender
+              kata="LABS"
+              mulai={2.15}
+              titik="rgba(0,187,162,0.95)"
+              blokTerang="#00BBA2"
+              blokGelap="#00675A"
+            />
           </p>
         </div>
       </div>
