@@ -70,8 +70,10 @@ export function useLang(): LangCtx {
   return useContext(Ctx);
 }
 
-// Pil dua posisi EN | ID dalam satu pil berbingkai — dipakai di
-// navbar desktop dan di laci mobile. Tombol aktif terisi aksen.
+// Satu kontrol teks "EN | ID" dalam satu pil berbingkai — dipakai
+// di navbar desktop dan di laci mobile. Bukan dua tombol terpisah:
+// yang aktif hanya diberi WARNA aksen, sisanya redup, dipisah garis
+// tegak (koreksi user 27 Nov 2026).
 export function LangSwitcher({ onPick }: { onPick?: () => void }) {
   const { lang, setLang, t } = useLang();
   const opt = (l: Lang, label: string) => (
@@ -82,10 +84,8 @@ export function LangSwitcher({ onPick }: { onPick?: () => void }) {
         setLang(l);
         onPick?.();
       }}
-      className={`cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-bold tracking-[0.04em] transition-colors duration-150 ${
-        lang === l
-          ? "bg-accent text-[#052A1E]"
-          : "text-[#9DB1D9] hover:text-white"
+      className={`cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[12.5px] font-bold tracking-[0.04em] transition-colors duration-150 ${
+        lang === l ? "text-accent" : "text-[#8298C0] hover:text-white"
       }`}
     >
       {label}
@@ -93,13 +93,16 @@ export function LangSwitcher({ onPick }: { onPick?: () => void }) {
   );
   return (
     <span
-      className="inline-flex flex-none items-center gap-0.5 rounded-full border border-line3 bg-white/[0.03] p-[3px]"
+      className="inline-flex flex-none items-center rounded-full border border-line3 bg-white/[0.03] px-2 py-[3px]"
       role="group"
       aria-label={t("nav.language")}
       title={t("nav.language")}
     >
-      <Globe size={13} className="ml-1 flex-none text-[#8298C0]" aria-hidden="true" />
+      <Globe size={13} className="mr-0.5 flex-none text-[#8298C0]" aria-hidden="true" />
       {opt("en", "EN")}
+      <span className="text-[#41538A]" aria-hidden="true">
+        |
+      </span>
       {opt("id", "ID")}
     </span>
   );
