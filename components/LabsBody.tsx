@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from "react";
 // logo berdampingan kata AMAMIYA LABS. Tanpa navbar: Navbar dan
 // AgentFab ikut disembunyikan untuk awalan /labs.
 //
-// ENTRANCE berurutan (permintaan user 27 Nov 2026): ledakan
-// sel dari tengah layar lebih dulu (komponen LabsLedakan),
+// ENTRANCE berurutan (permintaan user 27 Nov 2026): dibuka
+// SINGULARITAS pekat di tengah selama 0,5 dtk, lalu ledakan
+// sel dari tengah layar (komponen LabsLedakan),
 // SESUDAH itu logo muncul dan terakit DI TENGAH layar dengan
 // SATU-SATUNYA animasi "rakit dari pusat" (diambil dari Logo
 // Lab /lab/logo: ketiga potongan berangkat dari gugus pusat
@@ -121,12 +122,15 @@ function KataRender({
   );
 }
 
-// Ledakan sel dari tengah (entrance KHUSUS /labs): kisi sel
-// materialisasi — matriks titik, balok dua nada, lalu karakter —
-// menyebar radial dari tengah layar lalu memudar. Isi selnya "#"
-// dulu sebagai uji coba (BUKAN kata AMAMIYA). Sekali jalan
-// sesudah halaman dimuat, bukan loop; hormati
-// prefers-reduced-motion.
+// Ledakan sel dari tengah (entrance KHUSUS /labs), dibuka
+// SINGULARITAS: inti pekat bercahaya di tengah layar selama
+// 0,5 dtk — titik-titik materi tersedot masuk, cahaya memadat
+// (glow menyusut, inti memutih) — lalu MELEDAK: kilatan cincin
+// disusul kisi sel materialisasi (matriks titik, balok dua
+// nada, lalu karakter) yang menyebar radial dari tengah lalu
+// memudar. Isi selnya "#" dulu sebagai uji coba (BUKAN kata
+// AMAMIYA). Sekali jalan sesudah halaman dimuat, bukan loop;
+// hormati prefers-reduced-motion.
 function gambarSel(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -208,8 +212,68 @@ function LabsLedakan() {
     const DUR = 900;
     const FADE = 550;
     const SPEED = 1500;
+    const T_SING = 500; // singularitas memadat (ms)
+    const T_FLASH = 150; // kilatan awal ledakan (ms)
     const T0 = performance.now();
     let raf = 0;
+    // Singularitas: materi tersedot ke pusat (46 titik sudut
+    // emas dalam cakram) sambil inti memadat — glow menyusut
+    // 54->18 px, inti mengecil 7->3,5 px dan memutih.
+    const gambarSingularitas = (q: number, t: number) => {
+      for (let i = 0; i < 46; i++) {
+        const sudut = i * 2.399963;
+        const r0 = 42 + ((i * 67) % 150);
+        const r = r0 * (1 - q * q) + 5;
+        const a = 0.12 + 0.8 * q;
+        ctx.fillStyle = `rgba(0, 217, 145, ${a.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(
+          cx + Math.cos(sudut) * r,
+          cy + Math.sin(sudut) * r,
+          1.4 + (i % 3) * 0.5,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+      const denyut = 1 + 0.05 * Math.sin(t / 38);
+      const glowR = (54 - 36 * q) * denyut;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+      g.addColorStop(0, `rgba(0, 255, 170, ${(0.55 + 0.3 * q).toFixed(3)})`);
+      g.addColorStop(0.4, "rgba(0, 187, 162, 0.28)");
+      g.addColorStop(1, "rgba(0, 155, 160, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#00d991";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 7 - 2 * q, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = `rgba(239, 255, 248, ${(0.55 + 0.45 * q).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3.6 - 1.1 * q, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    // Kilatan ledakan: cincin terang mengembang cepat + sisa
+    // pijar inti yang memudar.
+    const gambarKilatan = (p: number) => {
+      ctx.strokeStyle = `rgba(0, 255, 170, ${((1 - p) * 0.9).toFixed(3)})`;
+      ctx.lineWidth = 3 - 1.8 * p;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 8 + p * 110, 0, Math.PI * 2);
+      ctx.stroke();
+      const sisa = ctx.createRadialGradient(cx, cy, 0, cx, cy, 20);
+      sisa.addColorStop(
+        0,
+        `rgba(239, 255, 248, ${((1 - p) * 0.55).toFixed(3)})`,
+      );
+      sisa.addColorStop(1, "rgba(0, 255, 170, 0)");
+      ctx.fillStyle = sisa;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      ctx.fill();
+    };
     const frame = (now: number) => {
       const t = now - T0;
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -217,10 +281,19 @@ function LabsLedakan() {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       let selesai = true;
+      if (t < T_SING) {
+        gambarSingularitas(t / T_SING, t);
+        selesai = false;
+      } else if (t < T_SING + T_FLASH) {
+        gambarKilatan((t - T_SING) / T_FLASH);
+        selesai = false;
+      }
+      if (t >= T_SING) {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const x = (c + 0.5) * CW, y = (r + 0.5) * CH;
-          const mulai = (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
+          const mulai =
+            T_SING + (Math.hypot(x - cx, y - cy) / maxD) * SPEED;
           const p = (t - mulai) / DUR;
           if (p < 0) {
             selesai = false;
@@ -236,6 +309,7 @@ function LabsLedakan() {
             gambarSel(ctx, x, y, CW, CH, p, 1);
           }
         }
+      }
       }
       if (!selesai) raf = requestAnimationFrame(frame);
       else ctx.clearRect(0, 0, W, H);
@@ -286,8 +360,8 @@ export default function LabsBody() {
     };
     ukur();
     window.addEventListener("resize", ukur);
-    const t1 = setTimeout(() => setFase(1), 1400);
-    const t2 = setTimeout(() => setFase(2), 2850);
+    const t1 = setTimeout(() => setFase(1), 1900);
+    const t2 = setTimeout(() => setFase(2), 3350);
     return () => {
       window.removeEventListener("resize", ukur);
       clearTimeout(t1);
@@ -395,7 +469,7 @@ export default function LabsBody() {
           <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.02em] text-paper">
             <KataRender
               kata="AMAMIYA"
-              mulai={3.65}
+              mulai={4.15}
               titik="rgba(238,238,248,0.95)"
               blokTerang="#C3D2F0"
               blokGelap="#8298C0"
@@ -404,7 +478,7 @@ export default function LabsBody() {
           <p ref={refL} className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
-              mulai={4.5}
+              mulai={5}
               titik="rgba(0,187,162,0.95)"
               blokTerang="#00BBA2"
               blokGelap="#00675A"
