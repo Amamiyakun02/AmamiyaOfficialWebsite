@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Badan halaman /labs: landing kosong calon subdomain lab —
 // logo berdampingan kata AMAMIYA LABS. Tanpa navbar: Navbar dan
@@ -133,9 +133,51 @@ function KataRender({
 
 export default function LabsBody() {
   const [variant, setVariant] = useState<Variant | null>(null);
+  const refA = useRef<HTMLParagraphElement>(null);
+  const refL = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     setVariant(VARIANTS[Math.floor(Math.random() * VARIANTS.length)]);
+  }, []);
+
+  // Sejajarkan TINTA huruf dengan emblem, bukan kotak barisnya:
+  // di dalam kotak baris (line-height 1) huruf kapital mengambang
+  // — ada ruang metrik font di atas topi huruf dan di bawah garis
+  // alasnya, besarnya beda-beda per font perangkat. Ukur dari
+  // metrik font yang benar-benar dipakai browser ini, lalu geser
+  // AMAMIYA naik sejauh celah atasnya dan LABS turun sejauh celah
+  // bawahnya (dalam em, jadi ikut skala di semua ukuran layar).
+  useEffect(() => {
+    const cv = document.createElement("canvas").getContext("2d");
+    if (!cv) return;
+    const sejajarkan = (
+      el: HTMLParagraphElement | null,
+      kata: string,
+      arah: "atas" | "bawah",
+    ) => {
+      if (!el) return;
+      const cs = getComputedStyle(el);
+      const fs = parseFloat(cs.fontSize);
+      if (!fs) return;
+      cv.font = `${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+      const m = cv.measureText(kata);
+      if (
+        m.fontBoundingBoxAscent === undefined ||
+        m.fontBoundingBoxDescent === undefined
+      )
+        return;
+      const baseline =
+        (fs - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 +
+        m.fontBoundingBoxAscent;
+      const celah =
+        arah === "atas"
+          ? baseline - m.actualBoundingBoxAscent
+          : fs - baseline - m.actualBoundingBoxDescent;
+      if (celah > 0)
+        el.style.transform = `translateY(${((arah === "atas" ? -celah : celah) / fs).toFixed(4)}em)`;
+    };
+    sejajarkan(refA.current, "AMAMIYA", "atas");
+    sejajarkan(refL.current, "LABS", "bawah");
   }, []);
 
   return (
@@ -177,8 +219,8 @@ export default function LabsBody() {
             </g>
           </svg>
         </div>
-        <div className="ml-[0.05em] flex h-[2em] translate-y-[0.1em] flex-col justify-between">
-          <p className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
+        <div className="ml-[0.05em] flex h-[2em] flex-col justify-between">
+          <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
             <KataRender
               kata="AMAMIYA"
               mulai={0.95}
@@ -187,7 +229,7 @@ export default function LabsBody() {
               blokGelap="#8298C0"
             />
           </p>
-          <p className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
+          <p ref={refL} className="m-0 text-[1em] leading-none font-bold tracking-[0.02em] text-accent2">
             <KataRender
               kata="LABS"
               mulai={1.8}
