@@ -65,7 +65,15 @@ export default function AgentFab() {
     !pathname ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/labs") ||
-    pathname === "/tools/assistant"
+    pathname === "/tools/assistant" ||
+    // Akar host labs.amamiya.web.id adalah landing /labs yang
+    // di-rewrite: usePathname klien membaca "/" sehingga FAB
+    // muncul lagi sesudah hidrasi (bug yang sama dengan navbar,
+    // dilaporkan user 27 Nov 2026). Cek hostname saat render —
+    // di server window tak ada sehingga SSR tidak berubah.
+    (typeof window !== "undefined" &&
+      window.location.hostname === "labs.amamiya.web.id" &&
+      pathname === "/")
   )
     return null;
 
