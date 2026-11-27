@@ -170,7 +170,7 @@ export default function LogoLab() {
     <main className="min-h-0 flex-1 overflow-y-auto">
       <style>{ANIM_CSS}</style>
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        <a href="/labs" className="text-[13px] font-semibold text-accent2 transition-colors hover:text-accent">
+        <a href="/lab" className="text-[13px] font-semibold text-accent2 transition-colors hover:text-accent">
           ← Labs
         </a>
         <h1 className="mt-2 text-[28px] font-bold text-paper">Logo Lab</h1>

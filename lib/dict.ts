@@ -332,6 +332,8 @@ export const DICT = {
   },
   "labs.open": { en: "Open experiment", id: "Buka eksperimen" },
   "labs.enter": { en: "Enter the Lab", id: "Masuk ke Lab" },
+  "labs.backLanding": { en: "Back to landing", id: "Kembali ke landing" },
+  "labs.moreTitle": { en: "More experiments", id: "Eksperimen lainnya" },
   "labs.statusLive": { en: "Available", id: "Tersedia" },
   "labs.logoLabDesc": {
     en: "Playground for the Amamiya logo: size and padding previews, backgrounds, animation variants, and PNG/SVG export.",

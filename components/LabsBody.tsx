@@ -644,7 +644,7 @@ export default function LabsBody() {
         </div>
       </div>
       <Link
-        href="/lab/logo"
+        href="/lab"
         className="labs-btn pointer-events-none mt-8 rounded-full border border-accent2/40 px-7 py-3 text-sm font-semibold tracking-[0.08em] text-paper no-underline transition-colors hover:border-accent hover:bg-accent/10 hover:text-accent"
       >
         {t("labs.enter")}
