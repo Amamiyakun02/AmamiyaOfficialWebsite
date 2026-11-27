@@ -2843,17 +2843,23 @@ code {
 .st-title.st-pre .t-char {
   opacity: 0;
 }
+/* TANPA basis 1,35s milik hero (di hero basis itu menunggu
+   logo selesai dirakit; di judul section tidak ada yang ditunggu —
+   basis itu sempat ikut tersalin ke sini sehingga timer "done"
+   di SectionTitle (620ms + jenjang) selalu memutus animasi
+   SEBELUM huruf pertama mulai: judul muncul utuh tanpa
+   materialisasi. Bug dilaporkan user 27 Nov 2026.) */
 .st-title.st-play .t-char {
   animation: tCharIn 0.6s ease both;
-  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 .st-title.st-play .t-dots {
   animation: tDots 0.6s ease both;
-  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 .st-title.st-play .t-block {
   animation: tBlock 0.6s ease both;
-  animation-delay: calc(1.35s + var(--i) * var(--sd, 85ms));
+  animation-delay: calc(var(--i) * var(--sd, 85ms));
 }
 .st-title.st-instant .t-dots,
 .st-title.st-instant .t-block {
