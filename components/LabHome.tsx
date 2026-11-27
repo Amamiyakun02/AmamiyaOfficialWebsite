@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, FlaskConical } from "lucide-react";
+import { ArrowUpRight, FlaskConical } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import SectionTitle from "@/components/SectionTitle";
 
@@ -23,14 +23,7 @@ export default function LabHome() {
         }}
       >
         <div className="mx-auto max-w-[1080px] px-4 pt-[18px] pb-14">
-          <Link
-            href="/labs"
-            className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-fog no-underline hover:text-white"
-          >
-            <ArrowLeft size={14} /> {t("labs.backLanding")}
-          </Link>
-
-          <p className="m-0 mt-8 text-[12px] font-bold tracking-[0.28em] text-accent2">
+          <p className="m-0 mt-2 text-[12px] font-bold tracking-[0.28em] text-accent2">
             {t("labs.kicker")}
           </p>
           <SectionTitle text={t("labs.title")} />

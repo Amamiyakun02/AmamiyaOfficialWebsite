@@ -41,7 +41,8 @@ function allowedOnLabsHost(pathname: string): boolean {
     pathname === "/favicon.png" ||
     pathname === "/favicon.ico" ||
     pathname === "/vienna.svg" ||
-    pathname === "/profesional-cv.pdf"
+    pathname === "/profesional-cv.pdf" ||
+    pathname === "/labs-wordmark.png"
   );
 }
 

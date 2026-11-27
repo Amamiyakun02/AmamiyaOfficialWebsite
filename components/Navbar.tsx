@@ -136,7 +136,9 @@ export default function Navbar() {
     pathname === "/dashboard" ||
     pathname?.startsWith("/dashboard/") ||
     pathname === "/labs" ||
-    pathname?.startsWith("/labs/")
+    pathname?.startsWith("/labs/") ||
+    pathname === "/lab" ||
+    pathname?.startsWith("/lab/")
   )
     return null;
 

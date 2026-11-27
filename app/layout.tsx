@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import LabHeader from "@/components/LabHeader";
 import AgentFab from "@/components/AgentFab";
 import { LanguageProvider } from "@/lib/i18n";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
         <LanguageProvider>
           <div className="flex h-dvh flex-col">
             <Navbar />
+            <LabHeader />
             {children}
             <AgentFab />
           </div>

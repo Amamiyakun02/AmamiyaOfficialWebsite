@@ -170,14 +170,11 @@ export default function LogoLab() {
     <main className="min-h-0 flex-1 overflow-y-auto">
       <style>{ANIM_CSS}</style>
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        <a href="/lab" className="text-[13px] font-semibold text-accent2 transition-colors hover:text-accent">
-          ← Labs
-        </a>
         <h1 className="mt-2 text-[28px] font-bold text-paper">Logo Lab</h1>
         <p className="mt-1 max-w-[640px] text-sm leading-relaxed text-fog">
           Halaman coba-coba untuk SVG logo Amamiya: atur ukuran, padding, latar, dan animasi untuk
-          melihat hasilnya sebelum dipakai. Tidak ada tautan ke sini dari navbar — halaman ini hanya
-          dijangkau lewat URL langsung.
+          melihat hasilnya sebelum dipakai. Bagian dari Amamiya Labs — dijangkau dari beranda Lab
+          atau lewat URL langsung.
         </p>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_300px]">
