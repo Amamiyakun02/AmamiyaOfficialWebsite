@@ -173,8 +173,13 @@ export default function LabsBody() {
         arah === "atas"
           ? baseline - m.actualBoundingBoxAscent
           : fs - baseline - m.actualBoundingBoxDescent;
-      if (celah > 0)
-        el.style.transform = `translateY(${((arah === "atas" ? -celah : celah) / fs).toFixed(4)}em)`;
+      // Sesudah rata tepi, kedua baris dirapatkan ke tengah sejauh
+      // RAPAT em supaya jarak antar katanya mengecil; blok kata
+      // tetap berpusat pada emblem.
+      const RAPAT = 0.14;
+      const geser =
+        (arah === "atas" ? -celah / fs + RAPAT : celah / fs - RAPAT);
+      el.style.transform = `translateY(${geser.toFixed(4)}em)`;
     };
     sejajarkan(refA.current, "AMAMIYA", "atas");
     sejajarkan(refL.current, "LABS", "bawah");
@@ -220,7 +225,7 @@ export default function LabsBody() {
           </svg>
         </div>
         <div className="ml-[0.05em] flex h-[2em] flex-col justify-between">
-          <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.08em] text-paper">
+          <p ref={refA} className="m-0 text-[1em] leading-none font-extrabold tracking-[0.02em] text-paper">
             <KataRender
               kata="AMAMIYA"
               mulai={0.95}
