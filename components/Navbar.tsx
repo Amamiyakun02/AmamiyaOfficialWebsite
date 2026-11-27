@@ -239,7 +239,15 @@ export default function Navbar() {
             ? "pointer-events-auto translate-x-0 shadow-[24px_0_48px_rgba(0,0,0,0.45)]"
             : "pointer-events-none -translate-x-[105%]"
         }`}
-        aria-hidden={!open}
+        // inert, BUKAN aria-hidden: aria-hidden pada laci tertutup
+        // diblokir browser bila tautan yang baru diklik masih
+        // memegang fokus (peringatan konsol "Blocked aria-hidden",
+        // dilaporkan user 27 Nov 2026) — dan memang tautannya tetap
+        // bisa difokus keyboard walau laci tertutup. inert menutup
+        // keduanya: laci tertutup hilang dari pohon aksesibilitas
+        // DAN tidak dapat difokus; fokus yang tertinggal di dalam
+        // dilepas browser ke <body>.
+        inert={!open}
       >
         <div className="flex items-center justify-between border-b border-[#1e1e22] px-[18px] py-[13px]">
           <Link
