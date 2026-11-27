@@ -132,7 +132,12 @@ export default function Navbar() {
   // 5 Nov (permintaan user, entrance memenuhi layar), dan sejak
   // rombak bersidebar 18 Nov halaman dashboardnya juga — ia aplikasi
   // platform mandiri dengan sidebar + tautan "Situs utama" sendiri.
-  if (pathname === "/dashboard" || pathname?.startsWith("/dashboard/"))
+  if (
+    pathname === "/dashboard" ||
+    pathname?.startsWith("/dashboard/") ||
+    pathname === "/labs" ||
+    pathname?.startsWith("/labs/")
+  )
     return null;
 
   return (

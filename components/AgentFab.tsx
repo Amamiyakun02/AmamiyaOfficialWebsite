@@ -64,6 +64,7 @@ export default function AgentFab() {
   if (
     !pathname ||
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/labs") ||
     pathname === "/tools/assistant"
   )
     return null;
