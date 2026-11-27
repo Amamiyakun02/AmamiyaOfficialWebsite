@@ -323,6 +323,24 @@ export const DICT = {
   "file.minimize": { en: "Minimize", id: "Perkecil" },
   "file.dragResize": { en: "Drag to resize", id: "Seret untuk mengubah ukuran" },
 
+  // ===== Labs (/labs — calon beranda labs.amamiya.web.id) =====
+  "labs.kicker": { en: "AMAMIYA LABS", id: "AMAMIYA LABS" },
+  "labs.title": { en: "Labs", id: "Labs" },
+  "labs.intro": {
+    en: "A playground for experiments — design studies, prototypes, and small tools in progress, long before they graduate to the main site.",
+    id: "Taman bermain eksperimen — studi desain, prototipe, dan tool kecil yang sedang dikembangkan, jauh sebelum naik ke situs utama.",
+  },
+  "labs.open": { en: "Open experiment", id: "Buka eksperimen" },
+  "labs.statusLive": { en: "Available", id: "Tersedia" },
+  "labs.logoLabDesc": {
+    en: "Playground for the Amamiya logo: size and padding previews, backgrounds, animation variants, and PNG/SVG export.",
+    id: "Halaman coba-coba logo Amamiya: pratinjau ukuran dan padding, latar, varian animasi, dan ekspor PNG/SVG.",
+  },
+  "labs.moreSoon": {
+    en: "More experiments are brewing — this page is where they will land first.",
+    id: "Eksperimen lain sedang disiapkan — halaman ini tempat mereka mendarat pertama kali.",
+  },
+
   // ===== 404 & error =====
   "nf.title": { en: "Page not found", id: "Halaman tidak ditemukan" },
   "err.title": { en: "Something went wrong", id: "Terjadi kesalahan" },
