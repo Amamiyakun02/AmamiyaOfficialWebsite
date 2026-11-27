@@ -35,8 +35,8 @@ export default function LabHeader() {
         </Link>
         {expTitle && (
           <>
-            <span className="h-5 w-px bg-line" />
-            <span className="text-[15px] font-bold text-paper">{expTitle}</span>
+            <span className="h-6 w-px bg-line" />
+            <span className="text-[20px] font-bold text-paper max-[760px]:text-[17px]">{expTitle}</span>
           </>
         )}
       </div>

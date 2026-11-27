@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import SectionTitle from "@/components/SectionTitle";
 
 // Halaman coba-coba logo Amamiya (SVG kaku final, disetujui user
 // 25 Nov 2026): pratinjau interaktif untuk menguji ukuran, padding,
@@ -170,7 +171,9 @@ export default function LogoLab() {
     <main className="min-h-0 flex-1 overflow-y-auto">
       <style>{ANIM_CSS}</style>
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        <h1 className="mt-2 text-[28px] font-bold text-paper">Logo Lab</h1>
+        <div className="mt-2">
+          <SectionTitle text="Logo Lab" />
+        </div>
         <p className="mt-1 max-w-[640px] text-sm leading-relaxed text-fog">
           Halaman coba-coba untuk SVG logo Amamiya: atur ukuran, padding, latar, dan animasi untuk
           melihat hasilnya sebelum dipakai. Bagian dari Amamiya Labs — dijangkau dari beranda Lab
