@@ -6,6 +6,7 @@ import type { NextRequest } from "next/server";
 // - www/amamiya.web.id tidak melayani /dashboard sama sekali (404).
 // Host lain (localhost, preview *.vercel.app) tidak disentuh agar alur dev tetap normal.
 const DASHBOARD_HOST = "dashboard.amamiya.web.id";
+const LABS_HOST = "labs.amamiya.web.id";
 const PUBLIC_HOSTS = new Set(["amamiya.web.id", "www.amamiya.web.id"]);
 
 // Selain /dashboard, host dashboard tetap butuh: aset Next (/_next),
@@ -18,6 +19,23 @@ function allowedOnDashboardHost(pathname: string): boolean {
   return (
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/v1/") ||
+    pathname === "/favicon.png" ||
+    pathname === "/favicon.ico" ||
+    pathname === "/vienna.svg" ||
+    pathname === "/profesional-cv.pdf"
+  );
+}
+
+// Host labs hanya melayani permukaan Labs: landing lockup di
+// root (rewrite ke /labs agar URL tetap bersih), beranda Lab
+// dan eksperimen-eksperimennya di /lab/*. Aset bersama sama
+// seperti host dashboard (favicon, avatar agent, CV, /v1).
+function allowedOnLabsHost(pathname: string): boolean {
+  return (
+    pathname === "/lab" ||
+    pathname.startsWith("/lab/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/v1/") ||
     pathname === "/favicon.png" ||
@@ -44,6 +62,21 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     if (!allowedOnDashboardHost(pathname)) return notFound(request);
+    return NextResponse.next();
+  }
+
+  if (host === LABS_HOST) {
+    if (pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/labs";
+      return NextResponse.rewrite(url);
+    }
+    if (pathname === "/labs") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    if (!allowedOnLabsHost(pathname)) return notFound(request);
     return NextResponse.next();
   }
 
